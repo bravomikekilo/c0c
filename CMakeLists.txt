@@ -1,0 +1,16 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.8)
+project(C0)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+if(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+endif(MSVC)
+
+file(GLOB CLI_FILE "cli/*")
+file(GLOB AST_FILE "AST/*")
+
+include_directories(${C0_SOURCE_DIR})
+
+add_executable(C0 Lexer.cpp Lex.cpp Parser.cpp util.cpp Type.cpp ${CLI_FILE} ${AST_FILE} StackTable.h)

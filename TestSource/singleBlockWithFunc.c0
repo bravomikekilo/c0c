@@ -1,0 +1,16 @@
+{
+    ret = 1;
+    while(e > 0) {
+        ret = ret * base;
+        e = e + 1;
+    }
+    next[x + y + 3] = t;
+
+    if(next[0] > - 3 + 4) {
+        hello + 3;
+    } else {
+        return -exp(4, t[x]+5*dx);
+    }
+
+    return ret;
+}
