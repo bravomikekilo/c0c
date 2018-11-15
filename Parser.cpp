@@ -20,6 +20,14 @@ bool Parser::checkSemicolon() {
 unique_ptr<ExprAST> Parser::parseFactor() {
     const auto& head = lexer.peek();
 
+    if (head.is(Op::Add)) {
+
+    }
+
+    if (head.is(Op::Sub)) {
+
+    }
+
     // parse paranthese expression
     if(head.is(Sep::LPar)) {
         lexer.next();
@@ -49,6 +57,7 @@ unique_ptr<ExprAST> Parser::parseFactor() {
         lexer.next();
         if (lexer.peek().is(Sep::LBar)) {
             lexer.next();
+
             auto var = make_unique<VarExpr>(name);
             auto ind = parseExpr();
             expect(Sep::RBar, "loss ] in index");

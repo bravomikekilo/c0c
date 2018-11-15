@@ -3,20 +3,16 @@
 namespace C0 {
 
 
-
-shared_ptr<BaseType> BaseType::Int() {
-    auto *ret = new BaseType(TypeK::Int, false);
-    return shared_ptr<BaseType>(ret);
-}
-
-shared_ptr<BaseType> BaseType::Char() {
-    auto *ret = new BaseType(TypeK::Char, false);
-    return shared_ptr<BaseType>(ret);
-}
-
-shared_ptr<BaseType> BaseType::Void() {
-    auto *ret = new BaseType(TypeK::Void, false);
-    return shared_ptr<BaseType>(ret);
+size_t baseTypeSize(BaseTypeK base) {
+    switch (base) {
+    case BaseTypeK::Char:
+        return 1;
+    case BaseTypeK::Int:
+        return 4;
+    case BaseTypeK::Void:
+    case BaseTypeK::Error:
+        return 0;
+    }
 }
 
 

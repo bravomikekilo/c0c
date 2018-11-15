@@ -9,11 +9,11 @@
 
 namespace C0 {
 
-template <typename T>
+template <typename K, typename V>
 class StackTable {
 public:
     vector<T> vars;
-    unordered_map<string, size_t> index_map;
+    unordered_map<K, size_t> index_map;
 
     shared_ptr<StackTable<T>> prev;
 
@@ -21,7 +21,7 @@ public:
         return prev == nullptr;
     }
 
-    bool hasVar(const string &name) const {
+    bool has(const K &name) const {
         if(index_map.count(name) == 1) {
             return true;
         }
@@ -36,7 +36,7 @@ public:
         return false;
     }
 
-    optional<T> getVar(const string &name) const {
+    optional<T> get(const K &name) const {
         if(index_map.count(name) == 1) {
             return {index_map[name]};
         }
@@ -54,7 +54,7 @@ public:
 
 };
 
-using SymTable = StackTable<Type>;
+using SymTable = StackTable<string, Type>;
 
 }
 

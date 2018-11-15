@@ -3,6 +3,7 @@
 #include "../common.h"
 #include "../c0.h"
 #include "ASTBase.h"
+#include "Type.h"
 
 
 namespace C0 {
@@ -50,8 +51,10 @@ public:
     void accept(ASTVisitor &visitor) override {
         visitor.visit(this);
     }
-    explicit VarExpr(string n):name(std::move(n)) { }
+    explicit VarExpr(string n, int id):name(std::move(n)), varID(id) { }
     string name;
+    int varID;
+    // int Type;
 };
 
 class CallExpr : public  ExprAST {

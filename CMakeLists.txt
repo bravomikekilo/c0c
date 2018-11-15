@@ -16,4 +16,6 @@ include_directories(${C0_SOURCE_DIR})
 
 add_executable(Lexer Lexer.cpp Lex.cpp util.cpp cli/lexer.cpp)
 
+add_executable(Grammar Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp ${AST_FILE} StackTable.h cli/grammar.cpp)
+
 add_executable(C0 cli/C0.cpp Lexer.cpp Lex.cpp Parser.cpp util.cpp Type.cpp ${CLI_FILE} ${AST_FILE} StackTable.h)

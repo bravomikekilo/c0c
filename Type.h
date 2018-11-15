@@ -1,94 +1,74 @@
 #pragma once
 #include "common.h"
+#include "util.h"
+#include <variant>
 
 namespace C0 {
 
-enum class TypeK {
+
+enum class BaseTypeK {
     Int,
     Char,
     Void,
-    Pointer,
-    Array,
     Error,
 };
 
-class Type
-{
-public:
-    virtual string toString() const = 0;
-    virtual bool is(TypeK kind) const = 0;
-    virtual bool isConst() const = 0;
-    ~Type() = default;
+size_t baseTypeSize(BaseTypeK);
+
+
+struct ArrayT {
+    size_t length;
+    BaseTypeK base;
+    inline size_t sizeOf() const {
+        return length * baseTypeSize(base);
+    }
 };
 
-class ErrorType :public Type {
-    string toString() const override {
-        return "errorT";
-    }
-
-    bool is(TypeK type) const override {
-        return type == TypeK::Error;
-    }
-
-    bool isConst() const override {return false;}
-};
-
-class BaseType : public Type {
+class Type {
 public:
-    BaseType(TypeK t, bool c)
-        :t(t), c(c) {};
-    static shared_ptr<BaseType> Int();
-    static shared_ptr<BaseType> Char();
-    static shared_ptr<BaseType> Void();
-    
-
-    bool is(TypeK type) const override {
-        return t == type;
+    using ValType = std::variant<ArrayT, BaseTypeK>;
+    bool isArray() const {
+        return std::holds_alternative<ArrayT>(val);
     }
 
-    bool isConst() const override {
-        return c;
+    bool isBase() const {
+        return std::holds_alternative<BaseTypeK>(val);
     }
 
-    string toString() const override {
-        switch (t)
-        {
-        case C0::TypeK::Int:
-            return "int";
-        case C0::TypeK::Char:
-            return "char";
-        case C0::TypeK::Void:
-            return "void";
-        default:
-            return "interal type error";
+    bool isError() const {
+        return std::holds_alternative<BaseTypeK>(val) 
+            && std::get<BaseTypeK>(val) == BaseTypeK::Error;
+    }
+
+    size_t sizeOf() const {
+        return std::visit(overloaded {
+            [](BaseTypeK arg) -> size_t { return baseTypeSize(arg); },
+            [](ArrayT arg) -> size_t {return arg.sizeOf(); },
+            }, val);
+    }
+
+    optional<string> canAssignTo(const Type& other) const {
+        if (isArray() || other.isArray()) return {"array value can't be assigned"};
+        if (isError()) return {};
+        const auto& base = std::get<BaseTypeK>(val);
+        const auto& other_base = std::get<BaseTypeK>(other.getVal());
+        if (base != other_base) {
+            return "can't assign different type";
+        } else {
+            return {};
         }
+
+    }
+
+    const ValType &getVal() const {
+        return val;
     }
 
 private:
-    TypeK t;
-    bool c;
+    ValType val;
+
+    
 };
-
-class ArrayType :public Type {
-protected:
-    ArrayType(shared_ptr<BaseType> base, size_t sz): base(std::move(base)), sz(sz) {}
-
-    bool is(TypeK type) const override {
-        return type == TypeK::Pointer;
-    }
-
-    bool isConst() const override { return false; };
-
-    string toString() const override {
-        auto b = base->toString();
-        return b + "[" + std::to_string(sz) + "]";
-    }
-
-public:
-    shared_ptr<BaseType> base;
-    size_t sz;
-};
-
 
 
 
