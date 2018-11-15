@@ -53,8 +53,8 @@ Lex Lexer::parseChar() {
         return Lex::Error(err);
     }
     char ch = static_cast<char>(c);
-
-    if(ch == '+' || ch == '-' || isdigit(ch) || isalpha(ch)) {
+    stream.get();
+    if(ch == '+' || ch == '-' || ch == '_' || isdigit(ch) || isalpha(ch)) {
         invalid_char = false;
     }
 
@@ -62,7 +62,7 @@ Lex Lexer::parseChar() {
     auto last = stream.peek();
     if (last != '\'' || invalid_char) {
         for (;last != EOF && last != '\n' && last != '\''; last = stream.peek()) {
-            err.push_back(ch);
+            err.push_back(last);
             stream.get();
         }
         if (last == '\'') {
@@ -71,6 +71,7 @@ Lex Lexer::parseChar() {
         }
         return Lex::Error(err);
     } else {
+        stream.get();
         return Lex(ch);
     }
 }
@@ -89,11 +90,11 @@ Lex Lexer::parseString() {
     }
     if (head == '"' && !invalid_char) {
         stream.get();
-        Lex::String(raw);
+        return Lex::String(raw);
     } else {
-        Lex::Error(raw);
+        return Lex::Error(raw);
     }
-    return Lex::String(raw);
+    // return Lex::String(raw);
 }
 
 Lex Lexer::parseIdentOrKey() {
@@ -114,6 +115,8 @@ Lex Lexer::parseIdentOrKey() {
 Lex Lexer::parseInt() {
     string chunk;
     bool overflow = false;
+    bool hasZero = false;
+    bool multiZero = false;
     auto head = stream.peek();
     int ret = 0;
     int sign = 1;
@@ -122,6 +125,11 @@ Lex Lexer::parseInt() {
         stream.get();
     }
     while (isdigit(stream.peek())) {
+        if (stream.peek() == '0') {
+            if (!hasZero) hasZero = true;
+            else multiZero = true;
+        }
+
         int prev = ret;
         chunk.push_back(static_cast<char>(stream.peek()));
         ret *= 10;
@@ -130,7 +138,7 @@ Lex Lexer::parseInt() {
             overflow = true;
         }
     }
-    if(overflow) {
+    if(overflow || multiZero) {
         return Lex::Error(chunk);
     } else {
         return Lex(sign * ret);

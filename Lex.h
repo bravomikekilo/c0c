@@ -112,8 +112,11 @@ public:
         {
         case C0::LexKind::Int:
             return "Int:" + std::to_string(std::get<int>(val));
-        case C0::LexKind::Char:
-            return "char:" + std::to_string(std::get<char>(val));
+        case C0::LexKind::Char: {
+            std::string ret = "char:";
+            ret.push_back(std::get<char>(val));
+            return ret;
+        }
         case C0::LexKind::String:
             return "str:\"" + std::get<string>(val) + "\"";
         case C0::LexKind::Ident:

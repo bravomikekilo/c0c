@@ -12,7 +12,7 @@ optional<Keyword> isKeyword(const string &raw) {
     if (raw == "else") {
         return Keyword::ELSE;
     }
-    if (raw == "DO") {
+    if (raw == "do") {
         return Keyword::DO;
     }
     if (raw == "while") {
@@ -141,6 +141,8 @@ string keyToString(Keyword key) {
             return "int";
         case Keyword::CHAR:
             return "char";
+        case Keyword::VOID:
+            return "void";
         default:
             return {};
     }

@@ -1,0 +1,13 @@
+{
+  "configurations": [
+    {
+      "currentDir": "${workspaceRoot}",
+      "name": "Lexer.exe",
+      "project": "CMakeLists.txt",
+      "projectTarget": "Lexer.exe",
+      "type": "default"
+    }
+  ],
+  "defaults": {},
+  "version": "0.2.1"
+}

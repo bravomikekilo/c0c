@@ -59,8 +59,13 @@ private:
     
     template<typename T>
     bool expect(T sym, const string &err) {
-        if (lexer.peek().is(sym)) lexer.next();
-        else report(err);
+        if (lexer.peek().is(sym)) {
+            lexer.next();
+            return true;
+        } else {
+            report(err);
+            return false;
+        }
     }
 
 };

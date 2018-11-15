@@ -1,8 +1,8 @@
 #include "StmtAST.h"
 
-inline void C0::IfStmt::accept(ASTVisitor & visitor) { visitor.visit(this); }
+void C0::IfStmt::accept(ASTVisitor & visitor) { visitor.visit(this); }
 
-inline void C0::BlockStmt::accept(ASTVisitor & visitor) { visitor.visit(this); }
+void C0::BlockStmt::accept(ASTVisitor & visitor) { visitor.visit(this); }
 
 void C0::WhileStmt::accept(ASTVisitor & visitor) { visitor.visit(this); }
 
