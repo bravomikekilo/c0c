@@ -1,0 +1,23 @@
+
+int add(int x, int y) {
+
+    const int base = 10, next = 20;
+    int temp, result;
+    int swap;
+
+    swap = x;
+    x = y;
+    y = swap;
+
+    temp = 1 + 2 * 3;
+    result = x + y + temp;
+
+    return result / base + next;
+
+
+
+
+
+}
+
+

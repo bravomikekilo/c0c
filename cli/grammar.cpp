@@ -17,9 +17,16 @@ int main(int argc, char **argv) {
     string source = C0::getFileContents(source_name.c_str());
 
     auto parser = C0::Parser::fromStr(source);
-    auto stmt = parser.parseStmt();
-    std::cout << C0::ASTDrawer::dot(*stmt) << std::endl;
-    
+    auto [funcs, sym] = parser.parseProg();
+
+    std::cout << C0::ASTDrawer::drawProgram(funcs);
+
+    // std::cout << C0::ASTDrawer::dot(*func) << std::endl;
+
+    for(const auto& err: parser.getError()) {
+        std::cout << err << std::endl;
+    }
+
     return 0;
 
 }

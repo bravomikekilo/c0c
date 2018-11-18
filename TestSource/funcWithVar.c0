@@ -1,0 +1,14 @@
+
+int add(int x, int y) {
+    int temp;
+    int result;
+    temp = 1 + 2 * 3;
+
+    result = x + y + temp;
+
+    return result;
+
+}
+
+
+

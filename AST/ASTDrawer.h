@@ -2,12 +2,11 @@
 
 #include "ASTVisitor.h"
 #include "../common.h"
+#include "SymTable.h"
 
 namespace C0 {
 
 using std::tuple;
-
-class ExprAST;
 
 class ASTDrawer :
         public ASTVisitor {
@@ -15,6 +14,7 @@ public:
     using EdgeType = std::tuple<int, int, string>;
 
     static string dot(ASTBase &ast);
+    static string drawProgram(vector<shared_ptr<FuncAST>> &funcs);
 
     ASTDrawer()
             : currNodeID(0), nodes(vector<string>()), edges(vector<EdgeType>()) {};
@@ -32,6 +32,7 @@ private:
     int subID = -1;
     vector<string> nodes;
     vector<EdgeType> edges;
+    shared_ptr<SymTable> table;
 
 
     // Inherited via ASTVisitor
@@ -66,6 +67,8 @@ private:
     void visit(DoStmt *e) override;
 
     void visit(ForStmt *e) override;
+
+    void visit(FuncAST *e) override;
 
 };
 

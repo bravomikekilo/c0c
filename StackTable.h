@@ -12,10 +12,10 @@ namespace C0 {
 template <typename K, typename V>
 class StackTable {
 public:
-    vector<T> vars;
+    vector<V> vars;
     unordered_map<K, size_t> index_map;
 
-    shared_ptr<StackTable<T>> prev;
+    shared_ptr<StackTable<K, V>> prev;
 
     bool hasPrev() const {
         return prev == nullptr;
@@ -36,7 +36,7 @@ public:
         return false;
     }
 
-    optional<T> get(const K &name) const {
+    optional<V> get(const K &name) const {
         if(index_map.count(name) == 1) {
             return {index_map[name]};
         }
@@ -50,6 +50,11 @@ public:
         }
 
         return {};
+    }
+
+    void insert(const K &key, const V val) const {
+        vars.push_back(val);
+        index_map[key] = vars.size() - 1;
     }
 
 };

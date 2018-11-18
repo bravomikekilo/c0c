@@ -4,6 +4,7 @@
 #include "../c0.h"
 #include "ASTBase.h"
 #include "Type.h"
+#include "SymTable.h"
 
 
 namespace C0 {
@@ -51,10 +52,8 @@ public:
     void accept(ASTVisitor &visitor) override {
         visitor.visit(this);
     }
-    explicit VarExpr(string n, int id):name(std::move(n)), varID(id) { }
-    string name;
-    int varID;
-    // int Type;
+    explicit VarExpr(VarID id):varID(id) { }
+    VarID varID;
 };
 
 class CallExpr : public  ExprAST {

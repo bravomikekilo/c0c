@@ -4,4 +4,6 @@
 #include "ExprAST.h"
 #include "CondAST.h"
 #include "StmtAST.h"
+#include "FuncAST.h"
 #include "ASTVisitor.h"
+

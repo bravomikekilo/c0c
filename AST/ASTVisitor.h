@@ -24,6 +24,8 @@ class EmptyStmt;
 class DoStmt;
 class ForStmt;
 
+class FuncAST;
+
 class ASTVisitor
 {
 public:
@@ -47,7 +49,9 @@ public:
     virtual void visit(EmptyStmt *e) = 0;
     virtual void visit(DoStmt *e) = 0;
     virtual void visit(ForStmt *e) = 0;
-    
+
+    virtual void visit(FuncAST *e) = 0;
+
 
     virtual ~ASTVisitor() = default;
 };

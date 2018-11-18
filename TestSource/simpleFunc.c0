@@ -1,0 +1,15 @@
+
+const int one = 1;
+
+int sum;
+
+int add(int x, int y) {
+    return x + y;
+}
+
+void addToSum(int v) {
+    int temp;
+    sum = one;
+    temp = v + v;
+    sum = sum + temp;
+}

@@ -15,18 +15,31 @@ enum class BaseTypeK {
 
 size_t baseTypeSize(BaseTypeK);
 
+string baseTypeToString(BaseTypeK t);
+
 
 struct ArrayT {
-    size_t length;
     BaseTypeK base;
+    size_t length;
     inline size_t sizeOf() const {
         return length * baseTypeSize(base);
     }
+
+    string toString() const ;
+
 };
 
 class Type {
 public:
     using ValType = std::variant<ArrayT, BaseTypeK>;
+
+    Type(BaseTypeK base, size_t length)
+        :val(ArrayT{base, length}){}
+
+    explicit Type(BaseTypeK base)
+        :val(base){}
+
+
     bool isArray() const {
         return std::holds_alternative<ArrayT>(val);
     }
@@ -38,6 +51,14 @@ public:
     bool isError() const {
         return std::holds_alternative<BaseTypeK>(val) 
             && std::get<BaseTypeK>(val) == BaseTypeK::Error;
+    }
+
+    string toString() const {
+        if(isArray()) {
+            return std::get<ArrayT>(val).toString();
+        } else {
+            return baseTypeToString(std::get<BaseTypeK>(val));
+        }
     }
 
     size_t sizeOf() const {
