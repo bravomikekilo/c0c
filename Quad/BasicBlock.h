@@ -14,9 +14,11 @@ namespace C0 {
 
 class BasicBlock {
 public:
-    std::list<unique_ptr<Quad>> insts;
-    vector<BasicBlock *> succ;
+    std::list<Quad> insts;
     BasicBlock *next;
+
+    explicit BasicBlock(int bid, BasicBlock *next = nullptr)
+    :bid(bid), next(next) {}
 
     int getBid() { return bid; }
 private:
@@ -27,8 +29,9 @@ private:
 
 class BasicBlockBuilder {
 
+public:
     BasicBlock *create() {
-        auto ret = new BasicBlock();
+        auto ret = new BasicBlock(popBid());
         built.push_back(ret);
         return ret;
     }
@@ -41,7 +44,12 @@ class BasicBlockBuilder {
 
 
 private:
+    int popBid() {
+        return next_bid++;
+    }
+    int next_bid = 1;
     vector<BasicBlock *> built;
+    
 };
 
 

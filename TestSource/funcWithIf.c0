@@ -1,0 +1,29 @@
+
+int add(int x, int y) {
+    int temp;
+    int result;
+
+    temp = 1 + 2 * 3;
+
+
+
+    if(temp > 10) {
+        result = x + y + temp;
+    } else {
+        if(result >= 0) {
+            temp = 2 * temp;
+        }
+    }
+
+    if(result != 0) {
+        result = result * 10;
+    }
+
+    return result;
+
+}
+
+
+
+
+

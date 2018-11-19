@@ -1,0 +1,13 @@
+
+
+int testFunc(int x, int y) {
+    int temp;
+    int result;
+    result = 1;
+    for(temp = 0; temp < 10; temp = temp + 1){
+        result = result * 2;
+    }
+
+    return result / temp;
+
+}

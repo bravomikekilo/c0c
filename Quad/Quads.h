@@ -21,20 +21,20 @@ class BasicBlock;
 
 enum class QuadOp {
     Add, Sub, Mul, Div,
-    Copy, Call, GetInt, GetChar,
+    Copy, Call, Ret, GetInt, GetChar,
     SetInt, SetChar, B,
     Beq, Bne, Bgt, Bge, Blt, Ble
 };
 
-bool isBranchOp(QuadOp op) {
+inline bool isBranchOp(QuadOp op) {
     return op >= QuadOp::B;
 }
 
-bool isGetOp(QuadOp op) {
+inline bool isGetOp(QuadOp op) {
     return op >= QuadOp::GetInt && op <= QuadOp::GetChar;
 }
 
-bool isSetOp(QuadOp op) {
+inline bool isSetOp(QuadOp op) {
     return op >= QuadOp::SetInt && op <= QuadOp::SetChar;
 }
 
@@ -68,12 +68,22 @@ struct Quad {
 
     using FuncExtT = pair<string, vector<QuadVal>>;
 
+    Quad(): op(QuadOp::Ret), jmp(nullptr), call_ext(nullptr) {}
+
+    explicit Quad(QuadVal ret)
+        :op(QuadOp::Ret), src0(ret), jmp(nullptr), call_ext(nullptr){
+
+    }
+
+    Quad(BasicBlock *target)
+             :op(QuadOp::B), call_ext(nullptr), jmp(target){}
+
     Quad(string name, vector<QuadVal>&& arg, QuadVal dst)
     :call_ext(make_unique<FuncExtT>(std::move(name), std::move(arg)))
     , op(QuadOp::Call), jmp(nullptr) {}
 
     Quad(QuadOp cond, QuadVal lhs, QuadVal rhs, BasicBlock *target)
-        :op(cond), src0(lhs), src1(rhs), jmp(target) {}
+        :op(cond), src0(lhs), src1(rhs), jmp(target), call_ext(nullptr) {}
 
     Quad(QuadVal dst, QuadOp op, QuadVal src0, QuadVal src1)
             : src0(src0), src1(src1), op(op), dst(dst),
@@ -82,8 +92,7 @@ struct Quad {
 
     unique_ptr<pair<string, vector<QuadVal>>> call_ext; /// args for call op
 
-    string toString(shared_ptr<SymTable> table);
-
+    string toString(shared_ptr<SymTable> table) const ;
 
 };
 

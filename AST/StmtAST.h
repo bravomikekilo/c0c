@@ -64,26 +64,31 @@ public:
         visitor.visit(this);
     }
 
-    explicit ForStmt(unique_ptr<CondAST>&& cond)
-        :cond(std::move(cond)), start({}), after({}) {};
+    explicit ForStmt(unique_ptr<CondAST>&& cond, unique_ptr<StmtAST>&& body)
+        :cond(std::move(cond)), start({}), after({}), body(std::move(body)) {};
 
-    explicit ForStmt(unique_ptr<AsStmt>&& start, unique_ptr<CondAST>&& cond)
-        :cond(std::move(cond)), start(std::move(start)), after({}) {};
+    explicit ForStmt(unique_ptr<AsStmt>&& start, unique_ptr<CondAST>&& cond, unique_ptr<StmtAST>&& body)
+        :cond(std::move(cond)), start(std::move(start)), after({}), body(std::move(body)) {};
 
-    explicit ForStmt(unique_ptr<AsStmt>&& start, unique_ptr<CondAST>&& cond, unique_ptr<AsStmt>&& after)
-        :cond(std::move(cond)), start(std::move(start)), after(std::move(after)) {};
+    explicit ForStmt(unique_ptr<AsStmt>&& start,
+                     unique_ptr<CondAST>&& cond,
+                     unique_ptr<AsStmt>&& after,
+                     unique_ptr<StmtAST>&& body)
+        :cond(std::move(cond)), start(std::move(start)), after(std::move(after)), body(std::move(body)) {};
 
     explicit ForStmt(
             optional<unique_ptr<AsStmt>>&& start,
             unique_ptr<CondAST>&& cond,
-            optional<unique_ptr<AsStmt>>&& after
+            optional<unique_ptr<AsStmt>>&& after,
+            unique_ptr<StmtAST>&& body
             )
-        :cond(std::move(cond)), start(std::move(start)), after(std::move(after)) {};
+        :cond(std::move(cond)), start(std::move(start)), after(std::move(after)), body(std::move(body)) {};
 
 
     optional<unique_ptr<AsStmt>> start;
     unique_ptr<CondAST> cond;
     optional<unique_ptr<AsStmt>> after;
+    unique_ptr<StmtAST> body;
 };
 
 class WhileStmt : public StmtAST {

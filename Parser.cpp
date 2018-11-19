@@ -277,7 +277,7 @@ unique_ptr<ForStmt> Parser::parseFor() {
 
     auto body = parseStmt();
 
-    return make_unique<ForStmt>(std::move(start), std::move(cond), std::move(after));
+    return make_unique<ForStmt>(std::move(start), std::move(cond), std::move(after), std::move(body));
 
 }
 

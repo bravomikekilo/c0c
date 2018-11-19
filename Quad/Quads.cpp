@@ -21,6 +21,8 @@ string opToString(QuadOp op) {
             return "Copy";
         case QuadOp::Call:
             return "Call";
+        case QuadOp::Ret:
+            return "Ret";
         case QuadOp::GetInt:
             return "GetInt";
         case QuadOp::SetInt:
@@ -48,8 +50,8 @@ string opToString(QuadOp op) {
 
 
 string varToString(QuadVal v, shared_ptr<SymTable> table) {
-    if (std::holds_alternative<VarID>(v)) {
-        auto id = std::get<VarID>(v);
+    if (!v.isConst) {
+        auto id = v.val;
         if (id == 0) {
             return "_";
         }
@@ -66,14 +68,13 @@ string varToString(QuadVal v, shared_ptr<SymTable> table) {
         }
 
     } else {
-        auto val = std::get<int>(v);
-        return std::to_string(val);
+        return std::to_string(v.val);
     }
 
 }
 
 
-string Quad::toString(shared_ptr<SymTable> table) {
+string Quad::toString(shared_ptr<SymTable> table) const {
     if (op == QuadOp::Call) {
         auto bulk = fmt::format("{} = {} Call",
                                 varToString(dst, table),
@@ -84,9 +85,19 @@ string Quad::toString(shared_ptr<SymTable> table) {
             bulk += fmt::format(" {}", varToString(arg, table));
         }
         return bulk;
+    } else if (op == QuadOp::Copy) {
+        return fmt::format("{} = Copy {}",
+                           varToString(dst, table),
+                           varToString(src0, table));
+    } else if (op == QuadOp::Ret) {
+
+        return fmt::format("Ret {}", varToString(src0, table));
+
+
     } else if (isSetOp(op)) {
         return fmt::format("{} {} {} {}",
                            varToString(dst, table),
+                           opToString(op),
                            varToString(src0, table),
                            varToString(src1, table)
         );

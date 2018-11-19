@@ -1,0 +1,14 @@
+
+int testFunc(int x, int y) {
+    int temp;
+    int result;
+
+    result = 0;
+    do {
+        result = result + y;
+        temp = result * 2;
+    }while(result < temp);
+
+    return result;
+
+}
