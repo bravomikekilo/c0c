@@ -20,6 +20,14 @@ bool Parser::checkSemicolon() {
 unique_ptr<ExprAST> Parser::parseFactor() {
     const auto &head = lexer.peek();
 
+    if (head.is(Keyword::PRINTF)) {
+        return parsePrint();
+    }
+
+    if (head.is(Keyword::SCANF)) {
+        return parseRead();
+    }
+
     if (head.is(Op::Add)) {
 
     }
@@ -397,10 +405,10 @@ void Parser::tryParseConst(bool global) {
                 lexer.next();
                 expect(Sep::Assign, "miss = in const");
                 int val = 0;
-                if(lexer.peek().is(LexKind::Int)) {
+                if (lexer.peek().is(LexKind::Int)) {
                     val = lexer.peek().getInt();
                     lexer.next();
-                } else if(lexer.peek().is(LexKind::Char)) {
+                } else if (lexer.peek().is(LexKind::Char)) {
                     val = lexer.peek().getChar();
                     lexer.next();
                 } else {
@@ -498,7 +506,7 @@ pair<vector<shared_ptr<FuncAST>>, shared_ptr<SymTable>> Parser::parseProg() {
     while (!lexer.peek().is(LexKind::Eof)) {
         auto func = parseFunc();
         funcs.push_back(func);
-        if(func != nullptr) {
+        if (func != nullptr) {
             func_table.insert(pair(func->name, func));
         }
     }
@@ -510,11 +518,11 @@ pair<vector<shared_ptr<FuncAST>>, shared_ptr<SymTable>> Parser::parseProg() {
 Type Parser::parseRetType() {
     auto head = lexer.peek();
     lexer.next();
-    if(head.is(Keyword::VOID)) {
+    if (head.is(Keyword::VOID)) {
         return Type(BaseTypeK::Void);
-    } else if(head.is(Keyword::CHAR)) {
+    } else if (head.is(Keyword::CHAR)) {
         return Type(BaseTypeK::Char);
-    } else if(head.is(Keyword::INT)) {
+    } else if (head.is(Keyword::INT)) {
         return Type(BaseTypeK::Int);
     } else {
         return Type(BaseTypeK::Error);
@@ -526,11 +534,11 @@ Type Parser::parseRetType() {
 Type Parser::parseArgType() {
     auto head = lexer.peek();
     lexer.next();
-    if(head.is(Keyword::VOID)) {
+    if (head.is(Keyword::VOID)) {
         return Type(BaseTypeK::Error);
-    } else if(head.is(Keyword::CHAR)) {
+    } else if (head.is(Keyword::CHAR)) {
         return Type(BaseTypeK::Char);
-    } else if(head.is(Keyword::INT)) {
+    } else if (head.is(Keyword::INT)) {
         return Type(BaseTypeK::Int);
     } else {
         return Type(BaseTypeK::Error);
@@ -543,14 +551,14 @@ shared_ptr<FuncAST> Parser::parseFunc() {
     auto retType = parseRetType();
 
     string func_name;
-    if(lexer.peek().is(LexKind::Ident)) {
+    if (lexer.peek().is(LexKind::Ident)) {
         func_name = lexer.peek().getString();
         lexer.next();
-    } else {incomplete = true;}
+    } else { incomplete = true; }
 
     auto func = parseFunc(retType, func_name);
 
-    if(incomplete) {
+    if (incomplete) {
         return nullptr;
     } else {
         return func;
@@ -560,7 +568,7 @@ shared_ptr<FuncAST> Parser::parseFunc() {
 shared_ptr<FuncAST> Parser::parseFunc(Type ret, string func_name) {
     bool incomplete = false;
 
-    if(!expect(Sep::LPar, "missing { in function")){
+    if (!expect(Sep::LPar, "missing { in function")) {
         incomplete = true;
     }
 
@@ -568,18 +576,18 @@ shared_ptr<FuncAST> Parser::parseFunc(Type ret, string func_name) {
 
     vector<pair<Type, string>> args;
 
-    if(!lexer.peek().is(Sep::RPar)) {
+    if (!lexer.peek().is(Sep::RPar)) {
         auto first_type = parseArgType();
         string first_arg;
-        if(lexer.peek().is(LexKind::Ident)) {
+        if (lexer.peek().is(LexKind::Ident)) {
             first_arg = lexer.peek().getString();
             lexer.next();
         }
         curr_table->insert({popVarID(), first_type, first_arg, false, {}});
         args.emplace_back(pair(first_type, first_arg));
 
-        while(!lexer.peek().is(Sep::RPar)) {
-            if(lexer.peek().is(Sep::Comma)) {
+        while (!lexer.peek().is(Sep::RPar)) {
+            if (lexer.peek().is(Sep::Comma)) {
                 lexer.next();
             } else {
                 errors.emplace_back("missing comma");
@@ -588,7 +596,7 @@ shared_ptr<FuncAST> Parser::parseFunc(Type ret, string func_name) {
             auto arg_type = parseArgType();
 
             string arg_name;
-            if(lexer.peek().is(LexKind::Ident)) {
+            if (lexer.peek().is(LexKind::Ident)) {
                 arg_name = lexer.peek().getString();
                 lexer.next();
             }
@@ -600,7 +608,7 @@ shared_ptr<FuncAST> Parser::parseFunc(Type ret, string func_name) {
     lexer.next();
 
 
-    if(!expect(Sep::LCur, "missing { in function")){
+    if (!expect(Sep::LCur, "missing { in function")) {
         incomplete = true;
     }
 
@@ -609,18 +617,102 @@ shared_ptr<FuncAST> Parser::parseFunc(Type ret, string func_name) {
 
     vector<unique_ptr<StmtAST>> stmts;
 
-    while(!lexer.peek().is(Sep::RCur)) {
+    while (!lexer.peek().is(Sep::RCur)) {
         stmts.push_back(parseStmt());
     }
 
     lexer.next();
 
 
-    if(incomplete) {
+    if (incomplete) {
         return nullptr;
     } else {
         return make_shared<FuncAST>(curr_table, func_name, ret, std::move(args), std::move(stmts));
     }
+}
+
+unique_ptr<ExprAST> Parser::parseRead() {
+    lexer.next();
+    bool finish = false;
+    vector<unique_ptr<VarExpr>> args;
+    expect(Sep::LPar, "missing ( in read");
+    if (!lexer.peek().is(LexKind::Ident)) {
+        errors.emplace_back("can't find variable in read");
+        if (lexer.peek().is(Sep::RPar)) {
+            lexer.next();
+            finish = true;
+        }
+    } else {
+        auto var_name = lexer.peek().getString();
+        lexer.next();
+        auto var_id = curr_table->findVarByName(var_name);
+        VarID id = 0;
+        if (!var_id.has_value()) {
+            errors.push_back("unknown variable:" + var_name);
+        } else {
+            id = var_id.value();
+        }
+        args.push_back(std::move(make_unique<VarExpr>(id)));
+    }
+
+    if (!finish) {
+        while (!lexer.peek().is(Sep::RPar)) {
+            if (lexer.peek().is(Sep::Comma)) {
+                lexer.next();
+            } else {
+                errors.emplace_back("missing , in read");
+            }
+            if (lexer.peek().is(LexKind::Ident)) {
+                auto var_name = lexer.peek().getString();
+                lexer.next();
+                auto var_id = curr_table->findVarByName(var_name);
+                VarID id = 0;
+                if (!var_id.has_value()) {
+                    errors.push_back("unknown variable:" + var_name);
+                } else {
+                    id = var_id.value();
+                }
+                args.push_back(std::move(make_unique<VarExpr>(id)));
+            } else {
+                errors.emplace_back("missing variable in read");
+                lexer.next();
+            }
+        }
+        lexer.next();
+        finish = true;
+
+    }
+
+    return make_unique<ReadExpr>(std::move(args));
+}
+
+unique_ptr<ExprAST> Parser::parsePrint() {
+    lexer.next();
+    expect(Sep::LPar, "missing print");
+    optional<int> str;
+
+    if(lexer.peek().is(LexKind::String)){
+        auto str_id = curr_table->addString(lexer.peek().getString());
+        str = str_id;
+        lexer.next();
+    }
+
+    if(lexer.peek().is(Sep::RPar)) {
+        lexer.next();
+        optional<unique_ptr<ExprAST>> exp;
+        return make_unique<PrintExpr>(str, std::move(exp));
+    }
+
+    if(str.has_value()) {
+        expect(Sep::Comma, "missing , in print");
+    }
+
+    optional<unique_ptr<ExprAST>> exp = {parseExpr()};
+
+    expect(Sep::RPar, "missing ) in print");
+
+    return make_unique<PrintExpr>(str, std::move(exp));
+
 }
 
 

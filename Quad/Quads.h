@@ -21,7 +21,7 @@ class BasicBlock;
 
 enum class QuadOp {
     Add, Sub, Mul, Div,
-    Copy, Call, Ret, GetInt, GetChar,
+    Copy, Call, Ret, Read, Print, GetInt, GetChar,
     SetInt, SetChar, B,
     Beq, Bne, Bgt, Bge, Blt, Ble
 };
@@ -65,18 +65,28 @@ struct Quad {
     QuadVal dst;
 
     BasicBlock *jmp;
-
+    int str_id = -1;
     using FuncExtT = pair<string, vector<QuadVal>>;
 
     Quad(): op(QuadOp::Ret), jmp(nullptr), call_ext(nullptr) {}
+
 
     explicit Quad(QuadVal ret)
         :op(QuadOp::Ret), src0(ret), jmp(nullptr), call_ext(nullptr){
 
     }
 
+    Quad(int str_id, QuadVal exp)
+        :op(QuadOp::Print), jmp(nullptr), call_ext(nullptr), src0(exp) {
+        this->str_id = str_id;
+    }
+
+    explicit Quad(vector<QuadVal>&& arg)
+    :op(QuadOp::Read), jmp(nullptr), call_ext(make_unique<FuncExtT>("", std::move(arg))){}
+
     Quad(BasicBlock *target)
              :op(QuadOp::B), call_ext(nullptr), jmp(target){}
+
 
     Quad(string name, vector<QuadVal>&& arg, QuadVal dst)
     :call_ext(make_unique<FuncExtT>(std::move(name), std::move(arg)))

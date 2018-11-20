@@ -25,6 +25,10 @@ public:
 
     void visit(CallExpr *e) override;
 
+    void visit(PrintExpr *e) override;
+
+    void visit(ReadExpr *e) override;
+
 private:
     int popNode();
 

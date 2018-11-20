@@ -23,6 +23,10 @@ string opToString(QuadOp op) {
             return "Call";
         case QuadOp::Ret:
             return "Ret";
+        case QuadOp::Read:
+            return "Read";
+        case QuadOp::Print:
+            return "Print";
         case QuadOp::GetInt:
             return "GetInt";
         case QuadOp::SetInt:
@@ -84,6 +88,20 @@ string Quad::toString(shared_ptr<SymTable> table) const {
         for (const auto &arg: call_ext->second) {
             bulk += fmt::format(" {}", varToString(arg, table));
         }
+        return bulk;
+    } else if (op == QuadOp::Read) {
+        string bulk = "Read";
+        for (const auto &arg: call_ext->second) {
+            bulk += fmt::format(" {}", varToString(arg, table));
+        }
+        return bulk;
+
+    } else if (op == QuadOp::Print) {
+        string bulk = "Print";
+        bulk += fmt::format(" {} {}",
+                            str_id >= 0 ? table->findStr(str_id) : "_",
+                            varToString(src0, table));
+
         return bulk;
     } else if (op == QuadOp::Copy) {
         return fmt::format("{} = Copy {}",

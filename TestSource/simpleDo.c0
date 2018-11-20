@@ -7,6 +7,19 @@ int testFunc(int x, int y) {
     do {
         result = result + y;
         temp = result * 2;
+        do {
+            x = y * x + 1 + 3 + 4 * x;
+            for(x = y; x < y + result; x = x + temp) {
+                if(result > 10) {
+                  x = y + 3;
+                } else {
+                  x = 4 - 5;
+                }
+            }
+            if(x > 3) {
+                y = x + 3;
+            }
+        } while(x < y);
     }while(result < temp);
 
     return result;

@@ -19,7 +19,11 @@ public:
     explicit CFGConverter(BasicBlockBuilder &builder): builder(builder) {
         curr_block = builder.create();
         start_block = curr_block;
-    };
+    }
+
+    void visit(PrintExpr *e) override;
+
+    void visit(ReadExpr *e) override;;
 
 
     void visit(IntExpr *e) override;

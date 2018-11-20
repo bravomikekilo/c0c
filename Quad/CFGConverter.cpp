@@ -211,8 +211,10 @@ void CFGConverter::visit(BlockStmt *e) {
 
 void CFGConverter::visit(AsStmt *e) {
 
+    bool right_is_leaf = false;
     e->rhs->accept(*this);
     if(expr_is_leaf) {
+        right_is_leaf = true;
         expr_is_leaf = false;
         right_val = leaf_val;
     } else {
@@ -226,7 +228,7 @@ void CFGConverter::visit(AsStmt *e) {
 
     if(left_is_var) {
         left_is_var = false;
-        if(right_val.isConst) {
+        if(right_is_leaf) {
             curr_block->insts.emplace_back(left_var, QuadOp::Copy, right_val, QuadVal());
         } else {
             curr_block->insts.back().dst = left_var;
@@ -279,6 +281,7 @@ void CFGConverter::visit(ForStmt *e) {
         } else {
             auto after_block = builder.create();
             cleanWaiting(after_block);
+            curr_block = after_block;
             e->after.value()->accept(*this);
             addWaiting(&after_block->next);
         }
@@ -314,7 +317,7 @@ void CFGConverter::visit(DoStmt *e) {
 
 }
 
-void CFGConverter::visit(EmptyStmt *e) {}
+void CFGConverter::visit(EmptyStmt *) {}
 
 void CFGConverter::visit(RetStmt *e) {
     if (e->ret.has_value()) {
@@ -330,6 +333,39 @@ void CFGConverter::visit(RetStmt *e) {
     } else {
         curr_block->insts.emplace_back();
     }
+}
+
+void CFGConverter::visit(PrintExpr *e) {
+
+    int str_id = e->str.value_or(-1);
+
+    if(!e->expr.has_value()) {
+        curr_block->insts.emplace_back(str_id, QuadVal());
+        return;
+    } else {
+        auto temp_reg = peekTempReg();
+        auto exp_val = QuadVal(temp_reg);
+        e->expr.value()->accept(*this);
+        if(expr_is_leaf) {
+            expr_is_leaf = false;
+            exp_val = leaf_val;
+        } else {
+            curr_block->insts.back().dst = exp_val;
+        }
+        curr_block->insts.emplace_back(str_id, exp_val);
+    }
+
+}
+
+void CFGConverter::visit(ReadExpr *e) {
+
+    vector<QuadVal> arg;
+    for(const auto &var : e->vars) {
+        arg.emplace_back(var->varID, false);
+    }
+
+    curr_block->insts.emplace_back(std::move(arg));
+
 }
 
 }

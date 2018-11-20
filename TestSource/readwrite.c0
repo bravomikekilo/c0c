@@ -1,0 +1,13 @@
+
+int main() {
+    int a, b, c, d;
+
+    printf("hello world");
+    printf("hello world", 1 + 2 + 3);
+    printf(1 + 2 + 3);
+    printf();
+
+    scanf(a);
+    scanf(a, b, c);
+
+}

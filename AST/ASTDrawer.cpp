@@ -25,7 +25,7 @@ string ASTDrawer::drawProgram(vector<shared_ptr<FuncAST>> &funcs) {
 
 string ASTDrawer::genDot() const {
     std::stringstream ss;
-    ss << "digraph {\n";
+    ss << "digraph {\n node [shape=box];\n";
     for (int i = 0; i < nodes.size(); ++i) {
         ss << fmt::format("N{} [label=\"{}\"]", i, nodes[i]) << std::endl;
     }
@@ -264,6 +264,41 @@ void ASTDrawer::visit(FuncAST *e) {
     for (int i = 0; i < sz; ++i) {
         e->stmts[i]->accept(*this);
         edges.emplace_back(nodeID, subID, "stmt" + std::to_string(i + 1));
+    }
+
+    subID = nodeID;
+}
+
+void ASTDrawer::visit(PrintExpr *e) {
+    auto nodeID = popNode();
+    string str = fmt::format("#{}\\nPrint\\n", nodeID);
+    if(e->str.has_value() || e->expr.has_value()) {
+        if(e->str.has_value()) {
+            str += fmt::format(R"(promote:\"{}\")", table->findStr(e->str.value()));
+        }
+        nodes.push_back(str);
+        if(e->expr.has_value()) {
+            e->expr.value()->accept(*this);
+            edges.emplace_back(nodeID, subID, "expr");
+        }
+    } else {
+        str += "error";
+        nodes.push_back(str);
+    }
+
+    subID = nodeID;
+}
+
+void ASTDrawer::visit(ReadExpr *e) {
+    auto nodeID = popNode();
+
+    string str = fmt::format("#{}\\nRead", nodeID);
+    nodes.push_back(str);
+    auto sz = e->vars.size();
+    for(int i = 0; i < sz; ++i) {
+        auto &arg = e->vars[i];
+        arg->accept(*this);
+        edges.emplace_back(nodeID, subID, "arg" + std::to_string(i + 1));
     }
 
     subID = nodeID;

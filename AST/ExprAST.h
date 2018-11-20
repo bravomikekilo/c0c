@@ -72,5 +72,35 @@ public:
 
 
 
+class PrintExpr : public ExprAST {
+public:
+    optional<int> str;
+    optional<unique_ptr<ExprAST>> expr;
+
+    PrintExpr(optional<int> str, optional<unique_ptr<ExprAST>>&& expr)
+        :str(std::move(str)), expr(std::move(expr)){}
+
+    void accept(ASTVisitor &visitor) override {
+        return visitor.visit(this);
+    }
+
+};
+
+
+class ReadExpr : public ExprAST {
+public:
+    vector<unique_ptr<VarExpr>> vars;
+    explicit ReadExpr(vector<unique_ptr<VarExpr>>&& vars)
+        : vars(std::move(vars)) {}
+
+    void accept(ASTVisitor &visitor) override {
+        return visitor.visit(this);
+    }
+
+
+};
+
+
+
 
 } // end namespace C0

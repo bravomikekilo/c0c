@@ -38,4 +38,27 @@ void SymTable::insert(SymTerm term) {
     id_map.insert(pair(term.id, index));
 }
 
+shared_ptr<SymTable> SymTable::createGlobalTable() {
+    return make_shared<SymTable>(nullptr, true);
+}
+
+int StringTable::insertStr(const string &str) {
+    if(id_table.count(str) == 1) {
+        return id_table[str];
+    } else {
+        int index = id_table.size();
+        id_table.insert(pair(str, index));
+        index_table.insert(pair(index, str));
+        return index;
+    }
+}
+
+string StringTable::findStr(int id) {
+    if(index_table.count(id) == 1) {
+        return index_table[id];
+    } else {
+        return "";
+    }
+}
+
 }

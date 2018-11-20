@@ -13,12 +13,14 @@ class Parser
 public:
     static Parser fromStr(string str);
     explicit Parser(Lexer lexer) 
-        : lexer(std::move(lexer)), global_table(make_shared<SymTable>(nullptr))
+        : lexer(std::move(lexer)), global_table(SymTable::createGlobalTable())
     {
         curr_table = global_table;
     };
 
     unique_ptr<ExprAST> parseExpr();
+    unique_ptr<ExprAST> parseRead();
+    unique_ptr<ExprAST> parsePrint();
     unique_ptr<ExprAST> parseFactor();
     unique_ptr<ExprAST> parseTerm();
     unique_ptr<CondAST> parseCond();
