@@ -6,7 +6,16 @@
       "project": "CMakeLists.txt",
       "projectTarget": "Lexer.exe",
       "type": "default"
+    },
+    {
+      "currentDir": "${workspaceRoot}",
+      "name": "Quad",
+      "project": "CMakeLists.txt",
+      "projectTarget": "Quad.exe",
+      "args": ["TestSource/whole.c0"],
+      "type": "default"
     }
+ 
   ],
   "defaults": {},
   "version": "0.2.1"

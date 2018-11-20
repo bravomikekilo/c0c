@@ -7,6 +7,9 @@
 #include "AST/ASTDrawer.h"
 #include "Parser.h"
 #include "util.h"
+#ifdef _WIN32
+#include <cstdio>
+#endif
 
 
 int main(int argc, char **argv) {
@@ -45,6 +48,10 @@ int main(int argc, char **argv) {
 
     }
 
+#ifdef _WIN32
+    std::cout << "press any key to exit" << std::endl;
+    getchar();
+#endif
 
     return 0;
 
