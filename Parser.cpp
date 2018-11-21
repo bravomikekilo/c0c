@@ -110,6 +110,7 @@ unique_ptr<ExprAST> Parser::parseFactor() {
                 args.push_back(parseExpr());
             }
             lexer.next();
+            std::cout << "get a function call expression" << std::endl;
             return make_unique<CallExpr>(name, std::move(args));
         }
 
@@ -424,7 +425,11 @@ void Parser::tryParseVar(bool global) {
         lexer.next();
         do {
             if (!lexer.peek().is(LexKind::Ident)) {
-                errors.emplace_back("miss a variable name");
+                errors.emplace_back("missing a variable name");
+                if (lexer.peek().is(Sep::Semicolon)) {
+                    break;
+                }
+                lexer.next();
             } else {
                 auto name = lexer.peek().getString();
                 lexer.next();
@@ -459,10 +464,19 @@ void Parser::tryParseVar(bool global) {
                     }
                 }
             }
+
+            if (lexer.peek().is(Sep::Semicolon)) {
+                break;
+            }
+
+            if (lexer.peek().is(LexKind::Eof)) {
+                errors.push_back("missing ; in var definition");
+                break;
+            }
             if (lexer.peek().is(Sep::Comma)) {
                 lexer.next();
             }
-        } while (!lexer.peek().is(Sep::Semicolon));
+        } while (true);
         lexer.next();
         std::cout << "get a group of variable" << std::endl;
     }
@@ -550,7 +564,7 @@ pair<vector<shared_ptr<FuncAST>>, shared_ptr<SymTable>> Parser::parseProg() {
         if (lexer.peek().is(Sep::LPar)) {
             auto func = parseFunc(Type(baseType), first_name);
             funcs.push_back(func);
-            func_table.insert(pair(first_name, func));
+            // func_table.insert(pair(first_name, func));
             break;
         } else if (lexer.peek().is(Sep::LBar)) {
             lexer.next();
@@ -569,10 +583,18 @@ pair<vector<shared_ptr<FuncAST>>, shared_ptr<SymTable>> Parser::parseProg() {
             }
             expect(Sep::RBar, "miss ] in array variable");
             Type t(baseType, length);
-            curr_table->insert(SymTerm{popVarID(), t, first_name, false, {}});
+            if (curr_table->hasVarInScope(first_name)) {
+                errors.push_back("multiple definition of variable:" + first_name);
+            } else {
+                curr_table->insert(SymTerm{popVarID(), t, first_name, false, {}});
+            }
         } else {
             Type t(baseType);
-            curr_table->insert(SymTerm{popVarID(), t, first_name, false, {}});
+            if (curr_table->hasVarInScope(first_name)) {
+                errors.push_back("multiple definition of variable:" + first_name);
+            } else {
+                curr_table->insert(SymTerm{popVarID(), t, first_name, false, {}});
+            }
         }
 
 
@@ -614,9 +636,11 @@ pair<vector<shared_ptr<FuncAST>>, shared_ptr<SymTable>> Parser::parseProg() {
                     }
                 }
             }
+            /*
             if (lexer.peek().is(Sep::Comma)) {
                 lexer.next();
             }
+            */
         };
         checkSemicolon();
     }

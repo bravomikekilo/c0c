@@ -143,6 +143,7 @@ int simpleAdd(int x, int y) {
 }
 
 int expr_test(int sum) {
+    int arr[10], char_sum;
     for(i = 0; i < 10; i = i + 1) {
         arr[i] = 5 + i;
         sum = sum+-1;

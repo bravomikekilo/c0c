@@ -1,10 +1,16 @@
 
 const int a = 1;
+
 int a, b, c;
 
 int hello() {
-	printf("world");
-	return a;
+    printf("world");
+    return a;
+}
+
+int hello(int x, int y) {
+	int temp0, temp1;
+    printf("hello world");
 }
 
 
