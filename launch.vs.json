@@ -12,10 +12,18 @@
       "name": "Quad",
       "project": "CMakeLists.txt",
       "projectTarget": "Quad.exe",
-      "args": ["TestSource/whole.c0"],
+      "args": ["TestSource/simpleArray.c0"],
+      "type": "default"
+    },
+    {
+      "currentDir": "${workspaceRoot}",
+      "name": "Grammar",
+      "project": "CMakeLists.txt",
+      "projectTarget": "Grammar.exe",
+      "args": ["TestSource/multiDef.c0"],
       "type": "default"
     }
- 
+
   ],
   "defaults": {},
   "version": "0.2.1"

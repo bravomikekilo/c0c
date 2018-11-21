@@ -80,6 +80,8 @@ public:
         }
     };
 
+    bool hasVarInScope(const string &name);
+
     optional<VarID> findVarByName(const string &name);
 
     const SymTerm *findVarByID(VarID id);

@@ -8,8 +8,6 @@ class CharExpr;
 class VarExpr;
 class OpExpr;
 class CallExpr;
-class PrintExpr;
-class ReadExpr;
 
 class CondAST;
 
@@ -58,10 +56,6 @@ public:
     virtual void visit(ReadStmt *e) = 0;
 
     virtual void visit(FuncAST *e) = 0;
-
-    virtual void visit(PrintExpr *e) = 0;
-    virtual void visit(ReadExpr *e) = 0;
-
 
     virtual ~ASTVisitor() = default;
 };

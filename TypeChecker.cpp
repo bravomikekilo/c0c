@@ -72,7 +72,7 @@ void C0::TypeChecker::visit(C0::OpExpr *e) {
 void C0::TypeChecker::visit(C0::CallExpr *e) {
     auto func_p = curr_table->findFunc(e->name);
     if (!func_p.has_value()) {
-        errors.emplace_back("call undefined function");
+        errors.push_back("call undefined function:" + e->name);
         return;
     }
 
@@ -249,8 +249,8 @@ void C0::TypeChecker::visit(C0::FuncAST *e) {
     }
 }
 
-// check type of print argument, array argument is not allowed
-void C0::TypeChecker::visit(C0::PrintExpr *e) {
+void C0::TypeChecker::visit(PrintStmt * e)
+{
     if(!e->expr.has_value()) {
         return;
     }
@@ -264,10 +264,11 @@ void C0::TypeChecker::visit(C0::PrintExpr *e) {
         errors.emplace_back("can't print void");
     }
 
+
 }
 
-// check type of read argument, array argument is not allowed
-void C0::TypeChecker::visit(C0::ReadExpr *e) {
+void C0::TypeChecker::visit(ReadStmt * e)
+{
     for(auto &var: e->vars) {
         auto var_type = var->outType(curr_table);
         if(var_type.isError()) continue;

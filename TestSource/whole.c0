@@ -126,6 +126,38 @@ int sum(int n) {
     return (sum);
 }
 
+void char_test(char c) {
+    char a, ch_arr[10];
+
+    a = c;
+    ch_arr[0] = c;
+    c = ch_arr[0];
+    ;
+    ;
+    ;
+    return;
+}
+
+int simpleAdd(int x, int y) {
+    return x + y;
+}
+
+int expr_test(int sum) {
+    for(i = 0; i < 10; i = i + 1) {
+        arr[i] = 5 + i;
+        sum = sum+-1;
+        sum = sum-+1;
+        sum = sum--1;
+        sum = -sum--1;
+        sum = -(sum * i) / (char_sum+i++2)*((arr[0]+1*-5)/(arr[2] + simpleAdd(arr[3], 10)));
+    }
+
+    return sum;
+}
+
+
+
+
 void main()
 {
     // memset(p, 0, sizeof(p));

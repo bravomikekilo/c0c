@@ -25,10 +25,6 @@ public:
 
     void visit(CallExpr *e) override;
 
-    void visit(PrintExpr *e) override;
-
-    void visit(ReadExpr *e) override;
-
     void visit(PrintStmt *e) override;
 
     void visit(ReadStmt *e) override;

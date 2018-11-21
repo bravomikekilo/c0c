@@ -6,6 +6,10 @@
 #include "AST/FuncAST.h"
 
 namespace C0 {
+bool SymTable::hasVarInScope(const string & name)
+{
+    return name_map.count(name) == 1;
+}
 
 optional<VarID> SymTable::findVarByName(const string &name) {
 

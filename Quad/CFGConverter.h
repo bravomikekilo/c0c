@@ -21,11 +21,6 @@ public:
         start_block = curr_block;
     }
 
-    void visit(PrintExpr *e) override;
-
-    void visit(ReadExpr *e) override;;
-
-
     void visit(IntExpr *e) override;
 
     void visit(CharExpr *e) override;

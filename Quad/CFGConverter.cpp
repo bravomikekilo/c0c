@@ -353,6 +353,7 @@ void CFGConverter::visit(RetStmt *e) {
     }
 }
 
+/*
 void CFGConverter::visit(PrintExpr *e) {
 
     int str_id = e->str.value_or(-1);
@@ -385,6 +386,7 @@ void CFGConverter::visit(ReadExpr *e) {
     curr_block->insts.emplace_back(std::move(arg));
 
 }
+*/
 
 void CFGConverter::visit(PrintStmt *e) {
 

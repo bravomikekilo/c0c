@@ -47,14 +47,20 @@ public:
 
     void visit(FuncAST *e) override;
 
-    void visit(PrintExpr *e) override;
-
-    void visit(ReadExpr *e) override;
+    const vector<string> &getErrors() {
+        return errors;
+    }
 
 private:
     vector<string> errors;
     shared_ptr<SymTable> curr_table;
     C0::FuncAST *curr_func = nullptr;
+
+
+    // Inherited via ASTVisitor
+    virtual void visit(PrintStmt * e) override;
+
+    virtual void visit(ReadStmt * e) override;
 
 };
 

@@ -1,0 +1,10 @@
+
+const int a = 1;
+int a, b, c;
+
+int hello() {
+	printf("world");
+	return a;
+}
+
+
