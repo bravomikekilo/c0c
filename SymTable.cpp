@@ -3,6 +3,7 @@
 //
 
 #include "SymTable.h"
+#include "AST/FuncAST.h"
 
 namespace C0 {
 
@@ -59,6 +60,11 @@ string StringTable::findStr(int id) {
     } else {
         return "";
     }
+}
+
+void FuncTable::insertFunc(shared_ptr<FuncAST> func) {
+    auto name = func->name;
+    table.insert(pair(name, func));
 }
 
 }

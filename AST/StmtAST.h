@@ -167,4 +167,36 @@ public:
 };
 
 
+
+class PrintStmt : public StmtAST {
+public:
+    optional<int> str;
+    optional<unique_ptr<ExprAST>> expr;
+
+    PrintStmt(optional<int> str, optional<unique_ptr<ExprAST>>&& expr)
+        :str(std::move(str)), expr(std::move(expr)){}
+
+    void accept(ASTVisitor &visitor) override {
+        return visitor.visit(this);
+    }
+
+
+};
+
+
+class ReadStmt : public StmtAST {
+public:
+    vector<unique_ptr<VarExpr>> vars;
+    explicit ReadStmt(vector<unique_ptr<VarExpr>>&& vars)
+        : vars(std::move(vars)) {}
+
+    void accept(ASTVisitor &visitor) override {
+        return visitor.visit(this);
+    }
+
+
+
+};
+
+
 }

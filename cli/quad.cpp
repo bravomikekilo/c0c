@@ -26,19 +26,24 @@ int main(int argc, char **argv) {
         std::cout << err << std::endl;
     }
 
-    C0::BasicBlockBuilder builder;
+    for(auto &func: funcs) {
 
-    C0::CFGConverter converter(builder);
 
-    funcs.front()->accept(converter);
+        C0::BasicBlockBuilder builder;
 
-    auto start_block = converter.getResult();
+        C0::CFGConverter converter(builder);
 
-    C0::CFGDrawer cfg_drawer;
+        func->accept(converter);
 
-    cfg_drawer.draw(start_block, funcs.front()->table);
+        auto start_block = converter.getResult();
 
-    std::cout << cfg_drawer.getDot() << std::endl;
+        C0::CFGDrawer cfg_drawer;
+
+        cfg_drawer.draw(start_block, func->table);
+
+        std::cout << cfg_drawer.getDot(func->name) << std::endl;
+
+    }
 
 
     return 0;

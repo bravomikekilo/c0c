@@ -4,12 +4,13 @@ const int one = 1;
 int sum;
 
 int add(int x, int y) {
-    return x + y;
+    return x + sum;
 }
 
 void addToSum(int v) {
     int temp;
     sum = one;
-    temp = v + v;
+    temp = add(v, v);
     sum = sum + temp;
+    return;
 }

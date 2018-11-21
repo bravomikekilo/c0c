@@ -25,6 +25,14 @@ struct ArrayT {
         return length * baseTypeSize(base);
     }
 
+    bool operator==(const ArrayT other) const {
+        return base == other.base && length == other.length;
+    }
+
+    bool operator!=(const ArrayT other) const {
+        return base != other.base || length != other.length;
+    }
+
     string toString() const ;
 
 };
@@ -33,11 +41,16 @@ class Type {
 public:
     using ValType = std::variant<ArrayT, BaseTypeK>;
 
+
     Type(BaseTypeK base, size_t length)
         :val(ArrayT{base, length}){}
 
+
+
     explicit Type(BaseTypeK base)
         :val(base){}
+
+
 
 
     bool isArray() const {
@@ -48,10 +61,35 @@ public:
         return std::holds_alternative<BaseTypeK>(val);
     }
 
+    bool operator==(const Type &other) {
+       return (val == other.val);
+    }
+
+    bool operator!=(const Type &other) {
+        return (val != other.val);
+    }
+
+    bool is(BaseTypeK base) const {
+        if(std::holds_alternative<BaseTypeK>(val)) {
+            return std::get<BaseTypeK>(val) == base;
+        } else {
+            return false;
+        }
+    }
+
+    Type getBase() const {
+        if(isBase()) {
+            return Type(std::get<BaseTypeK>(val));
+        } else {
+            return Type(std::get<ArrayT>(val).base);
+        }
+    }
+
     bool isError() const {
         return std::holds_alternative<BaseTypeK>(val) 
             && std::get<BaseTypeK>(val) == BaseTypeK::Error;
     }
+
 
     string toString() const {
         if(isArray()) {
@@ -60,6 +98,7 @@ public:
             return baseTypeToString(std::get<BaseTypeK>(val));
         }
     }
+
 
     size_t sizeOf() const {
         return std::visit(overloaded {
@@ -84,6 +123,7 @@ public:
     const ValType &getVal() const {
         return val;
     }
+
 
 private:
     ValType val;

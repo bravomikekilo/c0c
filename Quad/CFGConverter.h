@@ -67,6 +67,10 @@ public:
 
     ~CFGConverter() override = default;
 
+    void visit(PrintStmt *e) override;
+
+    void visit(ReadStmt *e) override;
+
 
 private:
     Quad &lastInst() {
@@ -101,7 +105,7 @@ private:
     }
 
 
-
+    shared_ptr<SymTable> curr_table;
     BasicBlockBuilder &builder;
     BasicBlock *curr_block;
     BasicBlock *start_block;

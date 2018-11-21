@@ -26,6 +26,9 @@ class EmptyStmt;
 class DoStmt;
 class ForStmt;
 
+class ReadStmt;
+class PrintStmt;
+
 class FuncAST;
 
 class ASTVisitor
@@ -51,6 +54,8 @@ public:
     virtual void visit(EmptyStmt *e) = 0;
     virtual void visit(DoStmt *e) = 0;
     virtual void visit(ForStmt *e) = 0;
+    virtual void visit(PrintStmt *e) = 0;
+    virtual void visit(ReadStmt *e) = 0;
 
     virtual void visit(FuncAST *e) = 0;
 

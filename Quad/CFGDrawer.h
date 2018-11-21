@@ -26,7 +26,9 @@ class CFGDrawer {
 public:
     void draw(BasicBlock *start, shared_ptr<SymTable> sym_table);
 
-    string getDot() const ;
+    string getDot(const string &graph_name) const ;
+
+
 
 };
 

@@ -1,4 +1,5 @@
 #pragma once
+
 #include "common.h"
 #include "Lexer.h"
 #include "AST/AST.h"
@@ -7,24 +8,26 @@
 namespace C0 {
 
 
-class Parser
-{
+class Parser {
 
 public:
     static Parser fromStr(string str);
-    explicit Parser(Lexer lexer) 
-        : lexer(std::move(lexer)), global_table(SymTable::createGlobalTable())
-    {
+
+    explicit Parser(Lexer lexer)
+            : lexer(std::move(lexer)), global_table(SymTable::createGlobalTable()) {
         curr_table = global_table;
     };
 
     unique_ptr<ExprAST> parseExpr();
-    unique_ptr<ExprAST> parseRead();
-    unique_ptr<ExprAST> parsePrint();
+
     unique_ptr<ExprAST> parseFactor();
+
     unique_ptr<ExprAST> parseTerm();
+
     unique_ptr<CondAST> parseCond();
+
     void tryParseVar(bool global);
+
     void tryParseConst(bool global);
 
     unique_ptr<StmtAST> parseStmt();
@@ -53,10 +56,16 @@ public:
     // called only with first keyword return
     unique_ptr<RetStmt> parseRet();
 
+    unique_ptr<StmtAST> parseRead();
+
+    unique_ptr<StmtAST> parsePrint();
+
     shared_ptr<FuncAST> parseFunc();
+
     shared_ptr<FuncAST> parseFunc(Type ret, string func_name);
 
     Type parseRetType();
+
     Type parseArgType();
 
     pair<vector<shared_ptr<FuncAST>>, shared_ptr<SymTable>> parseProg();
@@ -66,9 +75,9 @@ public:
     }
 
 
-
 private:
     bool checkSemicolon();
+
     void report(const string &err) {
         errors.push_back(err);
     }
@@ -84,7 +93,7 @@ private:
     VarID nextVarID = 1;
     shared_ptr<SymTable> curr_table;
     unordered_map<string, shared_ptr<FuncAST>> func_table;
-    
+
     template<typename T>
     bool expect(T sym, const string &err) {
         if (lexer.peek().is(sym)) {

@@ -12,6 +12,7 @@ namespace C0 {
 class ExprAST: public ASTBase {
 public:
     ~ExprAST() override = default;
+    virtual Type outType(shared_ptr<SymTable> table) = 0;
 };
 
 class IntExpr: public ExprAST {
@@ -19,7 +20,12 @@ public:
     void accept(ASTVisitor &visitor) override {
         visitor.visit(this);
     }
-    explicit IntExpr(int v) : v(v) {};
+    explicit IntExpr(int v) : v(v) {}
+
+    Type outType(shared_ptr<SymTable> table) override {
+        return Type(BaseTypeK::Int);
+    };
+
     int v;
 };
 
@@ -29,6 +35,11 @@ public:
         visitor.visit(this);
     }
     explicit CharExpr(char v) : v(v) {};
+
+    Type outType(shared_ptr<SymTable> table) override {
+        return Type(BaseTypeK::Char);
+    }
+
     char v;
 };
 
@@ -43,6 +54,19 @@ public:
     Op op;
     unique_ptr<ExprAST> lhs;
     unique_ptr<ExprAST> rhs;
+
+    Type outType(shared_ptr<SymTable> table) override {
+        if(op != C0::Op::Ind) {
+            return Type(BaseTypeK::Int);
+        } else {
+            if(lhs->outType(table).isArray()) {
+                return lhs->outType(table).getBase();
+            } else {
+                return Type(BaseTypeK::Int);
+            }
+        }
+    }
+
 };
 
 
@@ -54,6 +78,15 @@ public:
     }
     explicit VarExpr(VarID id):varID(id) { }
     VarID varID;
+
+    Type outType(shared_ptr<SymTable> table) override {
+        auto *term = table->findVarByID(varID);
+        if(term == nullptr) {
+            return Type(BaseTypeK::Error);
+        } else {
+            return term->type;
+        }
+    }
 };
 
 class CallExpr : public  ExprAST {
@@ -67,6 +100,8 @@ public:
 
     string name;
     vector<unique_ptr<ExprAST>> args;
+
+    Type outType(shared_ptr<SymTable> table) override;
 
 };
 
@@ -84,6 +119,10 @@ public:
         return visitor.visit(this);
     }
 
+    Type outType(shared_ptr<SymTable> table) override {
+        return Type(BaseTypeK::Void);
+    }
+
 };
 
 
@@ -95,6 +134,10 @@ public:
 
     void accept(ASTVisitor &visitor) override {
         return visitor.visit(this);
+    }
+
+    Type outType(shared_ptr<SymTable> table) override {
+        return Type(BaseTypeK::Void);
     }
 
 

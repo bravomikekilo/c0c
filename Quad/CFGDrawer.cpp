@@ -12,6 +12,7 @@ namespace C0 {
 
 void CFGDrawer::draw(C0::BasicBlock *start, shared_ptr<SymTable> table) {
 
+
     sym_table = std::move(table);
 
     std::stack<BasicBlock *> s;
@@ -44,9 +45,9 @@ void CFGDrawer::draw(C0::BasicBlock *start, shared_ptr<SymTable> table) {
     }
 }
 
-string CFGDrawer::getDot() const {
+string CFGDrawer::getDot(const string &graph_name) const {
     std::stringstream stream;
-    stream << "digraph {\ngraph[\nrankdir = \"TD\"\n];\n";
+    stream << fmt::format("digraph {} {{\ngraph[\nrankdir = \"TD\"\n];\n", graph_name);
 
     for(const auto& p: cfg) {
         stream << "\"node" << std::to_string(p.first) << "\"[\n";

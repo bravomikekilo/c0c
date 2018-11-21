@@ -120,15 +120,24 @@ Lex Lexer::parseInt() {
     auto head = stream.peek();
     int ret = 0;
     int sign = 1;
-    if (!isdigit(head)) {
-        if (head == '-') sign = -1;
+
+    while(stream.peek() == '0') {
+        chunk.push_back(static_cast<char>(stream.peek()));
         stream.get();
+        if(!hasZero) {
+            hasZero = true;
+            continue;
+        }
+        if(hasZero) { multiZero = true; }
     }
+
     while (isdigit(stream.peek())) {
+        /*
         if (stream.peek() == '0') {
             if (!hasZero) hasZero = true;
             else multiZero = true;
         }
+        */
 
         int prev = ret;
         chunk.push_back(static_cast<char>(stream.peek()));
@@ -138,11 +147,11 @@ Lex Lexer::parseInt() {
             overflow = true;
         }
     }
-    if(overflow || multiZero) {
-        return Lex::Error(chunk);
-    } else {
-        return Lex(sign * ret);
+    if(overflow || multiZero || (hasZero && ret != 0)) {
+        errors.push_back(Lex::Error(chunk));
     }
+    return Lex(sign * ret);
+
 }
 
 Lex Lexer::parse() {

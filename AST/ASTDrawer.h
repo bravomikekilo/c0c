@@ -29,6 +29,10 @@ public:
 
     void visit(ReadExpr *e) override;
 
+    void visit(PrintStmt *e) override;
+
+    void visit(ReadStmt *e) override;
+
 private:
     int popNode();
 

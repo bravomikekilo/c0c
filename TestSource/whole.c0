@@ -6,18 +6,18 @@ const int false = 0;
 
 const int bound = +8;
 
-char p[64];  // 棋盘数组
+int p[64];  // 棋盘数组
 int cnt;     //记录解的个数
              //判断(r,c)位置能否放置棋子,能,返回true,不能返回false
              //因为是从第一行开始往下放棋子，所以只需要判断r行之前的行中有没有棋子使得(r,c)不可落子即可
 
 // 设置棋子
-void set(int r, int c, char v) {
+void set(int r, int c, int v) {
     p[r * 8 + c] = v;
     return;
 }
 
-char get(int r, int c) {
+int get(int r, int c) {
     return (p[r * 8 + c]);
 }
 

@@ -38,7 +38,7 @@ string opToString(QuadOp op) {
         case QuadOp::B:
             return "JMP";
         case QuadOp::Beq:
-            return "Bz";
+            return "Beq";
         case QuadOp::Bne:
             return "Bne";
         case QuadOp::Bgt:
@@ -99,7 +99,7 @@ string Quad::toString(shared_ptr<SymTable> table) const {
     } else if (op == QuadOp::Print) {
         string bulk = "Print";
         bulk += fmt::format(" {} {}",
-                            str_id >= 0 ? table->findStr(str_id) : "_",
+                            str_id >= 0 ? fmt::format(R"(\"{}\")", table->findStr(str_id)) : "_",
                             varToString(src0, table));
 
         return bulk;
