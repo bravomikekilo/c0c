@@ -20,16 +20,6 @@ bool Parser::checkSemicolon() {
 unique_ptr<ExprAST> Parser::parseFactor() {
     const auto &head = lexer.peek();
 
-    /*
-    if (head.is(Keyword::PRINTF)) {
-        return parsePrint();
-    }
-
-    if (head.is(Keyword::SCANF)) {
-        return parseRead();
-    }
-    */
-
     if (head.is(Op::Add)) {
         lexer.next();
         if (lexer.peek().is(LexKind::Int)) {
@@ -110,7 +100,6 @@ unique_ptr<ExprAST> Parser::parseFactor() {
                 args.push_back(parseExpr());
             }
             lexer.next();
-            std::cout << "get a function call expression" << std::endl;
             return make_unique<CallExpr>(name, std::move(args));
         }
 
@@ -135,14 +124,12 @@ unique_ptr<ExprAST> Parser::parseFactor() {
 
 unique_ptr<ExprAST> Parser::parseTerm() {
     auto base = parseFactor();
-    std::cout << "get a factor" << std::endl;
     while (true) {
         const auto &head = lexer.peek();
         if (head.is(Op::Mul) || head.is(Op::Div)) {
             auto op = head.getOp();
             lexer.next();
             auto rhs = parseFactor();
-            std::cout << "get a factor" << std::endl;
             base = make_unique<OpExpr>(op, std::move(base), std::move(rhs));
         } else {
             break;
@@ -158,22 +145,18 @@ unique_ptr<ExprAST> Parser::parseExpr() {
         lexer.next();
     }
     auto base = parseTerm();
-    std::cout << "get a term" << std::endl;
 
     if (pre.has_value() && pre.value() == Op::Sub) {
         auto const_zero = make_unique<IntExpr>(0);
         base = make_unique<OpExpr>(Op::Sub, std::move(const_zero), std::move(base));
     }
-    std::cout << "get a expression" << std::endl;
     while (true) {
         const auto &head = lexer.peek();
         if (head.is(Op::Add) || head.is(Op::Sub)) {
             auto op = head.getOp();
             lexer.next();
             auto rhs = parseTerm();
-            std::cout << "get a term" << std::endl;
             base = make_unique<OpExpr>(op, std::move(base), std::move(rhs));
-            std::cout << "get a expression" << std::endl;
         } else {
             break;
         }
@@ -187,10 +170,8 @@ unique_ptr<CondAST> Parser::parseCond() {
         auto cp = lexer.peek().getCmp();
         lexer.next();
         auto rhs = parseExpr();
-        std::cout << "get a condition " << std::endl;
         return make_unique<CondAST>(std::move(lhs), cp, std::move(rhs));
     } else {
-        std::cout << "get a condition " << std::endl;
         return make_unique<CondAST>(std::move(lhs));
     }
 }
@@ -199,7 +180,6 @@ unique_ptr<AsStmt> Parser::parseAs() {
     auto lhs = parseExpr();
     expect(Sep::Assign, "loss assign in AsStmt");
     auto rhs = parseExpr();
-    std::cout << "get a assign statement" << std::endl;
     return make_unique<AsStmt>(std::move(lhs), std::move(rhs));
 }
 
@@ -207,44 +187,30 @@ unique_ptr<StmtAST> Parser::parseStmt() {
 
     const auto &head = lexer.peek();
     if (head.is(Keyword::IF)) {
-        std::cout << "get a if statement" << std::endl;
         return parseIf();
-    /*
-    } else if (head.is(Keyword::WHILE)) {
-        std::cout << "get a while statement";
-        return parseWhile();
-    */
     } else if (head.is(Keyword::DO)) {
         auto parsed = parseDo();
-        std::cout << "get a do-while statement" << std::endl;
         return parsed;
     } else if (head.is(Keyword::FOR)) {
         auto parsed = parseFor();
-        std::cout << "get a for statement" << std::endl;
         return parsed;
     } else if (head.is(Keyword::SWITCH)) {
         auto parsed = parseSwitch();
-        std::cout << "get a switch statement" << std::endl;
         return parsed;
     } else if (head.is(Sep::LCur)) {
         auto parsed = parseBlock();
-        std::cout << "get a block statement" << std::endl;
         return parsed;
     } else if (head.is(Keyword::RETURN)) {
         auto parsed = parseRet();
-        std::cout << "get a return statement" << std::endl;
         return parsed;
     } else if (head.is(Keyword::PRINTF)) {
         auto parsed = parsePrint();
-        std::cout << "get a print statement" << std::endl;
         return parsed;
     } else if (head.is(Keyword::SCANF)){
         auto parsed = parseRead();
-        std::cout << "get a read statement" << std::endl;
         return parsed;
     } else if (head.is(Sep::Semicolon)) {
         lexer.next();
-        std::cout << "get a empty statement" << std::endl;
         return make_unique<EmptyStmt>();
     }
 
@@ -254,12 +220,10 @@ unique_ptr<StmtAST> Parser::parseStmt() {
         lexer.next();
         auto rhs = parseExpr();
         checkSemicolon();
-        std::cout << "get a assign statement" << std::endl;
         return make_unique<AsStmt>(std::move(lhs), std::move(rhs));
     }
 
     checkSemicolon();
-    std::cout << "get a expression statement" << std::endl;
     return make_unique<ExprStmt>(std::move(lhs));
 
 }
@@ -303,12 +267,12 @@ unique_ptr<SwitchStmt> Parser::parseSwitch() {
 unique_ptr<IfStmt> Parser::parseIf() {
     lexer.next();
     if (lexer.peek().is(Sep::LPar)) lexer.next();
-    else report("missig (");
+    else report("missing (");
 
     auto cond = parseCond();
 
     if (lexer.peek().is(Sep::RPar)) lexer.next();
-    else report("missig )");
+    else report("missing )");
 
     auto body = parseStmt();
 
@@ -367,12 +331,12 @@ unique_ptr<DoStmt> Parser::parseDo() {
 unique_ptr<WhileStmt> Parser::parseWhile() {
     lexer.next();
     if (lexer.peek().is(Sep::LPar)) lexer.next();
-    else report("missig (");
+    else report("missing (");
 
     auto cond = parseCond();
 
     if (lexer.peek().is(Sep::RPar)) lexer.next();
-    else report("missig )");
+    else report("missing )");
 
     auto body = parseStmt();
 
@@ -478,7 +442,6 @@ void Parser::tryParseVar(bool global) {
             }
         } while (true);
         lexer.next();
-        std::cout << "get a group of variable" << std::endl;
     }
 }
 
@@ -546,7 +509,6 @@ void Parser::tryParseConst(bool global) {
             }
         } while (!lexer.peek().is(Sep::Semicolon));
         lexer.next();
-        std::cout << "get a group of constant" << std::endl;
     }
 }
 

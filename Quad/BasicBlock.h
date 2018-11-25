@@ -21,8 +21,16 @@ public:
     :bid(bid), next(next) {}
 
     int getBid() { return bid; }
+
+    void setPayload(void *payload) { other = payload; }
+    void cleanPayload() { other = nullptr; }
+
+    template <typename T>
+    T *payload() { return (T *)other; }
+
 private:
     int bid;
+    void *other = nullptr;
 };
 
 
