@@ -3,6 +3,7 @@
 
 #include "Inst.h"
 #include <list>
+#include "Type.h"
 
 namespace C0 {
 
@@ -12,9 +13,11 @@ class InstList {
     
 private:
     
-    vector<pair<string, int>> const_section;
-    vector<pair<string, string>> string_section;
+    vector<pair<string, Type>> global_section;
+    vector<pair<int, string>> string_section;
     list<unique_ptr<Inst>> insts;
+
+    string genDirectiveByType(Type t) const ;
 
 public:
 
@@ -30,13 +33,16 @@ public:
     }
 
     
-    void addGlobal(const string &name, int val) {
-        
-    }
+    void addGlobal(const string &name, Type type);
+    void addGlobal(vector<pair<string, Type>>&& vec) {
+        global_section = std::move(vec);
+    };
 
-    void addString(int str_id, string val) {
-        
-    }
+    void addString(int str_id, string val);
+    void addString(vector<pair<int, string>>&& vec) {
+        string_section = std::move(vec);
+    };
+
 
 };
 

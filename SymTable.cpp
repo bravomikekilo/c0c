@@ -43,6 +43,28 @@ void SymTable::insert(SymTerm term) {
     id_map.insert(pair(term.id, index));
 }
 
+vector<pair<int, string>> SymTable::getStringList() const {
+    if (str_table == nullptr) return {};
+    vector<pair<int, string>> ret;
+    const auto &str_tab = str_table->getTable();
+    auto count = str_tab.size();
+    for (int i = 0; i < count; ++i) {
+        ret.emplace_back(i, str_tab.at(i));
+    }
+    return ret;
+}
+
+vector<pair<string, Type>> SymTable::getGlobalList() const
+{
+    vector<pair<string, Type>> ret;
+    for (const auto &term : bulk) {
+        if (term.isGlobal && !term.isConst()) {
+            ret.emplace_back(term.name, term.type);
+        }
+    }
+    return ret;
+}
+
 shared_ptr<SymTable> SymTable::createGlobalTable() {
     return make_shared<SymTable>(nullptr, true);
 }

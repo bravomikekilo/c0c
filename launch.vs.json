@@ -28,7 +28,7 @@
       "name": "quadGen",
       "project": "CMakeLists.txt",
       "projectTarget": "QuadGen.exe",
-      "args": [ "TestSource/fact.c0" ],
+      "args": [ "TestSource/factWithPrint.c0" ],
       "type": "default"
     }
 

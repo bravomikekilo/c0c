@@ -12,4 +12,8 @@ string genGlobalLabel(const string & name) {
     return fmt::format(".global_{}", name);
 }
 
+string genStringLabel(int str_id) {
+    return fmt::format(".str_{}", str_id);
+}
+
 }

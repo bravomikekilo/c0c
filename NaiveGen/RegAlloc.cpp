@@ -40,6 +40,18 @@ void C0::RegAlloc::visit(C0::BasicBlock *block) {
             alloced_val.insert(iter->src1);
         }
 
+        if (iter->call_ext != nullptr) {
+            auto &args = iter->call_ext->second;
+            for (auto &arg : args) {
+                if (arg.val != 0
+                    && alloced_val.count(arg) == 0
+                    && checkVal(arg, curr_table, &next_reg)) {
+                    alloced_val.insert(arg);
+                }
+                if (next_reg >= saved_num) return;
+            }
+        }
+
     }
 
 

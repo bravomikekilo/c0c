@@ -52,7 +52,7 @@ public:
 
     int insertStr(const string &str);
 
-    const unordered_map<int, string> &getTable() {
+    const unordered_map<int, string> &getTable() const {
         return index_table;
     }
 
@@ -133,6 +133,10 @@ public:
         }
 
     }
+
+    vector<pair<int, string>> getStringList() const ;
+    vector<pair<string, Type>> getGlobalList() const ;
+    
 
 };
 

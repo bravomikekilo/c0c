@@ -39,6 +39,8 @@ int main(int argc, char **argv) {
 
     auto [funcs, sym] = parser.parseProg();
 
+    std::cout << C0::ASTDrawer::drawProgram(funcs) << std::endl;
+
     unordered_map<string, C0::BasicBlock *> cfg_map;
     unordered_map<string, std::shared_ptr<C0::frameTable>> frames;
     unordered_map<string, int> offsets;
@@ -75,6 +77,8 @@ int main(int argc, char **argv) {
     std::cout << std::endl;
     std::cout << "begin generate code" << std::endl;
     C0::InstList list;
+    list.addGlobal(sym->getGlobalList());
+    list.addString(sym->getStringList());
 
     for(auto &func: funcs) {
         C0::CFGSerializer writer(list, offsets);

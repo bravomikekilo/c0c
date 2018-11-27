@@ -399,29 +399,28 @@ void CFGSerializer::handleB(Quad &q, const RegTable *table) {
 
 void CFGSerializer::handlePrint(Quad &q, const RegTable *table) {
     if (q.str_id >= 0) {
-        auto li = make_unique<LiInst>(make_unique<VReg>(0), 4);
-        list.addInst(std::move(li));
-        auto load_str_id = make_unique<LiInst>(make_unique<AReg>(0), q.str_id);
-        list.addInst(std::move(load_str_id));
+
+        list.pushInst<LiInst>(
+            make_unique<VReg>(0), 4
+        );
+        
+        list.pushInst<LaInst>(
+            make_unique<AReg>(0),
+            Asm::genStringLabel(q.str_id)
+        );
+
         list.addInst(std::move(make_unique<SysCallInst>()));
     }
 
-    if (q.str_id >= 0) {
-        auto li = make_unique<LiInst>(make_unique<VReg>(0), 4);
-        list.addInst(std::move(li));
-        auto load_str_id = make_unique<LiInst>(make_unique<AReg>(0), q.str_id);
-        list.addInst(std::move(load_str_id));
-        list.addInst(std::move(make_unique<SysCallInst>()));
-    }
-
-    if (q.dst.val != 0) {
-        auto *ret_term = sym_table->findVarByID(q.dst.val);
+    if (q.src0.val != 0) {
+        auto *ret_term = sym_table->findVarByID(q.src0.val);
         if (ret_term != nullptr && ret_term->type.is(BaseTypeK::Char)) {
             list.pushInst<LiInst>(make_unique<VReg>(0), 11);
         } else {
             list.pushInst<LiInst>(make_unique<VReg>(0), 1);
         }
-        putValTo(q.dst, make_unique<AReg>(0), table);
+        putValTo(q.src0, make_unique<AReg>(0), table);
+        list.pushInst<SysCallInst>();
     }
 
     list.pushInst<LiInst>(make_unique<VReg>(0), 11);
@@ -552,7 +551,7 @@ void CFGSerializer::handleCall(Quad &q, const RegTable *table) {
 
         if (term != nullptr && term->isGlobal) {
             list.pushInst<LwInst>(
-                    make_unique<VReg>(0),
+                    make_unique<TReg>(0),
                     getGlobalLabel(term->name)
             );
             list.pushInst<SwInst>(
@@ -571,12 +570,12 @@ void CFGSerializer::handleCall(Quad &q, const RegTable *table) {
             );
         } else {
             list.pushInst<LwInst>(
-                    make_unique<VReg>(0),
+                    make_unique<TReg>(0),
                     make_unique<SpReg>(),
                     frame_table->getTopOffset(arg)
             );
             list.pushInst<SwInst>(
-                    make_unique<VReg>(0),
+                    make_unique<TReg>(0),
                     make_unique<SpReg>(),
                     arg_offset
             );
