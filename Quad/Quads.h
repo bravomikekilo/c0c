@@ -51,6 +51,8 @@ struct QuadVal {
         return isConst == other.isConst && other.val == val;
     }
 
+    optional<int> constVal(const SymTable& table) const ;
+
 };
 
 

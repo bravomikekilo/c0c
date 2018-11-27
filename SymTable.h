@@ -84,7 +84,7 @@ public:
 
     optional<VarID> findVarByName(const string &name);
 
-    const SymTerm *findVarByID(VarID id);
+    const SymTerm *findVarByID(VarID id) const ;
 
     const vector<SymTerm> &getVarInScope() {
         return bulk;

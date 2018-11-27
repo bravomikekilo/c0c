@@ -47,7 +47,7 @@ void C0::RegAlloc::visit(C0::BasicBlock *block) {
 
 bool RegAlloc::checkVal(QuadVal &val, RegTable *table, size_t *reg) {
     auto *term = curr_func->table->findVarByID(val.val);
-    if(term != nullptr && (term->isGlobal || val.isConst)) {
+    if(term != nullptr && (term->isGlobal || val.isConst || term->isConst())) {
         return false;
     } else {
         table->insert(pair(val, make_unique<SReg>(*reg)));

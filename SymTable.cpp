@@ -24,9 +24,9 @@ optional<VarID> SymTable::findVarByName(const string &name) {
     return prev->findVarByName(name);
 }
 
-const SymTerm *SymTable::findVarByID(VarID id) {
+const SymTerm *SymTable::findVarByID(VarID id) const {
     if(id_map.count(id) == 1) {
-        return &bulk[id_map[id]];
+        return &bulk.at(id_map.at(id));
     }
 
     if(prev == nullptr) {

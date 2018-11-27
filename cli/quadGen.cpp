@@ -17,6 +17,9 @@
 #include <unordered_map>
 #include <memory>
 #include <vector>
+#ifdef _WIN32
+#include <cstdio>
+#endif
 
 using std::string;
 using std::unordered_map;
@@ -62,6 +65,7 @@ int main(int argc, char **argv) {
 
         frames.insert(pair(func->name, frame));
         offsets.insert(pair(func->name, frame->getWholeSize()));
+        std::cout << "frame size of function: " << func->name << " is " << frame->getWholeSize() << std::endl;
 
         C0::RegAlloc alloc(6);
         auto reg_tables = alloc.alloc(start_block, func);
@@ -79,5 +83,9 @@ int main(int argc, char **argv) {
 
     std::cout << list.toString() << std::endl;
 
+#ifdef _WIN32
+    std::cout << "press any key to exit" << std::endl;
+    getchar();
+#endif
 
 }

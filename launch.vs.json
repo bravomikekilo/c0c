@@ -20,9 +20,19 @@
       "name": "Grammar",
       "project": "CMakeLists.txt",
       "projectTarget": "Grammar.exe",
-      "args": ["TestSource/multiDef.c0"],
+      "args": [ "TestSource/multiDef.c0" ],
+      "type": "default"
+    },
+    {
+      "currentDir": "${workspaceRoot}",
+      "name": "quadGen",
+      "project": "CMakeLists.txt",
+      "projectTarget": "QuadGen.exe",
+      "args": [ "TestSource/fact.c0" ],
       "type": "default"
     }
+
+
 
   ],
   "defaults": {},

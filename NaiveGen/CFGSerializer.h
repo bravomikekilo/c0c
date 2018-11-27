@@ -6,9 +6,12 @@
 #define C0_CFGSERIALIZER_H
 
 #include "Asm/InstList.h"
+#include "Asm/labelGen.h"
+
 #include "BfsCFGWalker.h"
 #include "RegAlloc.h"
 #include "frameTable.h"
+#include "AST/FuncAST.h"
 
 namespace C0 {
 
@@ -21,15 +24,17 @@ private:
     const unordered_map<string, int>& func_offset;
 
     string getBlockLabel(BasicBlock *block) {
-        return ".BB" + std::to_string(block->getBid());
+        return getBlockLabel(block->getBid());
     }
 
     string getBlockLabel(int bid) {
-        return ".BB" + std::to_string(bid);
+        return Asm::genBlockLabel(curr_func->name, bid);
+        // return ".BB_" + curr_func->name + "_" + std::to_string(bid);
     }
 
     string getGlobalLabel(const string &name) {
-        return "global_" + name;
+        return Asm::genGlobalLabel(name);
+        // return "global_" + name;
     }
 
     void handleArith(Quad &q, const RegTable *table);
@@ -48,6 +53,9 @@ private:
     void storeGlobalScalar(const string &name, unique_ptr<Reg>&& reg);
     void loadGlobalArrayAddr(const string &name, unique_ptr<Reg>&& reg);
     void putValTo(const QuadVal &val, unique_ptr<Reg> reg, const RegTable *table);
+    void saveReg();
+    void recoverReg();
+    void issueRet();
 
     bool evalCond(QuadOp op, int lhs, int rhs);
 

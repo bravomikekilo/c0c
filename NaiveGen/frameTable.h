@@ -11,7 +11,7 @@ namespace C0 {
 class frameTable {
 private:
     unordered_map<QuadVal, int> offsets;
-    int offset; /// offset of saved Ra
+    int offset = 0; /// offset of saved Ra
 
 public:
     void addVal(QuadVal val, int size);
@@ -31,7 +31,7 @@ public:
     }
 
     int getWholeSize() {
-        return -offset + 40;
+        return -offset + 36;
     }
 
     int getSave(int num) {

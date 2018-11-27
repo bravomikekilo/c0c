@@ -16,7 +16,7 @@ private:
 public:
     LiInst(unique_ptr<Reg>&& reg, int v) : reg(std::move(reg)), val(v) {}
     string toString() override {
-        return fmt::format("li {} {}", reg->toString(), val);
+        return fmt::format("li {}, {}", reg->toString(), val);
     }
 };
 
@@ -30,7 +30,7 @@ public:
         :lhs(std::move(lhs)), rhs(std::move(rhs)) {}
     
     string toString() override {
-        return fmt::format("move {} {}", lhs->toString(), rhs->toString());
+        return fmt::format("move {}, {}", lhs->toString(), rhs->toString());
     }
 };
 

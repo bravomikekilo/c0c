@@ -61,7 +61,7 @@ public:
         :lhs(std::move(lhs)), rhs(std::move(rhs)), label(std::move(label)) {} 
 
     string toString() override {
-        return fmt::format("{} {} {} {}", cond(), lhs->toString(), rhs->toString(), label);
+        return fmt::format("{} {}, {}, {}", cond(), lhs->toString(), rhs->toString(), label);
     }
 };
 
