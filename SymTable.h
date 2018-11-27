@@ -86,6 +86,10 @@ public:
 
     const SymTerm *findVarByID(VarID id);
 
+    const vector<SymTerm> &getVarInScope() {
+        return bulk;
+    }
+
     void insert(SymTerm term);
 
     string findStr(int id) {

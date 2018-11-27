@@ -3,7 +3,7 @@
 namespace C0 {
 string BInst::toString()
 {
-    return "b";
+    return "b " + label;
 }
 
 }

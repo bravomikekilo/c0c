@@ -23,6 +23,12 @@ public:
     void addInst(unique_ptr<Inst>&& inst) {
         insts.push_back(std::move(inst));
     }
+
+    template <typename I, typename ...Args>
+    void pushInst(Args&&... args) {
+        insts.push_back(std::move(make_unique<I>(std::forward<Args>(args)...)));
+    }
+
     
     void addGlobal(const string &name, int val) {
         
@@ -33,7 +39,6 @@ public:
     }
 
 };
-
 
 
 

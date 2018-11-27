@@ -31,7 +31,7 @@ protected:
     }
 
 public:
-    AddI(unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs, unique_ptr<Reg>&& dst)
+    AddI(unique_ptr<Reg>&& dst, unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs)
         :ArithInst(std::move(lhs), std::move(rhs), std::move(dst)) {}
 
 
@@ -47,7 +47,7 @@ protected:
 
 
 public:
-    SubI(unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs, unique_ptr<Reg>&& dst)
+    SubI(unique_ptr<Reg>&& dst, unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs)
         :ArithInst(std::move(lhs), std::move(rhs), std::move(dst)) {}
 
 
@@ -62,7 +62,7 @@ protected:
 
 
 public:
-    MulI(unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs, unique_ptr<Reg>&& dst)
+    MulI(unique_ptr<Reg>&& dst, unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs)
         :ArithInst(std::move(lhs), std::move(rhs), std::move(dst)) {}
 
 
@@ -75,7 +75,7 @@ protected:
     }
 
 public:
-    DivI(unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs, unique_ptr<Reg>&& dst)
+    DivI(unique_ptr<Reg>&& dst, unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs)
         :ArithInst(std::move(lhs), std::move(rhs), std::move(dst)) {}
 
 

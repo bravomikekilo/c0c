@@ -8,7 +8,7 @@
 
 namespace C0 {
 
-class LiInst : Inst {
+class LiInst : public Inst {
 private:
     unique_ptr<Reg> reg;
     int val;
@@ -20,7 +20,7 @@ public:
     }
 };
 
-class MoveInst : Inst {
+class MoveInst : public Inst {
 private:
     unique_ptr<Reg> lhs;
     unique_ptr<Reg> rhs;
@@ -31,6 +31,14 @@ public:
     
     string toString() override {
         return fmt::format("move {} {}", lhs->toString(), rhs->toString());
+    }
+};
+
+class SysCallInst : public Inst {
+public:
+
+    string toString() override {
+        return "syscall";
     }
 };
 

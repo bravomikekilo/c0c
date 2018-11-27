@@ -669,7 +669,7 @@ shared_ptr<FuncAST> Parser::parseFunc() {
 
 shared_ptr<FuncAST> Parser::parseFunc(Type ret, string func_name) {
 
-    !expect(Sep::LPar, "missing ( in function");
+    expect(Sep::LPar, "missing ( in function");
     curr_table = make_shared<SymTable>(curr_table);
 
     vector<pair<Type, string>> args;

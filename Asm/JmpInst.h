@@ -7,10 +7,48 @@
 
 namespace C0 {
 
+
+class LInst : public Inst {
+    string label;
+
+public:
+    string toString() override {
+        return label + ":";
+    }
+    explicit LInst(string str): label(std::move(str)) {}
+};
+
 class BInst : public Inst {
     // Inherited via Inst
-    virtual string toString() override;
+private:
+    string label;
+public:
+    string toString() override;
+
+    explicit BInst(string label): label(std::move(label)) {}
 };
+
+
+class RetInst : public Inst {
+public:
+    string toString() override {
+        return "jr $ra";
+    }
+};
+
+class CallInst : public Inst {
+private:
+    string func_name;
+
+public:
+    string toString() override {
+        return "jal " + func_name;
+    }
+
+    explicit CallInst(string name): func_name(std::move(name)) {}
+
+};
+
 
 class BranchInst : public Inst {
 protected:
@@ -31,8 +69,13 @@ class BeqInst : public BranchInst {
     // Inherited via Inst
     // Inherited via BranchInst
 public:
+
+    string cond() const override {
+        return "beq";
+    }
+
     BeqInst(unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs, string label)
-        :BranchInst(std::move(lhs), std::move(rhs), label) {}
+        :BranchInst(std::move(lhs), std::move(rhs), std::move(label)) {}
 
 
 };
@@ -40,8 +83,13 @@ public:
 class BneInst : public BranchInst {
     
 public:
+
+    string cond() const override {
+        return "bne";
+    }
+
     BneInst(unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs, string label)
-        :BranchInst(std::move(lhs), std::move(rhs), label) {}
+        :BranchInst(std::move(lhs), std::move(rhs), std::move(label)) {}
 
 
 };
@@ -50,8 +98,13 @@ class BgtInst : public BranchInst {
 
 
 public:
+
+    string cond() const override {
+        return "bgt";
+    }
+
     BgtInst(unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs, string label)
-        :BranchInst(std::move(lhs), std::move(rhs), label) {}
+        :BranchInst(std::move(lhs), std::move(rhs), std::move(label)) {}
 
 
 };
@@ -59,8 +112,13 @@ public:
 class BgeInst : public BranchInst {
 
 public:
+
+    string cond() const override {
+        return "bge";
+    }
+
     BgeInst(unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs, string label)
-        :BranchInst(std::move(lhs), std::move(rhs), label) {}
+        :BranchInst(std::move(lhs), std::move(rhs), std::move(label)) {}
 
 
 };
@@ -68,8 +126,13 @@ public:
 class BltInst : public BranchInst {
 
 public:
+
+    string cond() const override {
+        return "blt";
+    }
+
     BltInst(unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs, string label)
-        :BranchInst(std::move(lhs), std::move(rhs), label) {}
+        :BranchInst(std::move(lhs), std::move(rhs), std::move(label)) {}
 
 
 };
@@ -77,8 +140,13 @@ public:
 class BleInst : public BranchInst {
 
 public:
+
+    string cond() const override {
+        return "ble";
+    }
+
     BleInst(unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs, string label)
-        :BranchInst(std::move(lhs), std::move(rhs), label) {}
+        :BranchInst(std::move(lhs), std::move(rhs), std::move(label)) {}
 
 
 };

@@ -13,6 +13,7 @@
 
 #include "fmt/format.h"
 #include <variant>
+#include <functional>
 
 namespace C0 {
 
@@ -46,6 +47,10 @@ struct QuadVal {
     int val;
     QuadVal(): isConst(false), val(0) {}
     explicit QuadVal(int val, bool c=false): val(val), isConst(c) {}
+    bool operator==(const QuadVal &other) const {
+        return isConst == other.isConst && other.val == val;
+    }
+
 };
 
 
@@ -84,6 +89,7 @@ struct Quad {
     explicit Quad(vector<QuadVal>&& arg)
     :op(QuadOp::Read), jmp(nullptr), call_ext(make_unique<FuncExtT>("", std::move(arg))){}
 
+
     Quad(BasicBlock *target)
              :op(QuadOp::B), call_ext(nullptr), jmp(target){}
 
@@ -106,6 +112,19 @@ struct Quad {
 
 };
 
+
+}
+
+namespace std {
+
+template<>
+struct hash<C0::QuadVal> {
+    typedef C0::QuadVal argument_type;
+    typedef std::size_t result_type;
+    result_type operator()(argument_type const& s) const {
+        return hash<int>{}(s.val);
+    }
+};
 
 }
 

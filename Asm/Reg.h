@@ -8,75 +8,101 @@ class Reg {
 public:
     virtual string toString() = 0;
     virtual ~Reg() = default;
+    virtual Reg *clone() = 0;
     virtual optional<int> constVal() {
         return {};
     }
+
 };
 
 
 class FpReg : public Reg {
 public:
-    string toString() {
+    string toString() override {
         return "$fp";
+    }
+
+    Reg *clone() override {
+        return new FpReg();
     }
 };
 
 class SpReg : public Reg {
 public:
-    string toString() {
+    string toString() override {
         return "$sp";
+    }
+
+    Reg *clone() override {
+        return new SpReg();
     }
 };
 
 
 class TReg : public Reg {
 private:
-    int num;
+    size_t num;
 
 public:
-    TReg(int n) : num(n) {}
+    TReg(size_t n) : num(n) {}
 
     string toString() override {
         string ret = "$t";
         ret.push_back(num + '0');
         return ret;
     }
+
+    Reg *clone() override {
+        return new TReg(*this);
+    }
 };
 
 class SReg : public Reg {
 private:
-    int num;
+    size_t num;
 public:
-    SReg(int n) : num(n) {}
+    SReg(size_t n) : num(n) {}
     string toString() override {
         string ret = "$s";
         ret.push_back(num + '0');
         return ret;
     }
+
+    Reg *clone() override {
+        return new SReg(*this);
+    }
 };
 
 class VReg : public Reg {
 private:
-    int num;
+    size_t num;
 
 public:
-    VReg(int n) : num(n) {}
+    VReg(size_t n) : num(n) {}
     string toString() override {
         string ret = "$v";
         ret.push_back(num + '0');
         return ret;
     }
+
+    Reg *clone() override {
+        return new VReg(*this);
+    }
 };
 
 class AReg : public Reg {
 private:
-    int num;
+    size_t num;
+
 public:
-    AReg(int n) : num(n) {}
+    AReg(size_t n) : num(n) {}
     string toString() override {
         string ret = "$a";
         ret.push_back(num + '0');
         return ret;
+    }
+    Reg *clone() override {
+        return new AReg(*this);
     }
 };
 
@@ -85,12 +111,20 @@ public:
     string toString() override {
         return "$0";
     }
+
+    Reg *clone() override {
+        return new ZReg(*this);
+    }
 };
 
 class RaReg : public Reg {
 public:
     string toString() override {
         return "$ra";
+    }
+
+    Reg *clone() override {
+        return new RaReg();
     }
 };
 
@@ -106,6 +140,13 @@ public:
     optional<int> constVal() override {
         return { val };
     }
+
+    Reg *clone() override {
+        return new IntReg(*this);
+    }
+
+    IntReg(int x): val(x) {}
+
 };
 
 

@@ -39,11 +39,12 @@ protected:
         return "la";
     }
 
-    LaInst(unique_ptr<Reg>&& src, string label, unique_ptr<Reg>&& reg = nullptr, int offset = 0)
-        :MemInst(std::move(src), label, std::move(reg),  offset)  { } 
+public:
+    LaInst(unique_ptr<Reg>&& dst, string label, unique_ptr<Reg>&& reg = nullptr, int offset = 0)
+        :MemInst(std::move(dst), std::move(label), std::move(reg),  offset)  { }
 
-    LaInst(unique_ptr<Reg>&& src, unique_ptr<Reg>&& reg, int offset = 0)
-        :MemInst(std::move(src), std::move(reg), offset)  { } 
+    LaInst(unique_ptr<Reg>&& dst, unique_ptr<Reg>&& reg, int offset = 0)
+        :MemInst(std::move(dst), std::move(reg), offset)  { }
 
 };
 
@@ -91,7 +92,7 @@ protected:
 
 public:
     SbInst(unique_ptr<Reg>&& src, string label, unique_ptr<Reg>&& reg = nullptr, int offset = 0)
-        :StoreInst(std::move(src), label, std::move(reg),  offset)  { } 
+        :StoreInst(std::move(src), std::move(label), std::move(reg),  offset)  { }
 
     SbInst(unique_ptr<Reg>&& src, unique_ptr<Reg>&& reg, int offset = 0)
         :StoreInst(std::move(src), std::move(reg), offset)  { } 
@@ -113,10 +114,9 @@ protected:
 
 
 public:
-    string toString() override;
 
     LoadInst(unique_ptr<Reg>&& dst, string label, unique_ptr<Reg>&& reg, int offset)
-        :MemInst(std::move(dst), label, std::move(reg),  offset)  { } 
+        :MemInst(std::move(dst), std::move(label), std::move(reg),  offset)  { }
 
     LoadInst(unique_ptr<Reg>&& dst, unique_ptr<Reg>&& reg, int offset)
         :MemInst(std::move(dst), std::move(reg), offset)  { } 
@@ -132,7 +132,7 @@ protected:
 public:
 
     LwInst(unique_ptr<Reg>&& dst, string label, unique_ptr<Reg>&& reg = nullptr, int offset = 0)
-        :LoadInst(std::move(dst), label, std::move(reg),  offset)  { } 
+        :LoadInst(std::move(dst), std::move(label), std::move(reg),  offset)  { }
 
     LwInst(unique_ptr<Reg>&& dst, unique_ptr<Reg>&& reg, int offset = 0)
         :LoadInst(std::move(dst), std::move(reg), offset)  { } 
@@ -149,7 +149,7 @@ protected:
 public:
 
     LbInst(unique_ptr<Reg>&& dst, string label, unique_ptr<Reg>&& reg = nullptr, int offset = 0)
-        :LoadInst(std::move(dst), label, std::move(reg),  offset)  { } 
+        :LoadInst(std::move(dst), std::move(label), std::move(reg),  offset)  { }
 
     LbInst(unique_ptr<Reg>&& dst, unique_ptr<Reg>&& reg, int offset = 0)
         :LoadInst(std::move(dst), std::move(reg), offset)  { } 
