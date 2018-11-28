@@ -60,13 +60,15 @@ void CFGConverter::visit(OpExpr *e) {
         if(qop == QuadOp::GetChar) qop = QuadOp::SetChar;
 
         on_left_side = false;
-        QuadVal i;
+        auto temp_reg = peekTempReg();
+        auto i = QuadVal(temp_reg);
         e->rhs->accept(*this);
         if(expr_is_leaf) {
             expr_is_leaf = false;
             i = leaf_val;
         } else {
-            i = popTempReg();
+            curr_block->insts.back().dst = i;
+            next_temp_reg = --temp_reg;
         }
 
         e->lhs->accept(*this);

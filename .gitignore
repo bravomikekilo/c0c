@@ -2,4 +2,5 @@
 .vscode
 .vs
 cmake-build-debug
+assembly/*
 

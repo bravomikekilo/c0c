@@ -10,13 +10,14 @@
 namespace C0 {
 
 void CFGSerializer::visit(C0::BasicBlock *block) {
+    restored = false;
+
     std::cout << "serialize basic block:" << block->getBid() << std::endl;
     const auto *reg_table = block->payload<RegTable>();
     auto curr_block_label = make_unique<LInst>(getBlockLabel(block));
     list.addInst(std::move(curr_block_label));
 
     for (const auto &p: *reg_table) {
-        // putValTo(p.first, unique_ptr<Reg>(p.second->clone()), reg_table);
         std::cout << varToString(p.first, sym_table)
                   << "->" << p.second->toString() << std::endl;
         auto v = p.first;
@@ -105,6 +106,11 @@ void CFGSerializer::visit(C0::BasicBlock *block) {
         }
     }
 
+    if (!restored) {
+        storeRegAfterBasicBlock(reg_table);
+    }
+    
+    /*
     for (const auto &p: *reg_table) {
         const auto *term = sym_table->findVarByID(p.first.val);
         if (term != nullptr && term->type.isArray()) {
@@ -116,6 +122,7 @@ void CFGSerializer::visit(C0::BasicBlock *block) {
                 frame_table->getTopOffset(p.first)
         );
     }
+    */
 
     if (block->next != nullptr && nextBlock() != block->next) {
         unique_ptr<Inst> jmp = make_unique<BInst>(getBlockLabel(block->next));
@@ -207,6 +214,11 @@ void CFGSerializer::handleJmp(Quad &q, const RegTable *table) {
 
     auto label = getBlockLabel(q.jmp);
     unique_ptr<Inst> inst;
+    if (!restored) {
+        storeRegAfterBasicBlock(table);
+        restored = true;
+    }
+
     switch (q.op) {
         case QuadOp::Beq:
             inst = make_unique<BeqInst>(std::move(src0), std::move(src1), label);
@@ -285,7 +297,6 @@ void CFGSerializer::handleGet(Quad &q, const RegTable *table) {
                 std::move(make_unique<TReg>(1)),
                 std::move(make_unique<IntReg>(4))
         );
-
     }
 
     list.pushInst<AddI>(
@@ -344,7 +355,7 @@ void CFGSerializer::handleSet(Quad &q, const RegTable *table) {
     putValTo(q.dst, make_unique<TReg>(0), table);
     putValTo(q.src0, make_unique<TReg>(1), table);
 
-    if (op == QuadOp::GetInt) {
+    if (op == QuadOp::SetInt) {
         list.pushInst<MulI>(
                 make_unique<TReg>(1),
                 make_unique<TReg>(1),
@@ -359,16 +370,27 @@ void CFGSerializer::handleSet(Quad &q, const RegTable *table) {
             make_unique<TReg>(1)
     );
 
-    putValTo(q.src1, make_unique<TReg>(0), table);
+    // putValTo(q.src1, make_unique<TReg>(0), table);
+    unique_ptr<Reg> var;
+    auto var_const = q.src1.constVal(*sym_table);
+    if (var_const.has_value()) {
+        list.pushInst<LiInst>(
+            make_unique<TReg>(0),
+            var_const.value()
+        );
+        var = make_unique<TReg>(0);
+    } else {
+        var = getVal(q.src1, 0, table);
+    }
 
-    if (op == QuadOp::GetInt) {
+    if (op == QuadOp::SetInt) {
         list.pushInst<SwInst>(
-                make_unique<TReg>(0),
+                std::move(var),
                 make_unique<TReg>(1)
         );
     } else {
         list.pushInst<SbInst>(
-                make_unique<TReg>(0),
+                std::move(var),
                 make_unique<TReg>(1)
         );
     }
@@ -468,7 +490,7 @@ void CFGSerializer::handleRet(Quad &q, const RegTable *table) {
 
     auto val = q.src0;
 
-    if (val.val == 0) {
+    if (val.val == 0 && !val.isConst) {
         issueRet();
         return;
     }
@@ -723,6 +745,21 @@ void CFGSerializer::saveReg() {
                 4 * i
         );
     }
+}
+
+void CFGSerializer::storeRegAfterBasicBlock(const RegTable *reg_table) {
+    for (const auto &p: *reg_table) {
+        const auto *term = sym_table->findVarByID(p.first.val);
+        if (term != nullptr && term->type.isArray()) {
+            continue;
+        }
+        list.pushInst<SwInst>(
+                unique_ptr<Reg>(reg_table->at(p.first)->clone()),
+                make_unique<SpReg>(),
+                frame_table->getTopOffset(p.first)
+        );
+    }
+
 }
 
 void CFGSerializer::recoverReg() {

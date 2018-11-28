@@ -54,12 +54,13 @@ private:
     void loadGlobalArrayAddr(const string &name, unique_ptr<Reg>&& reg);
     void putValTo(const QuadVal &val, unique_ptr<Reg> reg, const RegTable *table);
     void saveReg();
+    void storeRegAfterBasicBlock(const RegTable *table);
     void recoverReg();
     void issueRet();
 
     bool evalCond(QuadOp op, int lhs, int rhs);
 
-
+    bool restored = true;
 protected:
     void visit(BasicBlock *block) override ;
 public:
