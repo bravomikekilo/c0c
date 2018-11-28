@@ -23,6 +23,7 @@ string InstList::toString() {
     stream << ".data" << std::endl;
     stream << "        # ----- string section -----" << std::endl;
     for (const auto &p : string_section) {
+        stream << "        " << ".align 2" << std::endl;
         stream << "        ";
         stream << Asm::genStringLabel(p.first) << ": .asciiz ";
         stream << "\"" << p.second << "\"";
@@ -31,6 +32,7 @@ string InstList::toString() {
     
     stream << "        # ----- global section -----" << std::endl;
     for (const auto &p : global_section) {
+        stream << "        " << ".align 2" << std::endl;
         stream << "        ";
         stream << Asm::genGlobalLabel(p.first) << ": ";
         stream << genDirectiveByType(p.second);

@@ -248,7 +248,13 @@ void CFGSerializer::handleCopy(Quad &q, const RegTable *table) {
     unique_ptr<Reg> src0;
     auto src_const = q.src0.constVal(*sym_table);
 
-    auto src_reg = getVal(q.src0, 0, table);
+    unique_ptr<Reg> src_reg;
+    if (src_const.has_value()) {
+        list.pushInst<LiInst>(make_unique<TReg>(0), src_const.value());
+        src_reg = make_unique<TReg>(0);
+    } else {
+        src_reg = getVal(q.src0, 0, table);
+    }
 
     unique_ptr<Reg> dst;
     if (q.dst.val == 0) return;
