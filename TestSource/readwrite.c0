@@ -2,12 +2,13 @@
 int main() {
     int a, b, c, d;
 
+    scanf(a);
+    scanf(a, b, c);
+
     printf("hello world");
     printf("hello world", 1 + 2 + 3);
     printf(1 + 2 + 3);
-    printf();
+    printf(a + b * c);
 
-    scanf(a);
-    scanf(a, b, c);
 
 }

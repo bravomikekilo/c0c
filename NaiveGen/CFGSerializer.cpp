@@ -10,12 +10,15 @@
 namespace C0 {
 
 void CFGSerializer::visit(C0::BasicBlock *block) {
+    std::cout << "serialize basic block:" << block->getBid() << std::endl;
     const auto *reg_table = block->payload<RegTable>();
     auto curr_block_label = make_unique<LInst>(getBlockLabel(block));
     list.addInst(std::move(curr_block_label));
 
     for (const auto &p: *reg_table) {
         // putValTo(p.first, unique_ptr<Reg>(p.second->clone()), reg_table);
+        std::cout << varToString(p.first, sym_table)
+                  << "->" << p.second->toString() << std::endl;
         auto v = p.first;
         const auto *term = sym_table->findVarByID(v.val);
         if (term == nullptr) { // temp variable
@@ -198,35 +201,8 @@ void CFGSerializer::handleJmp(Quad &q, const RegTable *table) {
         }
     }
 
-    /*
-    unique_ptr<Reg> src0;
-    if (table->count(q.src0) == 0) {
-        auto load = make_unique<LwInst>(
-                make_unique<TReg>(0),
-                make_unique<SpReg>(), frame_table->getTopOffset(q.src0)
-        );
-        list.addInst(std::move(load));
-        src0 = make_unique<TReg>(0);
-    } else {
-        src0 = unique_ptr<Reg>(table->at(q.src0)->clone());
-    }
-
-    unique_ptr<Reg> src1;
-    // settle src0
-    if (table->count(q.src1) == 0) {
-        auto load = make_unique<LwInst>(
-                make_unique<TReg>(0),
-                make_unique<SpReg>(), frame_table->getTopOffset(q.src0));
-        list.addInst(std::move(load));
-        src1 = make_unique<TReg>(1);
-    } else {
-        src1 = unique_ptr<Reg>(table->at(q.src0)->clone());
-    }
-    */
-
     auto src0 = getVal(q.src0, 0, table);
     auto src1 = getVal(q.src1, 1, table);
-
 
 
     auto label = getBlockLabel(q.jmp);
@@ -258,33 +234,40 @@ void CFGSerializer::handleJmp(Quad &q, const RegTable *table) {
 
 void CFGSerializer::handleCopy(Quad &q, const RegTable *table) {
     unique_ptr<Reg> src0;
-    unique_ptr<Reg> target;
-    if (table->count(q.src0) == 0) {
-        auto load = make_unique<LwInst>(
-                make_unique<TReg>(0),
-                make_unique<SpReg>(), frame_table->getTopOffset(q.src0)
-        );
-        list.addInst(std::move(load));
-        src0 = make_unique<TReg>(0);
-        target = make_unique<TReg>(0);
-    } else {
-        src0 = unique_ptr<Reg>(table->at(q.src0)->clone());
-        target = make_unique<TReg>(0);
-    }
+    auto src_const = q.src0.constVal(*sym_table);
+
+    auto src_reg = getVal(q.src0, 0, table);
 
     unique_ptr<Reg> dst;
-    if (table->count(q.dst) != 0) {
-        dst = unique_ptr<Reg>(table->at(q.src0)->clone());
-        unique_ptr<Inst> inst = make_unique<MoveInst>(std::move(src0), std::move(dst));
-        list.addInst(std::move(inst));
-        return;
-    } else {
-        unique_ptr<Inst> inst = make_unique<SwInst>(
-                std::move(target),
-                make_unique<SpReg>(),
-                frame_table->getTopOffset(q.dst)
-        );
-        list.addInst(std::move(inst));
+    if (q.dst.val == 0) return;
+
+    const auto *term = sym_table->findVarByID(q.dst.val);
+
+    if (table->count(q.dst) != 0) { // target on register
+        if (src_const.has_value()) {
+            list.pushInst<LiInst>(  // load literal
+                    unique_ptr<Reg>(table->at(q.dst)->clone()),
+                    src_const.value()
+            );
+        } else {
+            list.pushInst<MoveInst>( // move to register
+                    unique_ptr<Reg>(table->at(q.dst)->clone()),
+                    std::move(src_reg)
+            );
+        }
+    } else {  // target is global or on stack
+        if (term != nullptr && term->isGlobal) { // target is global value
+            list.pushInst<SwInst>(
+                    std::move(src_reg),
+                    getGlobalLabel(term->name)
+            );
+        } else {
+            list.pushInst<SwInst>(
+                    std::move(src_reg),
+                    make_unique<SpReg>(),
+                    frame_table->getTopOffset(q.dst)
+            );
+        }
     }
 
 }
@@ -306,9 +289,9 @@ void CFGSerializer::handleGet(Quad &q, const RegTable *table) {
     }
 
     list.pushInst<AddI>(
-            std::move(make_unique<TReg>(1)),
-            std::move(make_unique<TReg>(0)),
-            std::move(make_unique<IntReg>(1))
+            make_unique<TReg>(1),
+            make_unique<TReg>(1),
+            make_unique<TReg>(0)
     );
 
     if (table->count(q.dst) == 1) {
@@ -401,12 +384,12 @@ void CFGSerializer::handlePrint(Quad &q, const RegTable *table) {
     if (q.str_id >= 0) {
 
         list.pushInst<LiInst>(
-            make_unique<VReg>(0), 4
+                make_unique<VReg>(0), 4
         );
-        
+
         list.pushInst<LaInst>(
-            make_unique<AReg>(0),
-            Asm::genStringLabel(q.str_id)
+                make_unique<AReg>(0),
+                Asm::genStringLabel(q.str_id)
         );
 
         list.addInst(std::move(make_unique<SysCallInst>()));
@@ -481,7 +464,7 @@ void CFGSerializer::issueRet() {
 void CFGSerializer::handleRet(Quad &q, const RegTable *table) {
 
     // recover $ra
-    list.pushInst<LwInst>( make_unique<RaReg>(), make_unique<SpReg>(), 32 );
+    list.pushInst<LwInst>(make_unique<RaReg>(), make_unique<SpReg>(), 32);
 
     auto val = q.src0;
 
@@ -594,29 +577,29 @@ void CFGSerializer::handleCall(Quad &q, const RegTable *table) {
     );
     // store function return value
     if (q.dst.val == 0) return;
-    
+
     if (table->count(q.dst) == 1) {  // result on register
         list.pushInst<MoveInst>(
-            unique_ptr<Reg>(table->at(q.dst)->clone()),
-            make_unique<VReg>(0)
-            );
+                unique_ptr<Reg>(table->at(q.dst)->clone()),
+                make_unique<VReg>(0)
+        );
     } else { // not on register
         const auto *term = sym_table->findVarByID(q.dst.val);
 
         if (term != nullptr && term->isGlobal) { // global variable
             list.pushInst<SwInst>(
-                make_unique<VReg>(0),
-                getGlobalLabel(term->name)
-                );
+                    make_unique<VReg>(0),
+                    getGlobalLabel(term->name)
+            );
         } else { // on stack
             list.pushInst<SwInst>(
-                make_unique<VReg>(0),
-                make_unique<SpReg>(),
-                frame_table->getTopOffset(q.dst)
-                );
+                    make_unique<VReg>(0),
+                    make_unique<SpReg>(),
+                    frame_table->getTopOffset(q.dst)
+            );
         }
     }
-    
+
 }
 
 unique_ptr<Reg> CFGSerializer::getVal(QuadVal &val, size_t n, const RegTable *table) {
@@ -735,9 +718,9 @@ void CFGSerializer::putValTo(const QuadVal &val, unique_ptr<Reg> reg, const RegT
 void CFGSerializer::saveReg() {
     for (int i = 0; i < 8; ++i) {
         list.pushInst<SwInst>(
-            make_unique<SReg>(i),
-            make_unique<SpReg>(),
-            4 * i
+                make_unique<SReg>(i),
+                make_unique<SpReg>(),
+                4 * i
         );
     }
 }
@@ -745,9 +728,9 @@ void CFGSerializer::saveReg() {
 void CFGSerializer::recoverReg() {
     for (int i = 0; i < 8; ++i) {
         list.pushInst<LwInst>(
-            make_unique<SReg>(i),
-            make_unique<SpReg>(),
-            4 * i
+                make_unique<SReg>(i),
+                make_unique<SpReg>(),
+                4 * i
         );
     }
 }

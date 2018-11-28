@@ -271,6 +271,10 @@ void CFGConverter::visit(FuncAST *e) {
         curr_block = builder.create();
         curr_block->insts.emplace_back();
         cleanWaiting(curr_block);
+    } else {
+        if(curr_block->insts.back().op != QuadOp::Ret) {
+            curr_block->insts.emplace_back();
+        }
     }
 
 }
@@ -407,7 +411,7 @@ void CFGConverter::visit(PrintStmt *e) {
         }
         curr_block->insts.emplace_back(str_id, exp_val);
     }
-
+    freeAllTempReg();
 }
 
 void CFGConverter::visit(ReadStmt *e) {

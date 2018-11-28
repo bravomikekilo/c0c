@@ -38,7 +38,7 @@ string InstList::toString() {
     }
 
     stream << std::endl << ".text" << std::endl;
-    stream << "jal main \n li $v0 10 \n syscall" << std::endl;
+    stream << "jal main \nli $v0, 10 \nsyscall" << std::endl;
 
     for(const auto &inst: insts) {
         stream << inst->toString() << std::endl;

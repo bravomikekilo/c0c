@@ -11,12 +11,12 @@ void C0::BfsCFGWalker::walk(BasicBlock *start) {
         } else {
             continue;
         }
-        if(b->next != nullptr) {
+        if(b->next != nullptr && visited.count(b->next) == 0) {
             q.push(b->next);
         }
 
         auto jmp = b->insts.back().jmp;
-        if(jmp != nullptr) {
+        if(jmp != nullptr && visited.count(jmp) == 0) {
             q.push(jmp);
         }
 

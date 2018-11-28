@@ -63,9 +63,10 @@ string varToString(QuadVal v, shared_ptr<SymTable> table) {
         if (id < 0) {
             return "#" + std::to_string(-id);
         }
+
         auto term = table->findVarByID(id);
 
-        if (term->isConst()) {
+        if (term->isGlobal) {
             return "G:" + term->name;
         } else {
             return "L:" + term->name;

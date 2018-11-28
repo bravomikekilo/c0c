@@ -548,14 +548,14 @@ pair<vector<shared_ptr<FuncAST>>, shared_ptr<SymTable>> Parser::parseProg() {
             if (curr_table->hasVarInScope(first_name)) {
                 errors.push_back("multiple definition of variable:" + first_name);
             } else {
-                curr_table->insert(SymTerm{popVarID(), t, first_name, false, {}});
+                curr_table->insert(SymTerm{popVarID(), t, first_name, true, {}});
             }
         } else {
             Type t(baseType);
             if (curr_table->hasVarInScope(first_name)) {
                 errors.push_back("multiple definition of variable:" + first_name);
             } else {
-                curr_table->insert(SymTerm{popVarID(), t, first_name, false, {}});
+                curr_table->insert(SymTerm{popVarID(), t, first_name, true, {}});
             }
         }
 
