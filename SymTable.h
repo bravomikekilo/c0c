@@ -136,6 +136,7 @@ public:
 
     vector<pair<int, string>> getStringList() const ;
     vector<pair<string, Type>> getGlobalList() const ;
+    shared_ptr<SymTable> getGlobalTable() const;
     
 
 };

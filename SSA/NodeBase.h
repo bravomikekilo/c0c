@@ -6,6 +6,8 @@
 #define C0_NODEBASE_H
 
 
+#include "common.h"
+
 namespace C0 {
 
 class NodeBase {
@@ -16,6 +18,9 @@ public:
     T *Payload() {
         return (T *)payload;
     }
+
+    virtual size_t num_in() = 0;
+    virtual NodeBase *in(size_t index) = 0;
 
 };
 

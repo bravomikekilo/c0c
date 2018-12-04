@@ -10,11 +10,32 @@
 #include "AST/AST.h"
 #include "SSA.h"
 #include "NodeArena.h"
-#include "BuildContext.h"
 
 
 namespace C0 {
 
+class BuildContext {
+    unordered_map<VarID, ValueE> table;
+    bool filled = false;
+    bool sealed = false;
+
+public:
+
+    bool hasVar(VarID id) { return table.count(id) == 1; }
+
+    ValueE getVar(VarID id) {
+        if(table.count(id) == 0) {
+            return nullptr;
+        } else {
+            return table[id];
+        }
+    }
+
+    void setVar(VarID id, ValueE val) {
+        table[id] = val;
+    }
+
+};
 
 class SSABuilder : public ASTVisitor {
 public:
@@ -85,7 +106,7 @@ private:
     ValueE getVarRecursive(Region *region, VarID id) {
         // handle incomplete CFG
 
-        if(region->pred.size() == 1) {
+        if(region->num_cin() == 1) {
             // upward find a region node
             // return getVar(region->pred.front(), id);
         }

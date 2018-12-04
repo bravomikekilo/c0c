@@ -14,6 +14,7 @@ file(GLOB QUAD_FILE "Quad/*")
 file(GLOB SSA_FILE "SSA/*")
 file(GLOB ASM_FILE "Asm/*")
 file(GLOB NAIVE_GEN_FILE "NaiveGen/*")
+file(GLOB SON_FILE "SON/*")
 
 include_directories(${C0_SOURCE_DIR})
 
@@ -21,11 +22,13 @@ include_directories(${C0_SOURCE_DIR})
 add_executable(Lexer Lexer.cpp Lex.cpp util.cpp cli/lexer.cpp AST/ExprAST.cpp)
 
 add_executable(Quad cli/quad.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp ${AST_FILE} ${QUAD_FILE} AST/ExprAST.cpp TypeChecker.cpp TypeChecker.h)
-add_executable(SSA cli/ssa.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp ${AST_FILE} ${SSA_FILE} AST/ExprAST.cpp TypeChecker.cpp TypeChecker.h SSA/NodeBase.h SSA/SSABuilder.cpp SSA/SSABuilder.h SSA/NodeArena.cpp SSA/NodeArena.h SSA/BuildContext.h)
+add_executable(SSA cli/ssa.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp ${AST_FILE} ${SSA_FILE} AST/ExprAST.cpp TypeChecker.cpp TypeChecker.h SSA/NodeBase.h SSA/SSABuilder.cpp SSA/SSABuilder.h SSA/NodeArena.cpp SSA/NodeArena.h SSA/CmpValue.h SSA/ConstValue.h SSA/ArithValue.h SSA/MemValue.h SSA/CallValue.h SSA/MiscValue.h SSA/SSADrawer.cpp SSA/SSADrawer.h SSA/DefUse.h)
 
 add_executable(Grammar Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp ${AST_FILE} SymTable.cpp cli/grammar.cpp AST/ExprAST.cpp TypeChecker.cpp TypeChecker.h)
 
-add_executable(C0 cli/C0.cpp Lexer.cpp Lex.cpp Parser.cpp util.cpp Type.cpp ${CLI_FILE} ${AST_FILE}  SymTable.h SymTable.cpp AST/FuncAST.h Quad/BasicBlock.cpp Quad/BasicBlock.h Quad/Quads.cpp Quad/Quads.h Quad/CFGDrawer.cpp Quad/CFGDrawer.h Quad/CFGConverter.cpp Quad/CFGConverter.h AST/ExprAST.cpp TypeChecker.cpp TypeChecker.h SSA/Value.h SSA/Control.h cli/quadGen.cpp)
+add_executable(C0 cli/C0.cpp Lexer.cpp Lex.cpp Parser.cpp util.cpp Type.cpp ${CLI_FILE} ${AST_FILE}  SymTable.h SymTable.cpp AST/FuncAST.h Quad/BasicBlock.cpp Quad/BasicBlock.h Quad/Quads.cpp Quad/Quads.h Quad/CFGDrawer.cpp Quad/CFGDrawer.h Quad/CFGConverter.cpp Quad/CFGConverter.h AST/ExprAST.cpp TypeChecker.cpp TypeChecker.h SSA/Value.h SSA/Control.h cli/quadGen.cpp SON/Node.h SON/SON.h cli/seaOfNode.cpp SON/ConstN.h SON/MiscN.h)
 
 add_executable(QuadGen cli/quadGen.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp ${AST_FILE} ${QUAD_FILE} ${ASM_FILE} ${NAIVE_GEN_FILE} TypeChecker.cpp TypeChecker.h)
+
+add_executable(SON cli/seaOfNode.cpp ${SON_FILE} SON/CallN.h SON/MemN.h SON/SONBuilder.cpp SON/SONBuilder.h SON/Sea.h SON/CmpN.h SON/SONDrawer.cpp SON/SONDrawer.h)
 

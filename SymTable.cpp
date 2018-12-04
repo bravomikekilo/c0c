@@ -69,6 +69,12 @@ shared_ptr<SymTable> SymTable::createGlobalTable() {
     return make_shared<SymTable>(nullptr, true);
 }
 
+shared_ptr<SymTable> SymTable::getGlobalTable() const {
+    if(prev == nullptr) return nullptr;
+    else if(prev->prev == nullptr) return prev;
+    else return prev->getGlobalTable();
+}
+
 int StringTable::insertStr(const string &str) {
     if(id_table.count(str) == 1) {
         return id_table[str];
