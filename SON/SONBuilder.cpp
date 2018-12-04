@@ -10,11 +10,11 @@ namespace C0 {
 
 
 void C0::SONBuilder::visit(C0::IntExpr *e) {
-    right_val = sea.alloc<ConstIntN>(e->v);
+    right_val = sea.alloc<ConstIntN>(curr_block, e->v);
 }
 
 void C0::SONBuilder::visit(C0::CharExpr *e) {
-    right_val = sea.alloc<ConstIntN>(e->v);
+    right_val = sea.alloc<ConstCharN>(curr_block, e->v);
 }
 
 void C0::SONBuilder::visit(C0::VarExpr *e) {
@@ -74,10 +74,10 @@ void SONBuilder::visitLeftOp(OpExpr *e) {
 
     UseE set = nullptr;
     if (e->lhs->outType(curr_table).getBase().is(BaseTypeK::Char)) {
-        auto pointer = sea.alloc<AddN>(curr_table, base, rhs);
-        set = sea.alloc<SetCharN>(curr_table, pointer, lhs, val);
+        auto pointer = sea.alloc<AddN>(curr_block, base, rhs);
+        set = sea.alloc<SetCharN>(curr_block, pointer, lhs, val);
     } else {
-        auto expand = sea.alloc<MulN>(curr_block, rhs, sea.alloc<ConstIntN>(4));
+        auto expand = sea.alloc<MulN>(curr_block, rhs, sea.alloc<ConstIntN>(curr_block, 4));
         auto pointer = sea.alloc<AddN>(curr_block, base, expand);
         set = sea.alloc<SetIntN>(curr_block, pointer, lhs, val);
     }
@@ -98,7 +98,7 @@ void SONBuilder::visitRightOp(OpExpr *e) {
                 auto pointer = sea.alloc<AddN>(curr_block, base, rhs);
                 right_val = sea.alloc<GetCharN>(curr_block, pointer, lhs);
             } else {
-                auto expand = sea.alloc<MulN>(curr_block, rhs, sea.alloc<ConstIntN>(4));
+                auto expand = sea.alloc<MulN>(curr_block, rhs, sea.alloc<ConstIntN>(curr_block, 4));
                 auto pointer = sea.alloc<AddN>(curr_block, base, expand);
                 right_val = sea.alloc<GetCharN>(curr_block, pointer, lhs);
             }
@@ -371,7 +371,7 @@ void C0::SONBuilder::visit(C0::ForStmt *e) {
 void C0::SONBuilder::visit(C0::PrintStmt *e) {
     if (!e->expr.has_value()) {
         auto world = getWorld();
-        auto new_world = sea.alloc<PrintIntN>(curr_table, e->str, world);
+        auto new_world = sea.alloc<PrintIntN>(curr_block, e->str, world);
         setWorld(new_world);
         return;
     }
@@ -382,9 +382,9 @@ void C0::SONBuilder::visit(C0::PrintStmt *e) {
 
     UseE new_world = nullptr;
     if (e->expr.value()->outType(curr_table).is(BaseTypeK::Char)) {
-        new_world = sea.alloc<PrintCharN>(curr_table, e->str, world, arg);
+        new_world = sea.alloc<PrintCharN>(curr_block, e->str, world, arg);
     } else {
-        new_world = sea.alloc<PrintCharN>(curr_table, e->str, world, arg);
+        new_world = sea.alloc<PrintCharN>(curr_block, e->str, world, arg);
     }
     setWorld(new_world);
 }
@@ -427,8 +427,11 @@ void C0::SONBuilder::visit(C0::FuncAST *e) {
     curr_table = e->table;
     /// build first block and finish init variable
 
-    curr_block = sea.alloc<RegionN>();
+    start_block = sea.alloc<RegionN>();
+    curr_block = start_block;
     addContext(curr_block);
+    sealBlock(curr_block);
+
 
     UseE undef = sea.alloc<UndefN>(curr_block);
     auto *context = curr_block->Payload<BuildContext>();
@@ -452,7 +455,7 @@ void C0::SONBuilder::visit(C0::FuncAST *e) {
     sealBlock(last_block);
 
     vector<UseE> ret_globals;
-    world_phi = sea.alloc<PhiN>();
+    world_phi = sea.alloc<PhiN>(last_block);
 
     shared_ptr<SymTable> global_table = curr_table->getGlobalTable();
     const auto &global_terms = global_table->getVarInScope();

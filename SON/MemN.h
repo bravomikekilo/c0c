@@ -22,11 +22,13 @@ public:
 };
 
 class SetIntN : public SetN {
+public:
     SetIntN(UseE region, UseE pointer, UseE lhs, UseE rhs)
         :SetN(Nop::SetInt, region, pointer, lhs, rhs) {}
 };
 
 class SetCharN : public SetN {
+public:
     SetCharN(UseE region, UseE pointer, UseE lhs, UseE rhs)
         :SetN(Nop::SetChar, region, pointer, lhs, rhs) {}
 };
@@ -42,11 +44,13 @@ public:
 };
 
 class GetIntN: public GetN {
+public:
     GetIntN(UseE region, UseE pointer, UseE value)
         :GetN(Nop::GetInt, region, pointer, value) {}
 };
 
 class GetCharN: public GetN {
+public:
     GetCharN(UseE region, UseE pointer, UseE value)
         :GetN(Nop::GetChar, region, pointer, value) {}
 };

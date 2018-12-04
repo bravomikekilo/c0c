@@ -57,13 +57,15 @@ enum class Nop {
 
 };
 
+string nopToStr(Nop op);
+
 class Node;
 
 using UseE = Node *;
 
 class Node {
 private:
-    void *_payload;
+    void *_payload = nullptr;
 
 protected:
     Nop op;
@@ -120,6 +122,10 @@ public:
     explicit Node(Nop op, size_t num_uses) : op(op), num_uses(num_uses) {
         uses = new UseE[num_uses];
     }
+
+    virtual string str() {
+        return nopToStr(op);
+    };
 
     virtual ~Node() {
         delete[] uses;

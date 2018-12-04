@@ -21,6 +21,8 @@ private:
     unordered_map<UseE, int> region_ids;
     vector<pair<int, string>> floatNode;
 
+    unordered_map<UseE, int> node_id;
+
     vector<tuple<int, int, string>> edges;
 
     void addEdge(UseE src_node, int src, int dst, string label);
@@ -32,7 +34,6 @@ public:
     void draw(StopN *stop);
 
     string toDot(const string &graph_name);
-
 
 };
 

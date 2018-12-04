@@ -28,7 +28,7 @@ add_executable(Grammar Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp ${AST_FILE
 
 add_executable(C0 cli/C0.cpp Lexer.cpp Lex.cpp Parser.cpp util.cpp Type.cpp ${CLI_FILE} ${AST_FILE}  SymTable.h SymTable.cpp AST/FuncAST.h Quad/BasicBlock.cpp Quad/BasicBlock.h Quad/Quads.cpp Quad/Quads.h Quad/CFGDrawer.cpp Quad/CFGDrawer.h Quad/CFGConverter.cpp Quad/CFGConverter.h AST/ExprAST.cpp TypeChecker.cpp TypeChecker.h SSA/Value.h SSA/Control.h cli/quadGen.cpp SON/Node.h SON/SON.h cli/seaOfNode.cpp SON/ConstN.h SON/MiscN.h)
 
-add_executable(QuadGen cli/quadGen.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp ${AST_FILE} ${QUAD_FILE} ${ASM_FILE} ${NAIVE_GEN_FILE} TypeChecker.cpp TypeChecker.h)
+add_executable(QuadGen cli/quadGen.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp ${AST_FILE} ${QUAD_FILE} ${ASM_FILE} ${NAIVE_GEN_FILE} TypeChecker.cpp)
 
-add_executable(SON cli/seaOfNode.cpp ${SON_FILE} SON/CallN.h SON/MemN.h SON/SONBuilder.cpp SON/SONBuilder.h SON/Sea.h SON/CmpN.h SON/SONDrawer.cpp SON/SONDrawer.h)
+add_executable(SON cli/seaOfNode.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp TypeChecker.cpp ${SON_FILE} ${AST_FILE})
 

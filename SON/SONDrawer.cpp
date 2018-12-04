@@ -6,6 +6,9 @@
 #include <sstream>
 #define FMT_HEADER_ONLY
 #include "fmt/format.h"
+#include <stack>
+
+using std::stack;
 
 namespace C0 {
 
@@ -78,10 +81,51 @@ string SONDrawer::toDot(const string &graph_name) {
         stream << "label=\""  << std::get<2>(edge) << "\"\n];" << std::endl;
     }
 
-    stream << "\n}";
+    stream << "}\n\n";
 
     return stream.str();
 }
 
+void SONDrawer::draw(StopN *stop) {
+
+    // first get id for every node
+    int next_id = 1;
+    stack<UseE> s;
+    s.push(stop);
+
+    while(!s.empty()) {
+        auto head = s.top(); s.pop();
+        if(node_id.count(head)) continue;
+
+        if(head->getOp() == Nop::Region) {
+            region_ids.insert(pair(head, next_id));
+        }
+
+        node_id.insert(pair(head, next_id++));
+
+        for(auto use: *head) {
+            if(node_id.count(use)) continue;
+            s.push(use);
+        }
+    }
+
+    unordered_set<UseE> visited;
+    s.push(stop);
+    while(!s.empty()) {
+        auto head = s.top(); s.pop();
+        if(node_id.count(head)) continue;
+        addNode(head, node_id[head], head->str());
+
+        int index = 0;
+        for(auto use: *head) {
+            addEdge(head, node_id[head], node_id[use], std::to_string(index));
+            ++index;
+            if(node_id.count(use)) continue;
+            s.push(use);
+        }
+    }
+
+
+}
 
 }

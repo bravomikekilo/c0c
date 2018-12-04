@@ -45,6 +45,7 @@ private:
 
     unordered_map<VarID, PhiN *> last_global_phi;
 
+    RegionN *start_block = nullptr;
     RegionN *last_block = nullptr;
     PhiN *ret_phi = nullptr;
     PhiN *world_phi = nullptr;
@@ -85,7 +86,11 @@ private:
 
 
 public:
-    explicit SONBuilder(Sea &sea) : sea(sea) {}
+    SONBuilder(Sea &sea) : sea(sea) {}
+
+    pair<RegionN *, StopN *> getResult() {
+        return pair(start_block, stop);
+    }
 
     ~SONBuilder() override {
         // free all allocated build context

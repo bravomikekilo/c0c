@@ -32,8 +32,9 @@ public:
 
 class IfN : public Node {
 public:
-    explicit IfN(UseE up) :Node(Nop::If, 1) {
+    IfN(UseE up, UseE predict) :Node(Nop::If, 2) {
         uses[0] = up;
+        uses[1] = predict;
     }
 };
 
@@ -42,7 +43,7 @@ private:
     bool branch;
 
 public:
-    explicit IfProjN(bool branch, UseE up) :Node(Nop::IfProj, 1), branch(branch) {
+    explicit IfProjN(UseE up, bool branch) :Node(Nop::IfProj, 1), branch(branch) {
         uses[0] = up;
     }
 };
