@@ -17,16 +17,21 @@ private:
 
     Sea &sea;
 
-    std::stack<PhiN *> worklist;
+    std::stack<pair<PhiN *, UseE>> worklist;
 
-    bool trivial(PhiN *);
+    optional<UseE> trivial(PhiN *);
+
+    UseE undef;
 
 protected:
     void visit(UseE node) override;
 
 public:
 
-    PhiCleaner(Sea &sea): sea(sea) {}
+    PhiCleaner(Sea &sea): sea(sea) {
+        undef = sea.alloc<UndefN>();
+        undef->initDefUse();
+    }
 
     void optimize(StopN *stop);
 

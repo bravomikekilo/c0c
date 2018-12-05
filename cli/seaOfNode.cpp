@@ -3,7 +3,7 @@
 //
 
 #include <iostream>
-#include <SON/DefUseBuilder.h>
+#include "SON/sonUtil.h"
 #include "SON/SON.h"
 #include "SON/Sea.h"
 #include "SON/SONBuilder.h"
@@ -56,12 +56,12 @@ int main(int argc, char **argv) {
 
         std::cout << drawer.toDot(func->name) << std::endl;
 
-        std::vector<C0::UseE> use_def;
-        C0::DefUseBuilder def_use_builder(use_def);
-        def_use_builder.buildUseDef(stop);
 
+        C0::buildDefUse(stop);
 
         phi_cleaner.optimize(stop);
+
+
 
         drawer.clear();
         drawer.draw(stop);

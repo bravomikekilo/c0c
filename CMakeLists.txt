@@ -30,5 +30,5 @@ add_executable(C0 cli/C0.cpp Lexer.cpp Lex.cpp Parser.cpp util.cpp Type.cpp ${CL
 
 add_executable(QuadGen cli/quadGen.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp ${AST_FILE} ${QUAD_FILE} ${ASM_FILE} ${NAIVE_GEN_FILE} TypeChecker.cpp)
 
-add_executable(SON cli/seaOfNode.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp TypeChecker.cpp ${SON_FILE} ${AST_FILE} SON/BackDFSWalker.cpp SON/BackDFSWalker.h SON/DefUseBuilder.cpp SON/DefUseBuilder.h SON/PhiClean.h SON/PhiClean.cpp)
+add_executable(SON cli/seaOfNode.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp TypeChecker.cpp ${SON_FILE} ${AST_FILE} SON/BackDFSWalker.cpp SON/BackDFSWalker.h SON/PhiClean.h SON/PhiClean.cpp SON/sonUtil.h SON/sonUtil.cpp)
 

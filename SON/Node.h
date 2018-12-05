@@ -68,46 +68,7 @@ using UseE = Node *;
 
 class Node {
 public:
-
-    class User {
-    private:
-        vector<UseE>::iterator _begin;
-        size_t sz;
-
-    public:
-
-        User(vector<UseE>::iterator b, size_t sz)
-            :_begin(b), sz(sz) {}
-
-        vector<UseE>::iterator begin() {
-            return _begin;
-        }
-
-        UseE front() {
-            return *_begin;
-        }
-
-        bool empty() {
-            return sz == 0;
-        }
-
-        UseE &at(size_t index) {
-            return *(_begin + index);
-        }
-
-        UseE &operator[](size_t index) {
-            return at(index);
-        }
-
-        vector<UseE>::iterator end() {
-            return _begin + sz;
-        }
-
-        size_t size() {
-            return sz;
-        }
-
-    };
+    using User = unordered_set<UseE>;
 
 private:
     void *_payload = nullptr;
@@ -118,8 +79,7 @@ protected:
     UseE *uses = nullptr; // pointer to array of user
     size_t num_uses; // number of use
 
-    vector<UseE>::iterator use_begin;
-    size_t num_def_use = 0;
+    unique_ptr<User> user = nullptr;
 
 public:
 
@@ -132,16 +92,29 @@ public:
         return (T *) _payload;
     }
 
-    void clearUse() {num_def_use = 0;}
-    void addUse() { ++num_def_use; }
-    void setUseDef(vector<UseE>::iterator iter) {
-        use_begin = iter;
+    void clearDefUse() { user = nullptr; }
+
+    void initDefUse() { user = make_unique<User>(); }
+
+    void addUse(UseE use) {
+        if(user) {
+            user->insert(use);
+        }
     }
+
+    void addUse(User &other) {
+        if(user) {
+            user->insert(other.begin(), other.end());
+        }
+    }
+
     size_t getNumUse() {
-        return num_def_use;
+        if(user == nullptr) return 0;
+        else return user->size();
     }
-    User getUser() {
-        return User(use_begin, num_def_use);
+
+    User &getUser() {
+        return *user;
     }
 
     size_t size() { return num_uses; }
