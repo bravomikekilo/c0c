@@ -65,14 +65,61 @@ class Node;
 
 using UseE = Node *;
 
+
 class Node {
+public:
+
+    class User {
+    private:
+        vector<UseE>::iterator _begin;
+        size_t sz;
+
+    public:
+
+        User(vector<UseE>::iterator b, size_t sz)
+            :_begin(b), sz(sz) {}
+
+        vector<UseE>::iterator begin() {
+            return _begin;
+        }
+
+        UseE front() {
+            return *_begin;
+        }
+
+        bool empty() {
+            return sz == 0;
+        }
+
+        UseE &at(size_t index) {
+            return *(_begin + index);
+        }
+
+        UseE &operator[](size_t index) {
+            return at(index);
+        }
+
+        vector<UseE>::iterator end() {
+            return _begin + sz;
+        }
+
+        size_t size() {
+            return sz;
+        }
+
+    };
+
 private:
     void *_payload = nullptr;
+    int visit_flag = 0;
 
 protected:
-    Nop op;
-    UseE *uses = nullptr;
-    size_t num_uses;
+    Nop op;   // Node Op for the node
+    UseE *uses = nullptr; // pointer to array of user
+    size_t num_uses; // number of use
+
+    vector<UseE>::iterator use_begin;
+    size_t num_def_use = 0;
 
 public:
 
@@ -85,7 +132,18 @@ public:
         return (T *) _payload;
     }
 
-    size_t numUse() { return num_uses; }
+    void clearUse() {num_def_use = 0;}
+    void addUse() { ++num_def_use; }
+    void setUseDef(vector<UseE>::iterator iter) {
+        use_begin = iter;
+    }
+    size_t getNumUse() {
+        return num_def_use;
+    }
+    User getUser() {
+        return User(use_begin, num_def_use);
+    }
+
     size_t size() { return num_uses; }
 
     void push_back(const UseE &use) {
@@ -120,6 +178,16 @@ public:
     UseE back() { return *(end() - 1); }
 
     const UseE *cend() { return uses + num_uses; }
+
+    bool replace(UseE old, UseE n) {
+        for(auto &use: *this) {
+            if(use == old) {
+                use = n;
+                return true;
+            }
+        }
+        return false;
+    }
 
 
     explicit Node(Nop op, size_t num_uses) : op(op), num_uses(num_uses) {

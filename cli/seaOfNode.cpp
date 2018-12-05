@@ -3,11 +3,14 @@
 //
 
 #include <iostream>
+#include <SON/DefUseBuilder.h>
 #include "SON/SON.h"
 #include "SON/Sea.h"
 #include "SON/SONBuilder.h"
 #include "SON/SONDrawer.h"
+#include "SON/PhiClean.h"
 #include "AST/ASTDrawer.h"
+
 #include "Parser.h"
 #include "util.h"
 
@@ -39,6 +42,7 @@ int main(int argc, char **argv) {
     std::cout << "------------Sea Of Node------------" << std::endl;
 
     C0::Sea ocean(4096);
+    C0::PhiCleaner phi_cleaner(ocean);
     for(auto &func: funcs) {
         C0::SONBuilder builder(ocean);
         func->accept(builder);
@@ -48,8 +52,23 @@ int main(int argc, char **argv) {
         C0::SONDrawer drawer;
         drawer.draw(stop);
 
+        std::cout << "-------------before optimization------------" << std::endl;
+
         std::cout << drawer.toDot(func->name) << std::endl;
 
+        std::vector<C0::UseE> use_def;
+        C0::DefUseBuilder def_use_builder(use_def);
+        def_use_builder.buildUseDef(stop);
+
+
+        phi_cleaner.optimize(stop);
+
+        drawer.clear();
+        drawer.draw(stop);
+
+        std::cout << "-------------after optimization------------" << std::endl;
+
+        std::cout << drawer.toDot(func->name) << std::endl;
 
     }
 

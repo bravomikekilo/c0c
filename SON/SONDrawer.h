@@ -35,6 +35,14 @@ public:
 
     string toDot(const string &graph_name);
 
+    void clear() {
+        subgraphs.clear();
+        region_ids.clear();
+        floatNode.clear();
+        node_id.clear();
+        edges.clear();
+    }
+
 };
 
 

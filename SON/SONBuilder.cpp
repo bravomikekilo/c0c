@@ -577,7 +577,7 @@ UseE SONBuilder::readVarRecursive(VarID id, RegionN *region) {
         auto phi = sea.alloc<PhiN>(region);
         val = phi;
         context->incomplete_phi.insert(pair(id, phi));
-    } else if (region->numUse() == 1) {
+    } else if (region->size() == 1) {
         auto pred = region->front();
         while (pred->getOp() != Nop::Region) {
             pred = pred->front();

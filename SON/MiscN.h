@@ -83,9 +83,9 @@ public:
 class UndefN : public Node {
 
 public:
-    explicit UndefN(UseE region) : Node(Nop::Undef, 1) {
-        uses[0] = region;
-    }
+    explicit UndefN(UseE region) : Node(Nop::Undef, 0) { }
+    explicit UndefN() : Node(Nop::Undef, 0) { }
+
 };
 
 

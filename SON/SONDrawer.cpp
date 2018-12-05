@@ -37,7 +37,7 @@ void SONDrawer::addNode(UseE src_node, int id, string str) {
         // subgraphs.insert(pair(id, init_set));
     } else {
         auto src_op = src_node->getOp();
-        if (src_op == Nop::Stop || src_op == Nop::IfProj) { // float node
+        if (src_op == Nop::Stop || src_op == Nop::IfProj || src_op == Nop::Undef) { // float node
             floatNode.emplace_back(id, str);
         } else {
             auto region_id = region_ids[src_node->at(0)];
