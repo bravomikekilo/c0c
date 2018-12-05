@@ -1,0 +1,4 @@
+
+int _retConst() {
+    return 1 + 2;
+}

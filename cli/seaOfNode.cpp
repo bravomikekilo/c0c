@@ -28,11 +28,15 @@ int main(int argc, char **argv) {
 
     auto[funcs, sym] = parser.parseProg();
 
+    std::cout << "------------AST------------" << std::endl;
+
     std::cout << C0::ASTDrawer::drawProgram(funcs);
 
     for(const auto& err: parser.getError()) {
         std::cout << err << std::endl;
     }
+
+    std::cout << "------------Sea Of Node------------" << std::endl;
 
     C0::Sea ocean(4096);
     for(auto &func: funcs) {
@@ -48,6 +52,7 @@ int main(int argc, char **argv) {
 
 
     }
+
 
 #ifdef _WIN32
     std::cout << "press any key to exit" << std::endl;

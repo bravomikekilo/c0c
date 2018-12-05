@@ -91,8 +91,9 @@ public:
 class ReadN: public Node {
 
 public:
-    ReadN(Nop op, UseE region, UseE world): Node(op, 1) {
-        uses[0] = world;
+    ReadN(Nop op, UseE region, UseE world): Node(op, 2) {
+        uses[0] = region;
+        uses[1] = world;
     }
 
 };

@@ -1,19 +1,22 @@
 
-
 int testFunc(int x, int y) {
 
     const int ratio = 2;
 
     int temp;
+    int inc;
     int result;
-    result = 1;
+
+    scanf(result, temp);
 
     for(temp = 0; temp < 10; temp = temp + 1){
-        result = result * ratio;
+        scanf(inc);
+        result = inc + result * ratio;
     }
 
     if(temp) {
         result = 2 + result;
+        printf(result);
     } else {
         result = ratio * result;
     }

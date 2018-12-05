@@ -1,0 +1,18 @@
+
+
+int testFunc(int x, int y) {
+    int temp;
+    int result;
+    result = 1;
+
+    if(temp) {
+        result = 2;
+    } else {
+        result = 2 * result;
+    }
+
+    temp = 5;
+
+    return result / temp;
+
+}

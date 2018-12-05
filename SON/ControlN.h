@@ -46,6 +46,10 @@ public:
     explicit IfProjN(UseE up, bool branch) :Node(Nop::IfProj, 1), branch(branch) {
         uses[0] = up;
     }
+
+    string str() override {
+        return Node::str() + ":" + (branch ? "true" : "false");
+    }
 };
 
 

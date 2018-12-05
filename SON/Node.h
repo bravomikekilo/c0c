@@ -6,6 +6,8 @@
 #define C0_NODE_H
 
 #include "common.h"
+#define FMT_HEADER_ONLY
+#include "fmt/format.h"
 
 namespace C0 {
 
@@ -69,7 +71,7 @@ private:
 
 protected:
     Nop op;
-    UseE *uses;
+    UseE *uses = nullptr;
     size_t num_uses;
 
 public:
@@ -84,14 +86,15 @@ public:
     }
 
     size_t numUse() { return num_uses; }
+    size_t size() { return num_uses; }
 
     void push_back(const UseE &use) {
         auto arr = new UseE[num_uses + 1];
         for (int i = 0; i < num_uses; ++i) {
             arr[i] = uses[i];
         }
-        ++num_uses;
         arr[num_uses] = use;
+        ++num_uses;
         delete[] uses;
         uses = arr;
     }
@@ -124,7 +127,7 @@ public:
     }
 
     virtual string str() {
-        return nopToStr(op);
+        return fmt::format("#{} {}", size(), nopToStr(op));
     };
 
     virtual ~Node() {

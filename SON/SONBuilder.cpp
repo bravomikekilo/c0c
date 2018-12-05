@@ -9,15 +9,15 @@
 namespace C0 {
 
 
-void C0::SONBuilder::visit(C0::IntExpr *e) {
+void SONBuilder::visit(C0::IntExpr *e) {
     right_val = sea.alloc<ConstIntN>(curr_block, e->v);
 }
 
-void C0::SONBuilder::visit(C0::CharExpr *e) {
+void SONBuilder::visit(C0::CharExpr *e) {
     right_val = sea.alloc<ConstCharN>(curr_block, e->v);
 }
 
-void C0::SONBuilder::visit(C0::VarExpr *e) {
+void SONBuilder::visit(C0::VarExpr *e) {
     if (on_right) {
         this->visitRightVar(e);
     } else {
@@ -40,20 +40,28 @@ void SONBuilder::visitLeftVar(VarExpr *e) {
     } else {
         writeVar(e->varID, right_val);
     }
-    var_id = e->varID;
 }
 
 void SONBuilder::visitRightVar(VarExpr *e) {
     const auto *term = curr_table->findVarByID(e->varID);
+    if(term->isConst()) {
+        if(term->type.is(BaseTypeK::Char)) {
+            right_val = sea.alloc<ConstCharN>(curr_block, (char)(term->val.value()));
+        } else {
+            right_val = sea.alloc<ConstIntN>(curr_block, term->val.value());
+        }
+        return;
+    }
     if (term->isGlobal) {
         addr = sea.alloc<GlobalAddrN>(curr_block, global_offsets[e->varID]);
     } else if (term->type.isArray()) {
         addr = sea.alloc<StackSlotN>(curr_block, array_offsets[e->varID]);
     }
     right_val = readVar(e->varID);
+    var_id = e->varID;
 }
 
-void C0::SONBuilder::visit(C0::OpExpr *e) {
+void SONBuilder::visit(C0::OpExpr *e) {
     if (on_right) {
         visitRightOp(e);
     } else {
@@ -120,7 +128,7 @@ void SONBuilder::visitRightOp(OpExpr *e) {
 }
 
 
-void C0::SONBuilder::visit(C0::CondAST *e) {
+void SONBuilder::visit(C0::CondAST *e) {
     e->lhs->accept(*this);
     auto lhs = right_val;
     e->rhs->accept(*this);
@@ -149,7 +157,7 @@ void C0::SONBuilder::visit(C0::CondAST *e) {
 
 }
 
-void C0::SONBuilder::visit(C0::CallExpr *e) {
+void SONBuilder::visit(C0::CallExpr *e) {
     vector<UseE> globals;
     vector<UseE> args;
 
@@ -172,7 +180,7 @@ void C0::SONBuilder::visit(C0::CallExpr *e) {
 }
 
 
-void C0::SONBuilder::visit(C0::AsStmt *e) {
+void SONBuilder::visit(AsStmt *e) {
     e->rhs->accept(*this);
     on_right = false;
 
@@ -180,12 +188,11 @@ void C0::SONBuilder::visit(C0::AsStmt *e) {
     on_right = true;
 }
 
-void C0::SONBuilder::visit(C0::ExprStmt *e) {
+void SONBuilder::visit(ExprStmt *e) {
     e->exp->accept(*this);
 }
 
-
-void C0::SONBuilder::visit(C0::IfStmt *e) {
+void SONBuilder::visit(IfStmt *e) {
     e->cond->accept(*this);
     auto Cond = sea.alloc<IfN>(curr_block, right_val);
     auto then_branch = sea.alloc<IfProjN>(Cond, true);
@@ -198,7 +205,6 @@ void C0::SONBuilder::visit(C0::IfStmt *e) {
         curr_block = then_block;
 
         e->trueBranch->accept(*this);
-        vector<UseE> then_waiting;
         if (waiting.empty()) {
             waiting.push_back(curr_block);
         }
@@ -206,12 +212,13 @@ void C0::SONBuilder::visit(C0::IfStmt *e) {
             has_return = false;
             waiting.clear();
         }
+        vector<UseE> then_waiting;
         std::swap(then_waiting, waiting);
 
 
         auto else_block = sea.alloc<RegionN>(else_branch);
-        addContext(then_block);
-        sealBlock(then_block);
+        addContext(else_block);
+        sealBlock(else_block);
         curr_block = else_block;
 
         e->falseBranch.value()->accept(*this);
@@ -246,7 +253,7 @@ void C0::SONBuilder::visit(C0::IfStmt *e) {
     }
 }
 
-void C0::SONBuilder::visit(C0::BlockStmt *e) {
+void SONBuilder::visit(BlockStmt *e) {
     for (auto &stmt: e->stmts) {
 
         if (has_return) {
@@ -259,13 +266,14 @@ void C0::SONBuilder::visit(C0::BlockStmt *e) {
             addContext(block);
             sealBlock(block);
             waiting.clear();
+            curr_block = block;
         }
         stmt->accept(*this);
     }
 }
 
 
-void C0::SONBuilder::visit(C0::RetStmt *e) {
+void SONBuilder::visit(RetStmt *e) {
     UseE ret = nullptr;
     if (e->ret.has_value()) {
         e->ret.value()->accept(*this);
@@ -296,7 +304,7 @@ void C0::SONBuilder::visit(C0::RetStmt *e) {
 }
 
 
-void C0::SONBuilder::visit(C0::DoStmt *e) {
+void SONBuilder::visit(DoStmt *e) {
 
     auto body_block = sea.alloc<RegionN>(curr_block);
     addContext(body_block);
@@ -319,6 +327,7 @@ void C0::SONBuilder::visit(C0::DoStmt *e) {
         waiting.push_back(else_branch);
     } else {
         auto cond_block = sea.alloc<RegionN>(waiting);
+        addContext(cond_block);
         waiting.clear();
         e->cond->accept(*this);
         auto ifnode = sea.alloc<IfN>(curr_block, right_val);
@@ -330,7 +339,7 @@ void C0::SONBuilder::visit(C0::DoStmt *e) {
     }
 }
 
-void C0::SONBuilder::visit(C0::ForStmt *e) {
+void SONBuilder::visit(ForStmt *e) {
     if (e->start.has_value()) {
         e->start.value()->accept(*this);
     }
@@ -341,7 +350,11 @@ void C0::SONBuilder::visit(C0::ForStmt *e) {
     curr_block = cond_block;
     e->cond->accept(*this);
 
-    auto body_block = sea.alloc<RegionN>(curr_block);
+    auto ifn = sea.alloc<IfN>(curr_block, right_val);
+    auto true_branch = sea.alloc<IfProjN>(ifn, true);
+    auto false_branch = sea.alloc<IfProjN>(ifn, false);
+
+    auto body_block = sea.alloc<RegionN>(true_branch);
     addContext(body_block);
     sealBlock(body_block);
 
@@ -365,10 +378,10 @@ void C0::SONBuilder::visit(C0::ForStmt *e) {
     }
 
     sealBlock(cond_block);
-    waiting.push_back(cond_block);
+    waiting.push_back(false_branch);
 }
 
-void C0::SONBuilder::visit(C0::PrintStmt *e) {
+void SONBuilder::visit(PrintStmt *e) {
     if (!e->expr.has_value()) {
         auto world = getWorld();
         auto new_world = sea.alloc<PrintIntN>(curr_block, e->str, world);
@@ -384,12 +397,12 @@ void C0::SONBuilder::visit(C0::PrintStmt *e) {
     if (e->expr.value()->outType(curr_table).is(BaseTypeK::Char)) {
         new_world = sea.alloc<PrintCharN>(curr_block, e->str, world, arg);
     } else {
-        new_world = sea.alloc<PrintCharN>(curr_block, e->str, world, arg);
+        new_world = sea.alloc<PrintIntN>(curr_block, e->str, world, arg);
     }
     setWorld(new_world);
 }
 
-void C0::SONBuilder::visit(C0::ReadStmt *e) {
+void SONBuilder::visit(ReadStmt *e) {
     for (auto &var: e->vars) {
         UseE world = getWorld();
         auto curr_id = var->varID;
@@ -418,26 +431,27 @@ void C0::SONBuilder::visit(C0::ReadStmt *e) {
                 v = sea.alloc<ReadIntN>(curr_block, world);
             }
             setWorld(sea.alloc<ProjWorldN>(curr_block, v));
+            v = sea.alloc<ProjRetN>(curr_block, v);
         }
         writeVar(curr_id, v);
     }
 }
 
-void C0::SONBuilder::visit(C0::FuncAST *e) {
+void SONBuilder::visit(FuncAST *e) {
     curr_table = e->table;
     /// build first block and finish init variable
 
     start_block = sea.alloc<RegionN>();
+    addContext(start_block);
+    sealBlock(start_block);
     curr_block = start_block;
-    addContext(curr_block);
-    sealBlock(curr_block);
 
 
     UseE undef = sea.alloc<UndefN>(curr_block);
     auto *context = curr_block->Payload<BuildContext>();
     int n = 0;
     for (auto &arg: e->args) {
-        auto var_id = curr_table->findVarByName(e->name).value();
+        auto var_id = curr_table->findVarByName(arg.second).value();
         auto proj = sea.alloc<ProjArgN>(curr_block, n);
         context->value.insert(pair(var_id, proj));
         ++n;
@@ -449,6 +463,8 @@ void C0::SONBuilder::visit(C0::FuncAST *e) {
         if (term.isConst() || context->value.count(id)) continue; // skip function argument and const
         context->value.insert(pair(id, undef));
     }
+
+    setWorld(sea.alloc<InitWorldN>(curr_block));
 
     last_block = sea.alloc<RegionN>();
     addContext(last_block);
@@ -487,6 +503,7 @@ void C0::SONBuilder::visit(C0::FuncAST *e) {
             addContext(block);
             sealBlock(block);
             waiting.clear();
+            curr_block = block;
         }
         stmt->accept(*this);
     }
@@ -530,13 +547,16 @@ void SONBuilder::setWorld(UseE world) {
     writeVar(0, world);
 }
 
+UseE SONBuilder::getWorld() {
+    return readVar(0);
+}
 
 UseE SONBuilder::readVar(VarID id) {
     return readVar(id, curr_block);
 }
 
 UseE SONBuilder::readVar(VarID id, RegionN *region) {
-    auto *context = curr_block->Payload<BuildContext>();
+    auto *context = region->Payload<BuildContext>();
 
     if (id == 0 && context->world != nullptr) {
         return context->world;
@@ -550,7 +570,7 @@ UseE SONBuilder::readVar(VarID id, RegionN *region) {
 }
 
 UseE SONBuilder::readVarRecursive(VarID id, RegionN *region) {
-    auto *context = curr_block->Payload<BuildContext>();
+    auto *context = region->Payload<BuildContext>();
     UseE val = nullptr;
 
     if (!context->is_sealed) {
@@ -574,7 +594,7 @@ UseE SONBuilder::readVarRecursive(VarID id, RegionN *region) {
 }
 
 UseE SONBuilder::addPhiOperands(VarID id, PhiN *phi) {
-    for (auto pred: phi[0]) {
+    for (auto pred: *phi->at(0)) {
         while (pred->getOp() != Nop::Region) {
             pred = pred->at(0);
         }
@@ -585,12 +605,9 @@ UseE SONBuilder::addPhiOperands(VarID id, PhiN *phi) {
     return phi;
 }
 
-UseE SONBuilder::getWorld() {
-    return readVar(0);
-}
 
 void SONBuilder::sealBlock(RegionN *block) {
-    auto *context = curr_block->Payload<BuildContext>();
+    auto *context = block->Payload<BuildContext>();
     for (auto &p: context->incomplete_phi) {
         addPhiOperands(p.first, p.second);
     }
