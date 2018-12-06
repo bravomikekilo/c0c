@@ -13,6 +13,8 @@ void buildDefUse(StopN *stop);
 
 void cleanDefUse(StopN *stop);
 
+void mergeLinearRegion(StopN *stop);
+
 
 }
 

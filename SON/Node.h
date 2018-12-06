@@ -65,6 +65,7 @@ class Node;
 
 using UseE = Node *;
 
+class Sea;
 
 class Node {
 public:
@@ -167,6 +168,7 @@ public:
         uses = new UseE[num_uses];
     }
 
+
     virtual string str() {
         return fmt::format("#{} {}", size(), nopToStr(op));
     };
@@ -174,6 +176,14 @@ public:
     virtual ~Node() {
         delete[] uses;
     }
+
+    // methods for optimization
+
+    virtual void SCCPType() {};
+    virtual void SCCPType(void *projection) {}
+    virtual UseE SCCPIdentity(Sea &sea)  {};
+    virtual UseE SCCPIdentity(Sea &sea, void *projection) {}
+
 };
 
 

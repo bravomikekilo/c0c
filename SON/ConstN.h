@@ -16,6 +16,10 @@ public:
     explicit ConstN(Nop op, UseE region): Node(op, 1) {
         uses[0] = region;
     }
+
+    UseE SCCPIdentity(Sea &sea) override {
+        return this;
+    }
 };
 
 class ConstIntN: public ConstN {
@@ -29,6 +33,11 @@ public:
         auto base = Node::str();
         return fmt::format("{}:{}", base, v);
     }
+
+    // methods for optimization
+
+    // methods for SCCP
+    void SCCPType() override;
 
 };
 
@@ -44,6 +53,9 @@ public:
         auto base = Node::str();
         return fmt::format("{}:{}", base, v);
     }
+
+    // methods for SCCP
+    void SCCPType() override;
 
 };
 
@@ -78,6 +90,7 @@ public:
     }
 
 };
+
 
 }
 

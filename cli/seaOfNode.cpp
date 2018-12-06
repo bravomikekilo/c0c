@@ -60,6 +60,7 @@ int main(int argc, char **argv) {
         C0::buildDefUse(stop);
 
         phi_cleaner.optimize(stop);
+        C0::mergeLinearRegion(stop);
 
 
 

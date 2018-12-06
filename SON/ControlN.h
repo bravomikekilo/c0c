@@ -54,9 +54,11 @@ public:
 
 
 class StopN : public Node {
+private:
+    bool has_ret;
 public:
     explicit StopN(UseE last_block, const vector<UseE> &globals, UseE world)
-        :Node(Nop::Stop,  globals.size() + 2) {
+        :Node(Nop::Stop,  globals.size() + 2), has_ret(false) {
         int j = 2;
         uses[0] = last_block;
         uses[1] = world;
@@ -68,7 +70,7 @@ public:
     }
 
     explicit StopN(UseE last_block, const vector<UseE> &globals, UseE world, UseE ret)
-        :Node(Nop::Stop, globals.size() + 3) {
+        :Node(Nop::Stop, globals.size() + 3), has_ret(false) {
         int j = 3;
         uses[0] = last_block;
         uses[1] = ret;
