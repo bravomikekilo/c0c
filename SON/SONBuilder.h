@@ -38,7 +38,7 @@ private:
 
     vector<BuildContext *> contexts;
 
-    unordered_map<VarID, int> global_offsets;
+    const unordered_map<VarID, int> &global_offsets;
     unordered_map<VarID, int> array_offsets;
 
     unordered_set<VarID> global_ids;
@@ -86,7 +86,8 @@ private:
 
 
 public:
-    SONBuilder(Sea &sea) : sea(sea) {}
+    SONBuilder(Sea &sea, const unordered_map<VarID, int> &global_offset)
+        : sea(sea), global_offsets(global_offset) {}
 
     pair<RegionN *, StopN *> getResult() {
         return pair(start_block, stop);

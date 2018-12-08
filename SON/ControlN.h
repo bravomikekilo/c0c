@@ -82,6 +82,10 @@ public:
 
     }
 
+    string str() override {
+        return fmt::format("{}:{}", Node::str(), has_ret ? "ret" : "void") ;
+    }
+
 };
 
 

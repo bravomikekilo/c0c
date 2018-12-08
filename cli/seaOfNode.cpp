@@ -41,10 +41,12 @@ int main(int argc, char **argv) {
 
     std::cout << "------------Sea Of Node------------" << std::endl;
 
+    auto global_offsets = C0::getGlobalOffset(sym->getVarInScope());
+
     C0::Sea ocean(4096);
     C0::PhiCleaner phi_cleaner(ocean);
     for(auto &func: funcs) {
-        C0::SONBuilder builder(ocean);
+        C0::SONBuilder builder(ocean, global_offsets);
         func->accept(builder);
 
         auto [start, stop] = builder.getResult();

@@ -17,11 +17,12 @@ void buildDefUse(StopN *stop) {
     stack<UseE> s;
     s.push(stop);
 
-    while(!s.empty()) {
-        auto node = s.top(); s.pop();
+    while (!s.empty()) {
+        auto node = s.top();
+        s.pop();
 
-        if(visited.count(node)) {
-            for(auto use: *node) {
+        if (visited.count(node)) {
+            for (auto use: *node) {
                 use->addUse(node);
             }
             continue;
@@ -32,8 +33,8 @@ void buildDefUse(StopN *stop) {
         node->initDefUse();
         s.push(node);
 
-        for(auto use: *node) {
-            if(visited.count(use)) continue;
+        for (auto use: *node) {
+            if (visited.count(use)) continue;
             s.push(use);
         }
 
@@ -48,17 +49,18 @@ void cleanDefUse(StopN *stop) {
     stack<UseE> s;
     s.push(stop);
 
-    while(!s.empty()) {
-        auto node = s.top(); s.pop();
+    while (!s.empty()) {
+        auto node = s.top();
+        s.pop();
 
-        if(visited.count(node)) continue;
+        if (visited.count(node)) continue;
 
         visited.insert(node);
 
         node->clearDefUse();
 
-        for(auto use: *node) {
-            if(visited.count(use)) continue;
+        for (auto use: *node) {
+            if (visited.count(use)) continue;
             s.push(use);
         }
     }
@@ -72,36 +74,65 @@ void mergeLinearRegion(StopN *stop) {
     stack<UseE> s;
     s.push(stop);
 
-    while(!s.empty()) {
-        auto node = s.top(); s.pop();
+    while (!s.empty()) {
+        auto node = s.top();
+        s.pop();
 
-        if(visited.count(node)) continue;
+        if (visited.count(node)) continue;
 
         visited.insert(node);
 
-        if(node->getOp() == Nop::Region) {
-            for(auto use: *node) {
-                if(!visited.count(use)) {
+        if (node->getOp() == Nop::Region) {
+            for (auto use: *node) {
+                if (!visited.count(use)) {
                     s.push(use);
                 }
             }
 
-            if(node->size() == 1) {
+            if (node->size() == 1) {
                 auto pred = node->at(0);
-                if(pred->getOp() == Nop::Region && pred->getUser().size() == 1) {
-                    for(auto user : node->getUser()) {
-                        user->replace(node, pred);
+                if (pred->getOp() == Nop::Region) {
+                    auto pred_user = pred->getUser();
+                    auto region_cnt = 0;
+                    for (auto user : pred_user) {
+                        if (user->getOp() == Nop::Region) {
+                            ++region_cnt;
+                        }
                     }
-                    pred->getUser().clear();
-                    pred->addUse(node->getUser());
+
+                    if (region_cnt == 1) {
+                        for (auto user : pred_user) {
+                            user->replace(node, pred);
+                        }
+                        pred->getUser().clear();
+                        pred->addUse(node->getUser());
+                    }
+
                 }
             }
 
         } else {
-            if(!visited.count(node->at(0))) s.push(node->at(0));
+            if (!visited.count(node->at(0))) s.push(node->at(0));
         }
     }
 
+}
+
+unordered_map<VarID, int> getGlobalOffset(const vector<SymTerm> &terms) {
+    unordered_map<VarID, int> ret;
+    int offset = 0;
+    for (auto term : terms) {
+        if (term.isConst()) {
+            continue;
+        }
+        auto sz = term.type.sizeOf();
+        if (sz % 4 != 0) {
+            sz += 4 - sz % 4;
+        }
+        ret.insert(pair(term.id, offset));
+        offset += sz;
+    }
+    return ret;
 }
 
 }

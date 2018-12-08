@@ -62,15 +62,18 @@ public:
 class GlobalAddrN: public ConstN {
 private:
     int offset;
+    string label;
+
 public:
-    explicit GlobalAddrN(UseE region, int offset)
-        :ConstN(Nop::GlobalAddr, region), offset(offset) {}
+    explicit GlobalAddrN(UseE region, int offset, string name)
+        :ConstN(Nop::GlobalAddr, region),
+         offset(offset), label(std::move(name)) {}
 
     int getV() {return offset;}
 
     string str() override {
         auto base = Node::str();
-        return fmt::format("{}:{}", base, offset);
+        return fmt::format("{}:{}#{}", base, label, offset);
     }
 
 };
@@ -78,6 +81,7 @@ public:
 class StackSlotN: public ConstN {
 private:
     int offset;
+
 public:
     explicit StackSlotN(UseE region, int offset)
         :ConstN(Nop::StackSlot, region), offset(offset) {}

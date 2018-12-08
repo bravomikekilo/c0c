@@ -28,7 +28,10 @@ void SONBuilder::visit(C0::VarExpr *e) {
 void SONBuilder::visitLeftVar(VarExpr *e) {
     const auto *term = curr_table->findVarByID(e->varID);
     if (term->isGlobal) {
-        auto pointer = sea.alloc<GlobalAddrN>(curr_block, global_offsets[e->varID]);
+        auto pointer = sea.alloc<GlobalAddrN>(
+                curr_block, global_offsets.at(e->varID),
+                term->name
+        );
         auto var = readVar(e->varID);
         UseE set = nullptr;
         if (term->type.getBase().is(BaseTypeK::Char)) {
@@ -44,22 +47,26 @@ void SONBuilder::visitLeftVar(VarExpr *e) {
 
 void SONBuilder::visitRightVar(VarExpr *e) {
     const auto *term = curr_table->findVarByID(e->varID);
-    if(term->isConst()) {
-        if(term->type.is(BaseTypeK::Char)) {
-            right_val = sea.alloc<ConstCharN>(curr_block, (char)(term->val.value()));
+    if (term->isConst()) {
+        if (term->type.is(BaseTypeK::Char)) {
+            right_val = sea.alloc<ConstCharN>(curr_block, (char) (term->val.value()));
         } else {
             right_val = sea.alloc<ConstIntN>(curr_block, term->val.value());
         }
         return;
     }
     if (term->isGlobal) {
-        addr = sea.alloc<GlobalAddrN>(curr_block, global_offsets[e->varID]);
+        addr = sea.alloc<GlobalAddrN>(
+                curr_block, global_offsets.at(e->varID),
+                term->name
+        );
     } else if (term->type.isArray()) {
         addr = sea.alloc<StackSlotN>(curr_block, array_offsets[e->varID]);
     }
     right_val = readVar(e->varID);
     var_id = e->varID;
 }
+
 
 void SONBuilder::visit(C0::OpExpr *e) {
     if (on_right) {
@@ -108,7 +115,7 @@ void SONBuilder::visitRightOp(OpExpr *e) {
             } else {
                 auto expand = sea.alloc<MulN>(curr_block, rhs, sea.alloc<ConstIntN>(curr_block, 4));
                 auto pointer = sea.alloc<AddN>(curr_block, base, expand);
-                right_val = sea.alloc<GetCharN>(curr_block, pointer, lhs);
+                right_val = sea.alloc<GetIntN>(curr_block, pointer, lhs);
             }
             break;
         }
@@ -412,7 +419,10 @@ void SONBuilder::visit(ReadStmt *e) {
         UseE v = nullptr;
         if (term->isGlobal) {
             auto global = readVar(curr_id);
-            auto pointer = sea.alloc<GlobalAddrN>(curr_block, global_offsets[curr_id]);
+            auto pointer = sea.alloc<GlobalAddrN>(
+                    curr_block, global_offsets.at(curr_id),
+                    term->name
+            );
             if (term->type.is(BaseTypeK::Char)) {
                 v = sea.alloc<ReadCharN>(curr_block, world);
                 setWorld(sea.alloc<ProjWorldN>(curr_block, v));
@@ -440,6 +450,7 @@ void SONBuilder::visit(ReadStmt *e) {
 void SONBuilder::visit(FuncAST *e) {
     curr_table = e->table;
     /// build first block and finish init variable
+    buildTable();
 
     start_block = sea.alloc<RegionN>();
     addContext(start_block);
@@ -482,7 +493,8 @@ void SONBuilder::visit(FuncAST *e) {
 
         auto id = term.id;
         global_ids.insert(id);
-        auto init = sea.alloc<InitGlobalN>(curr_block);
+        last_global_phi.insert(pair(id, phi));
+        auto init = sea.alloc<InitGlobalN>(start_block, term.name);
         context->value.insert(pair(id, init));
     }
     if (!e->retType.is(BaseTypeK::Void)) {
@@ -612,6 +624,24 @@ void SONBuilder::sealBlock(RegionN *block) {
         addPhiOperands(p.first, p.second);
     }
     context->is_sealed = true;
+}
+
+
+void SONBuilder::buildTable() {
+    array_offsets.clear();
+    const auto &terms = curr_table->getVarInScope();
+    int offset = 36;
+    for (const auto &term: terms) {
+        if (term.type.isArray()) {
+            auto sz = term.type.sizeOf();
+            if (sz % 4 != 0) {
+                sz += 4 - sz % 4;
+            }
+
+            array_offsets.insert(pair(term.id, offset));
+            offset += sz;
+        }
+    }
 }
 
 void C0::SONBuilder::visit(C0::EmptyStmt *e) {}

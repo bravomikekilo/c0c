@@ -26,7 +26,7 @@ public:
         }
 
         for (int i = 0; i < globals.size(); ++i, ++j) {
-            uses[j] = args[i];
+            uses[j] = globals[i];
         }
 
     }
@@ -47,6 +47,10 @@ public:
             : Node(Nop::Call, 2), func_name(std::move(func)) {
         uses[0] = region;
         uses[1] = world;
+    }
+
+    string str() override {
+        return fmt::format("{}:{}", Node::str(), func_name);
     }
 
 };

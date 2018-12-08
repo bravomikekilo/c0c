@@ -26,9 +26,16 @@ public:
 };
 
 class InitGlobalN : public Node {
+private:
+    string name;
 public:
-    explicit InitGlobalN(UseE start_region): Node(Nop::InitGlobal, 1) {
+    explicit InitGlobalN(UseE start_region, string name)
+        : Node(Nop::InitGlobal, 1), name(std::move(name)) {
         uses[0] = start_region;
+    }
+
+    string str() override {
+        return fmt::format("{}:{}", Node::str(), name);
     }
 };
 
@@ -44,6 +51,11 @@ public:
     }
 
     size_t getN() {return n;}
+
+    string str() override {
+        return Node::str() + ":" + std::to_string(n);
+    }
+
 
 };
 
