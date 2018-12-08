@@ -297,8 +297,6 @@ void main()
     printf("Start testing if & while:");
     testIfWhile();
     printf("************************************************");
-    // printf("Start testing switch:");
-    // testSwitch();
     printf("************************************************");
     printf("Start testing parameter:");
     testPara();

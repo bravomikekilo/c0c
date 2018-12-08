@@ -156,21 +156,15 @@ void test_global_const(){
     x = y + const_a;
     if(x == 194) judge = judge +1;
 
-    switch(const_1){
-        case 1:{
-                judge = judge + 1;
-        }
-    default:;
+
+    if(const_1 == 1) {
+        judge = judge + 1;
     }
 
-    switch(const_1){
-        case 0:{
-                judge = judge + 1;
-        }
-        default:{
-                ;
-        }
+    if(const_1 == 0) {
+        judge = judge + 1;
     }
+
 
     x=0;
     while(x<const_2){
@@ -249,7 +243,7 @@ void test_expression()
     if(a==0)    judge = judge + 1;
     a = -a;
     if(a==0)    judge = judge + 1;
-    a = +c;
+    a = 0+c;
     if(a==97)    judge = judge + 1;
     a = -c;
     if(a==-97)    judge = judge + 1;
@@ -293,22 +287,17 @@ void test_while()
 
     b=0;
     while(b<=2){
-        switch(b){
-              case 0:{
-                  judge = judge + 1;
-              }
-              case 1:{
-                  judge = judge + 1;
-              }
-              default:{
-                  judge = judge + 1;
-              }
+
+        if(b) {
+            judge = judge + 1;
         }
+
         b = b+1;
     }
 
     b = 0;
     a = 0;
+
     while(a<=2){
         b = 0;
         while(b<=2){

@@ -174,6 +174,24 @@ void CFGConverter::visit(CondAST *e) {
 
 }
 
+
+void CFGConverter::visit(WhileStmt *e) {
+    e->cond->accept(*this);
+    auto *main_branch = &(curr_block->insts.back().jmp);
+    auto cond_block = curr_block;
+    auto body_block = builder.create();
+    *main_branch = body_block;
+
+    curr_block = body_block;
+    e->body->accept(*this);
+    if(!hasWaiting()) {
+        addWaiting(&body_block->next);
+    }
+    cleanWaiting(cond_block);
+    addWaiting(&cond_block->next);
+}
+
+
 void CFGConverter::visit(IfStmt *e) {
     e->cond->accept(*this); // generate condition instruction
     auto *main_branch = &(curr_block->insts.back().jmp);
@@ -359,40 +377,6 @@ void CFGConverter::visit(RetStmt *e) {
     }
 }
 
-/*
-void CFGConverter::visit(PrintExpr *e) {
-
-    int str_id = e->str.value_or(-1);
-
-    if(!e->expr.has_value()) {
-        curr_block->insts.emplace_back(str_id, QuadVal());
-        return;
-    } else {
-        auto temp_reg = peekTempReg();
-        auto exp_val = QuadVal(temp_reg);
-        e->expr.value()->accept(*this);
-        if(expr_is_leaf) {
-            expr_is_leaf = false;
-            exp_val = leaf_val;
-        } else {
-            curr_block->insts.back().dst = exp_val;
-        }
-        curr_block->insts.emplace_back(str_id, exp_val);
-    }
-
-}
-
-void CFGConverter::visit(ReadExpr *e) {
-
-    vector<QuadVal> arg;
-    for(const auto &var : e->vars) {
-        arg.emplace_back(var->varID, false);
-    }
-
-    curr_block->insts.emplace_back(std::move(arg));
-
-}
-*/
 
 void CFGConverter::visit(PrintStmt *e) {
 
@@ -425,6 +409,7 @@ void CFGConverter::visit(ReadStmt *e) {
     curr_block->insts.emplace_back(std::move(arg));
 
 }
+
 
 }
 

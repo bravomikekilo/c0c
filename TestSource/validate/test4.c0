@@ -35,7 +35,7 @@ void permutations(int a)
     }
 }
 
-int get_max_num_1()            
+int get_max_num_1()
 {                            
     return (MAX_STACK_NUM);    
 }
@@ -53,7 +53,7 @@ int get_2()
     return (m);
 }
 
-int compute(int a, int b, char op)    
+int compute(int a, int b, char op)
 {
     if (op == '+')
         return ((a + 2 * b) - b);
@@ -99,13 +99,13 @@ void preparation()
 {                    
     const int zero = 0;
     int n;
-    n = compute(get_max_num_1, 1, '+');
+    n = compute(get_max_num_1(), 1, '+');
     while (n)
     {
         n = -1 + n;
         used[n] = zero;
     }
-    for (n = compute(MAX_CHOOSE_NUM, get_2, '+') - 1; n; n = n - 1)
+    for (n = compute(MAX_CHOOSE_NUM, get_2(), '+') - 1; n; n = n - 1)
         stack[n - 1] = zero;
     return;
 }
@@ -128,7 +128,7 @@ void main()
     char op;
     char sy,nor_sy;
 
-    test_for;
+    test_for();
     scanf(a, b, op);
     n = compute(a, b, op);
     printf(n);
@@ -142,13 +142,13 @@ void main()
     printf("You can choose m numbers permutations from n numbers ? ", sy);
     printf("___________");
 
-    nor_sy = get_permutations_sy;
+    nor_sy = get_permutations_sy();
 
     if ((sy) != (nor_sy))
         printf("error input: 0 < m <= n <= 10");
     else
     {
-        preparation;
+        preparation();
         permutations(0);
     }
 } 

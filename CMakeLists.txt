@@ -11,7 +11,6 @@ endif(MSVC)
 file(GLOB CLI_FILE "cli/*_cli.*")
 file(GLOB AST_FILE "AST/*")
 file(GLOB QUAD_FILE "Quad/*")
-file(GLOB SSA_FILE "SSA/*")
 file(GLOB ASM_FILE "Asm/*")
 file(GLOB NAIVE_GEN_FILE "NaiveGen/*")
 file(GLOB SON_FILE "SON/*")
@@ -22,7 +21,6 @@ include_directories(${C0_SOURCE_DIR})
 add_executable(Lexer Lexer.cpp Lex.cpp util.cpp cli/lexer.cpp AST/ExprAST.cpp)
 
 add_executable(Quad cli/quad.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp ${AST_FILE} ${QUAD_FILE} AST/ExprAST.cpp TypeChecker.cpp TypeChecker.h)
-add_executable(SSA cli/ssa.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp ${AST_FILE} ${SSA_FILE} AST/ExprAST.cpp TypeChecker.cpp TypeChecker.h SSA/NodeBase.h SSA/SSABuilder.cpp SSA/SSABuilder.h SSA/NodeArena.cpp SSA/NodeArena.h SSA/CmpValue.h SSA/ConstValue.h SSA/ArithValue.h SSA/MemValue.h SSA/CallValue.h SSA/MiscValue.h SSA/SSADrawer.cpp SSA/SSADrawer.h SSA/DefUse.h)
 
 add_executable(Grammar Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp ${AST_FILE} SymTable.cpp cli/grammar.cpp AST/ExprAST.cpp TypeChecker.cpp TypeChecker.h)
 

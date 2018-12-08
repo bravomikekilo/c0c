@@ -1,0 +1,22 @@
+// const int a = 10, b = 15;
+// const char add = '+', sub = '-', mul = '*', div= '/';
+// int BS,bs;
+// int array[10];
+// char array_ch[10];
+
+void ptans(int in1, int in2, char op)
+{
+    int out;
+
+    if (op == '+')
+        out = in1 + in2;
+    if (op == '-')
+        out = in1 - in2;
+    if (op == '*')
+        out = in1 * in2;
+    if (op == '/')
+        out = in1 / in2;
+    printf(" ", out);
+
+}
+

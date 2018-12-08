@@ -39,7 +39,7 @@ public:
 
     void visit(BlockStmt *e) override;
 
-    void visit(WhileStmt *e) override {}
+    void visit(WhileStmt *e) override;
 
     void visit(SwitchStmt *e) override {}
 

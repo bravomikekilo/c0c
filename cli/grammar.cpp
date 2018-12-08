@@ -16,10 +16,17 @@ using namespace std;
 
 
 int main(int argc, char **argv) {
-    cout << "please input path to source file:";
+
     string source_name;
-    cin >> source_name;
-    
+
+    if(argc == 2) {
+        source_name = std::string(argv[1]);
+    } else {
+        cout << "please input path to source file:";
+        cin >> source_name;
+    }
+
+
     string source = C0::getFileContents(source_name.c_str());
 
     auto parser = C0::Parser::fromStr(source);
@@ -31,7 +38,7 @@ int main(int argc, char **argv) {
 
     // std::cout << C0::ASTDrawer::dot(*func) << std::endl;
     std::cout << "----------other output------------" << std::endl;
-    if (parser.getError().size() > 0) {
+    if (!parser.getError().empty()) {
         std::cout << "syntax error" << std::endl;
     }
     for(const auto& err: parser.getError()) {
@@ -48,7 +55,7 @@ int main(int argc, char **argv) {
         sym->addFunc(func);
         C0::TypeChecker checker;
         func->accept(checker);
-        if (checker.getErrors().size() > 0) {
+        if (!checker.getErrors().empty()) {
             std::cout << "sementic error in function " << func->name << std::endl;
             for (const auto &err : checker.getErrors()) {
                 std::cout << err << std::endl;

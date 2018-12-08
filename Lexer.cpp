@@ -54,7 +54,7 @@ Lex Lexer::parseChar() {
     }
     char ch = static_cast<char>(c);
     stream.get();
-    if(ch == '+' || ch == '-' || ch == '_' || isdigit(ch) || isalpha(ch)) {
+    if(ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '_' || isdigit(ch) || isalpha(ch)) {
         invalid_char = false;
     }
 

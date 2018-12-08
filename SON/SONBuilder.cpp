@@ -199,6 +199,9 @@ void SONBuilder::visit(ExprStmt *e) {
     e->exp->accept(*this);
 }
 
+
+
+
 void SONBuilder::visit(IfStmt *e) {
     e->cond->accept(*this);
     auto Cond = sea.alloc<IfN>(curr_block, right_val);
@@ -308,6 +311,41 @@ void SONBuilder::visit(RetStmt *e) {
     }
 
     has_return = true;
+}
+
+
+/// useless, wait for extension
+void C0::SONBuilder::visit(C0::WhileStmt *e) {
+
+    auto cond_block = sea.alloc<RegionN>(curr_block);
+    addContext(cond_block);
+    curr_block = cond_block;
+
+    e->cond->accept(*this);
+    auto ifnode = sea.alloc<IfN>(curr_block, right_val);
+
+    auto then_branch = sea.alloc<IfProjN>(ifnode, true);
+    auto else_branch = sea.alloc<IfProjN>(ifnode, false);
+
+    auto body_block = sea.alloc<RegionN>(then_branch);
+    addContext(body_block);
+    sealBlock(body_block);
+
+    curr_block = body_block;
+    e->body->accept(*this);
+
+    if(waiting.empty()) {
+        waiting.push_back(curr_block);
+    }
+
+    for(auto wait: waiting) {
+        cond_block->push_back(wait);
+    }
+
+    sealBlock(cond_block);
+
+    waiting.clear();
+    waiting.push_back(else_branch);
 }
 
 
@@ -646,8 +684,6 @@ void SONBuilder::buildTable() {
 
 void C0::SONBuilder::visit(C0::EmptyStmt *e) {}
 
-/// useless, wait for extension
-void C0::SONBuilder::visit(C0::WhileStmt *e) {}
 
 void C0::SONBuilder::visit(C0::CaseStmt *e) {}
 

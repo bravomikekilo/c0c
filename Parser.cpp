@@ -188,6 +188,9 @@ unique_ptr<StmtAST> Parser::parseStmt() {
     const auto &head = lexer.peek();
     if (head.is(Keyword::IF)) {
         return parseIf();
+    } else if (head.is(Keyword::WHILE)){
+        auto parsed = parseWhile();
+        return parsed;
     } else if (head.is(Keyword::DO)) {
         auto parsed = parseDo();
         return parsed;
@@ -670,6 +673,7 @@ shared_ptr<FuncAST> Parser::parseFunc() {
 shared_ptr<FuncAST> Parser::parseFunc(Type ret, string func_name) {
 
     expect(Sep::LPar, "missing ( in function");
+    auto prev_table = curr_table;
     curr_table = make_shared<SymTable>(curr_table);
 
     vector<pair<Type, string>> args;
@@ -729,7 +733,10 @@ shared_ptr<FuncAST> Parser::parseFunc(Type ret, string func_name) {
 
     lexer.next();
 
-    return make_shared<FuncAST>(curr_table, func_name, ret, std::move(args), std::move(stmts));
+
+    auto r = make_shared<FuncAST>(curr_table, func_name, ret, std::move(args), std::move(stmts));
+    curr_table = prev_table;
+    return r;
 }
 
 unique_ptr<StmtAST> Parser::parseRead() {

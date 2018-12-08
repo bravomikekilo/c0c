@@ -75,7 +75,7 @@ void calltest2(){
 }
 
 int calltest1(){
-    calltest2;
+    calltest2();
     var2=50;
     return (0);
 }
@@ -116,6 +116,6 @@ void main(){
 
     printf("! #$%&'()*+,-./0123456789:;<=>?@ABCXYZabcxyz[\]^_{|}~");
 
-    printf(chartest);
-    calltest1;
+    printf(chartest());
+    calltest1();
 }

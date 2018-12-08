@@ -1,6 +1,6 @@
 const int A1 = -10, B1 = 5;
 const char C1 = '8', D1 = '-', D2 = 'A';
-int i,j,k, intarray[10];
+int i,j, k, intarray[10];
 char op, chararray[11]; 
 
 int add(int a1, int b, int c, int d, char k){
@@ -27,8 +27,8 @@ int fib(int n){
 
 void testexpr(){
     printf("test expr\n");
-    intarray[0] = add(A1*B1,A1/B1,B1/A1,(D1),D2);
-    intarray[1] = 1+2+2*(3+C1/(2*(add(1,return_3,intarray[0],-('A'),'A')-40-k)));
+    intarray[0] = add(A1*B1,A1/B1,B1/A1,(0 + D1),D2);
+    intarray[1] = 1+2+2*(3+C1/(2*(add(1,return_3(),intarray[0],-('A'),'A')-40-k)));
     intarray[2] = fib(k);
     j = 0;
     do{
@@ -95,7 +95,7 @@ void main(){
         }
     }
 
-    tem = get;
+    tem = get();
     if((tem) != ('_')){
         printf("print string and expr, got char: ",tem);
     } 
