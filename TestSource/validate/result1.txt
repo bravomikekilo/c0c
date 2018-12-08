@@ -1,0 +1,31 @@
+==========================Example 1================================
+> input:
+    e 1 2 3
+> output:
+    Three integers
+    -193
+
+==========================Example 2================================
+> input:
+    r 3
+> output:
+    Full permutation, please input a number(<100)
+    Finished!
+
+
+==========================Example 3================================
+> input:
+    n
+> output:
+
+==========================Example 4================================
+> input:
+    v 2
+> output:
+    b
+
+==========================Example 5================================
+> input:
+    w
+> output:
+    Please input e/r/n/v/t instead of w
