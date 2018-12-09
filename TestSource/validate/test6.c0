@@ -21,15 +21,17 @@ int fib(int n){
     }else
     if(n)
         return (fib(n-1) + fib(n-2));
-    else 
+    else
         return (1);
 }
 
 void testexpr(){
+    int result;
     printf("test expr\n");
     intarray[0] = add(A1*B1,A1/B1,B1/A1,(0 + D1),D2);
     intarray[1] = 1+2+2*(3+C1/(2*(add(1,return_3(),intarray[0],-('A'),'A')-40-k)));
     intarray[2] = fib(k);
+
     j = 0;
     do{
         printf(intarray[j]);
@@ -94,6 +96,8 @@ void main(){
             else k = k + 7;
         }
     }
+
+    printf("k:", k);
 
     tem = get();
     if((tem) != ('_')){

@@ -568,7 +568,7 @@ void CFGSerializer::handleCall(Quad &q, const RegTable *table) {
                     make_unique<SpReg>(),
                     arg_offset
             );
-            return;
+            continue;
         }
 
         if (table->count(arg)) {
@@ -692,7 +692,8 @@ void CFGSerializer::loadGlobalArrayAddr(const string &name, unique_ptr<Reg> &&re
 }
 
 void CFGSerializer::putValTo(const QuadVal &val, unique_ptr<Reg> reg, const RegTable *table) {
-    if (val.val == 0) return;
+    if (val.val == 0 && !val.isConst) return;
+
     auto val_const = val.constVal(*sym_table);
     if (val_const.has_value()) {
         list.pushInst<LiInst>(
