@@ -144,11 +144,11 @@ string Quad::toString(shared_ptr<SymTable> table) const {
 
 }
 
-optional<int> QuadVal::constVal(const SymTable & table) const {
-    if (isConst) return val;
+optional<int> QuadVal::constVal(const SymTable &table) const {
+    if (isConst) return {val};
     const auto *term = table.findVarByID(val);
     if (term != nullptr && term->isConst()) {
-        return term->val.value();
+        return {term->val.value()};
     }
     
     return {};

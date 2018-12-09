@@ -151,7 +151,7 @@ void testReturn() {
 }
 
 void testAssignAndExp() {
-   const int const_int_1 = 1, const_int_2 = -1, const_int_3 = 0;
+    const int const_int_1 = 1, const_int_2 = -1, const_int_3 = 0;
     const char const_char_1 = 'a', const_char_2 = 'A', const_char_3 = 'b';
 
     int int_temp_1, int_temp_2, int_array[2], int_temp_3;

@@ -736,6 +736,7 @@ shared_ptr<FuncAST> Parser::parseFunc(Type ret, string func_name) {
 
     auto r = make_shared<FuncAST>(curr_table, func_name, ret, std::move(args), std::move(stmts));
     curr_table = prev_table;
+    curr_table->addFunc(r);
     return r;
 }
 

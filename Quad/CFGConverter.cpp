@@ -171,7 +171,7 @@ void CFGConverter::visit(CondAST *e) {
     }
     auto cond = convertCmp(e->cp);
     curr_block->insts.emplace_back(cond, lhs_reg, rhs_reg, nullptr);
-
+    freeAllTempReg();
 }
 
 

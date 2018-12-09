@@ -56,12 +56,17 @@ protected:
     unique_ptr<Reg> lhs;
     unique_ptr<Reg> rhs;
     virtual string cond() const = 0;
+    virtual string invert() const = 0;
 public:
     BranchInst(unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs, string label)
         :lhs(std::move(lhs)), rhs(std::move(rhs)), label(std::move(label)) {} 
 
     string toString() override {
-        return fmt::format("{} {}, {}, {}", cond(), lhs->toString(), rhs->toString(), label);
+        if(lhs->getKind() == Reg::Kind::Int) {
+            return fmt::format("{} {}, {}, {}", invert(), rhs->toString(), lhs->toString(), label);
+        } else {
+            return fmt::format("{} {}, {}, {}", cond(), lhs->toString(), rhs->toString(), label);
+        }
     }
 };
 
@@ -72,6 +77,10 @@ public:
 
     string cond() const override {
         return "beq";
+    }
+
+    string invert() const override {
+        return "bne";
     }
 
     BeqInst(unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs, string label)
@@ -86,6 +95,10 @@ public:
 
     string cond() const override {
         return "bne";
+    }
+
+    string invert() const override {
+        return "beq";
     }
 
     BneInst(unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs, string label)
@@ -103,6 +116,10 @@ public:
         return "bgt";
     }
 
+    string invert() const override {
+        return "blt";
+    }
+
     BgtInst(unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs, string label)
         :BranchInst(std::move(lhs), std::move(rhs), std::move(label)) {}
 
@@ -115,6 +132,10 @@ public:
 
     string cond() const override {
         return "bge";
+    }
+
+    string invert() const override {
+        return "ble";
     }
 
     BgeInst(unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs, string label)
@@ -131,6 +152,10 @@ public:
         return "blt";
     }
 
+    string invert() const override {
+        return "bgt";
+    }
+
     BltInst(unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs, string label)
         :BranchInst(std::move(lhs), std::move(rhs), std::move(label)) {}
 
@@ -143,6 +168,10 @@ public:
 
     string cond() const override {
         return "ble";
+    }
+
+    string invert() const override {
+        return "bge";
     }
 
     BleInst(unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs, string label)

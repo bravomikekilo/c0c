@@ -28,6 +28,10 @@ public:
         :table(std::move(table)), name(std::move(name)) , retType(std::move(ret))
         , args(std::move(args)), stmts(std::move(stmts)) {}
 
+   FuncAST(string name, Type ret, vector<pair<Type, string>> &args)
+        :table(nullptr), name(std::move(name)) , retType(std::move(ret))
+        , args(std::move(args)), stmts(vector<unique_ptr<StmtAST>>()) {}
+
     void accept(ASTVisitor &visitor) override {
         visitor.visit(this);
     }
