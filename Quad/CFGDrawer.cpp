@@ -35,12 +35,13 @@ void CFGDrawer::draw(C0::BasicBlock *start, shared_ptr<SymTable> table) {
             edges.emplace_back(b->getBid(), b->next->getBid(), "next");
         }
 
-        auto other = b->insts.back().jmp;
-        if (other) {
-            s.push(other);
-            edges.emplace_back(b->getBid(), other->getBid(), "jmp");
+        if (!b->insts.empty()) {
+            auto other = b->insts.back().jmp;
+            if (other) {
+                s.push(other);
+                edges.emplace_back(b->getBid(), other->getBid(), "jmp");
+            }
         }
-
 
     }
 }
@@ -49,37 +50,37 @@ string CFGDrawer::getDot(const string &graph_name) const {
     std::stringstream stream;
     stream << fmt::format("digraph {} {{\ngraph[\nrankdir = \"TD\"\n];\n", graph_name);
 
-    for(const auto& p: cfg) {
+    for (const auto &p: cfg) {
         stream << "\"node" << std::to_string(p.first) << "\"[\n";
         std::stringstream labelstream;
         labelstream << "<header> block:" << std::to_string(p.first);
 
-        const auto& insts = p.second;
+        const auto &insts = p.second;
 
         auto sz = insts.size();
         int count = 1;
 
-        for(const auto& inst: insts) {
-            if(count >= sz) break;
+        for (const auto &inst: insts) {
+            if (count >= sz) break;
             labelstream << "|" << inst;
             ++count;
         }
 
         labelstream << "| <tail> "; // << insts.back();
-        if(!insts.empty()) labelstream << insts.back();
+        if (!insts.empty()) labelstream << insts.back();
 
 
-        stream << "label = \"{"  << labelstream.str() << "}\"\n";
+        stream << "label = \"{" << labelstream.str() << "}\"\n";
 
 
         stream << "shape=\"record\"\n];\n";
     }
 
-    for(const auto &p: edges) {
+    for (const auto &p: edges) {
         stream << "\"node" << std::to_string(std::get<0>(p))
-            << "\":tail -> "
-            << "\"node" << std::to_string(std::get<1>(p))
-            << "\":header[\n";
+               << "\":tail -> "
+               << "\"node" << std::to_string(std::get<1>(p))
+               << "\":header[\n";
         stream << "label=\"" << std::get<2>(p) << "\"\n];" << std::endl;
     }
 

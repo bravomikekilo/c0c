@@ -176,6 +176,11 @@ void CFGConverter::visit(CondAST *e) {
 
 
 void CFGConverter::visit(WhileStmt *e) {
+    if(!curr_block->insts.empty()) {
+        auto head_block = builder.create();
+        curr_block->next = head_block;
+        curr_block = head_block;
+    }
     e->cond->accept(*this);
     auto *main_branch = &(curr_block->insts.back().jmp);
     auto cond_block = curr_block;
@@ -185,7 +190,7 @@ void CFGConverter::visit(WhileStmt *e) {
     curr_block = body_block;
     e->body->accept(*this);
     if(!hasWaiting()) {
-        addWaiting(&body_block->next);
+        addWaiting(&curr_block->next);
     }
     cleanWaiting(cond_block);
     addWaiting(&cond_block->next);
@@ -203,10 +208,11 @@ void CFGConverter::visit(IfStmt *e) {
         curr_block = true_head_block;
         e->trueBranch->accept(*this);
         vector<BasicBlock **> true_waiting;
-        // addWaiting(&curr_block->next);
+
         if(!hasWaiting()) {
             addWaiting(&curr_block->next);
         }
+
         std::swap(true_waiting, wait_for_next_block);
 
         auto false_head_block = builder.create();
@@ -214,7 +220,7 @@ void CFGConverter::visit(IfStmt *e) {
 
         curr_block = false_head_block;
         e->falseBranch.value()->accept(*this);
-        // addWaiting(&curr_block->next);
+
         if(!hasWaiting()) {
             addWaiting(&curr_block->next);
         }
@@ -225,10 +231,10 @@ void CFGConverter::visit(IfStmt *e) {
         curr_block = builder.create();
         *main_branch = curr_block;
         e->trueBranch->accept(*this);
+
         if(!hasWaiting()) {
             addWaiting(&curr_block->next);
         }
-        // addWaiting(&curr_block->next);
 
         addWaiting(&head_block->next);
     }
