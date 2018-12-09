@@ -22,7 +22,7 @@ class BasicBlock;
 
 enum class QuadOp {
     Add, Sub, Mul, Div,
-    Copy, Call, Ret, Read, Print, GetInt, GetChar,
+    Copy, Call, Ret, Read, PrintInt, PrintChar, GetInt, GetChar,
     SetInt, SetChar, B,
     Beq, Bne, Bgt, Bge, Blt, Ble
 };
@@ -83,8 +83,9 @@ struct Quad {
 
     }
 
-    Quad(int str_id, QuadVal exp)
-        :op(QuadOp::Print), jmp(nullptr), call_ext(nullptr), src0(exp) {
+    Quad(int str_id, QuadVal exp, bool is_char=false)
+        :op(is_char ? QuadOp::PrintChar : QuadOp::PrintInt),
+         jmp(nullptr), call_ext(nullptr), src0(exp) {
         this->str_id = str_id;
     }
 

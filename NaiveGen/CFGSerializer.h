@@ -17,6 +17,7 @@ namespace C0 {
 
 class CFGSerializer : public BfsCFGWalker {
 private:
+    const bool verbose;
     InstList &list;
     shared_ptr<SymTable> sym_table;
     shared_ptr<FuncAST> curr_func;
@@ -59,14 +60,15 @@ private:
     void issueRet();
 
     bool evalCond(QuadOp op, int lhs, int rhs);
+    int evalArith(QuadOp op, int lhs, int rhs);
 
     bool restored = true;
 protected:
     void visit(BasicBlock *block) override ;
 public:
 
-    explicit CFGSerializer(InstList &list, const unordered_map<string, int>& offsets)
-    : list(list), func_offset(offsets) { }
+    explicit CFGSerializer(InstList &list, const unordered_map<string, int>& offsets, bool verbose=false)
+    : list(list), func_offset(offsets), verbose(verbose) { }
 
     void serialize(shared_ptr<FuncAST> func, BasicBlock *start, shared_ptr<frameTable> frame);
 

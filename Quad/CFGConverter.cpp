@@ -19,7 +19,7 @@ void CFGConverter::visit(CharExpr *e) {
 }
 
 void CFGConverter::visit(VarExpr *e) {
-    if(on_left_side) {
+    if (on_left_side) {
         left_is_var = true;
         left_var = QuadVal(e->varID, false);
         // auto result_reg = QuadVal(e->varID, false);
@@ -37,7 +37,7 @@ void CFGConverter::visit(OpExpr *e) {
     switch (op) {
         case Op::Ind:
             qop = (e->lhs->outType(curr_table).getBase().is(BaseTypeK::Char)) ?
-                    QuadOp::GetChar : QuadOp::GetInt;
+                  QuadOp::GetChar : QuadOp::GetInt;
             // qop = QuadOp::GetInt; // TODO: get array type
             break;
         case Op::Add:
@@ -54,16 +54,16 @@ void CFGConverter::visit(OpExpr *e) {
             break;
     }
 
-    if(on_left_side) {
+    if (on_left_side) {
 
-        if(qop == QuadOp::GetInt) qop = QuadOp::SetInt;
-        if(qop == QuadOp::GetChar) qop = QuadOp::SetChar;
+        if (qop == QuadOp::GetInt) qop = QuadOp::SetInt;
+        if (qop == QuadOp::GetChar) qop = QuadOp::SetChar;
 
         on_left_side = false;
         auto temp_reg = peekTempReg();
         auto i = QuadVal(temp_reg);
         e->rhs->accept(*this);
-        if(expr_is_leaf) {
+        if (expr_is_leaf) {
             expr_is_leaf = false;
             i = leaf_val;
         } else {
@@ -176,7 +176,7 @@ void CFGConverter::visit(CondAST *e) {
 
 
 void CFGConverter::visit(WhileStmt *e) {
-    if(!curr_block->insts.empty()) {
+    if (!curr_block->insts.empty()) {
         auto head_block = builder.create();
         curr_block->next = head_block;
         curr_block = head_block;
@@ -189,7 +189,7 @@ void CFGConverter::visit(WhileStmt *e) {
 
     curr_block = body_block;
     e->body->accept(*this);
-    if(!hasWaiting()) {
+    if (!hasWaiting()) {
         addWaiting(&curr_block->next);
     }
     cleanWaiting(cond_block);
@@ -209,7 +209,7 @@ void CFGConverter::visit(IfStmt *e) {
         e->trueBranch->accept(*this);
         vector<BasicBlock **> true_waiting;
 
-        if(!hasWaiting()) {
+        if (!hasWaiting()) {
             addWaiting(&curr_block->next);
         }
 
@@ -221,7 +221,7 @@ void CFGConverter::visit(IfStmt *e) {
         curr_block = false_head_block;
         e->falseBranch.value()->accept(*this);
 
-        if(!hasWaiting()) {
+        if (!hasWaiting()) {
             addWaiting(&curr_block->next);
         }
         wait_for_next_block.insert(wait_for_next_block.end(), true_waiting.begin(), true_waiting.end());
@@ -232,7 +232,7 @@ void CFGConverter::visit(IfStmt *e) {
         *main_branch = curr_block;
         e->trueBranch->accept(*this);
 
-        if(!hasWaiting()) {
+        if (!hasWaiting()) {
             addWaiting(&curr_block->next);
         }
 
@@ -254,7 +254,7 @@ void CFGConverter::visit(AsStmt *e) {
 
     bool right_is_leaf = false;
     e->rhs->accept(*this);
-    if(expr_is_leaf) {
+    if (expr_is_leaf) {
         right_is_leaf = true;
         expr_is_leaf = false;
         right_val = leaf_val;
@@ -267,9 +267,9 @@ void CFGConverter::visit(AsStmt *e) {
     e->lhs->accept(*this);
     on_left_side = false;
 
-    if(left_is_var) {
+    if (left_is_var) {
         left_is_var = false;
-        if(right_is_leaf) {
+        if (right_is_leaf) {
             curr_block->insts.emplace_back(left_var, QuadOp::Copy, right_val, QuadVal());
         } else {
             curr_block->insts.back().dst = left_var;
@@ -298,7 +298,7 @@ void CFGConverter::visit(FuncAST *e) {
         curr_block->insts.emplace_back();
         cleanWaiting(curr_block);
     } else {
-        if(curr_block->insts.back().op != QuadOp::Ret) {
+        if (curr_block->insts.back().op != QuadOp::Ret) {
             curr_block->insts.emplace_back();
         }
     }
@@ -321,9 +321,9 @@ void CFGConverter::visit(ForStmt *e) {
     curr_block = body_block;
     e->body->accept(*this);
 
-    if(e->after.has_value()) {
+    if (e->after.has_value()) {
         //if(curr_block == body_block) {
-        if(!hasWaiting()) {
+        if (!hasWaiting()) {
             e->after.value()->accept(*this);
             addWaiting(&curr_block->next);
         } else {
@@ -388,27 +388,29 @@ void CFGConverter::visit(PrintStmt *e) {
 
     int str_id = e->str.value_or(-1);
 
-    if(!e->expr.has_value()) {
-        curr_block->insts.emplace_back(str_id, QuadVal());
+    if (!e->expr.has_value()) {
+        curr_block->insts.emplace_back(str_id, QuadVal(), false);
         return;
     } else {
         auto temp_reg = peekTempReg();
         auto exp_val = QuadVal(temp_reg);
         e->expr.value()->accept(*this);
-        if(expr_is_leaf) {
+        if (expr_is_leaf) {
             expr_is_leaf = false;
             exp_val = leaf_val;
         } else {
             curr_block->insts.back().dst = exp_val;
         }
-        curr_block->insts.emplace_back(str_id, exp_val);
+        curr_block->insts.emplace_back(str_id, exp_val,
+                                       e->expr.value()->outType(curr_table).is(BaseTypeK::Char)
+        );
     }
     freeAllTempReg();
 }
 
 void CFGConverter::visit(ReadStmt *e) {
     vector<QuadVal> arg;
-    for(const auto &var : e->vars) {
+    for (const auto &var : e->vars) {
         arg.emplace_back(var->varID, false);
     }
 

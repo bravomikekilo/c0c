@@ -15,6 +15,7 @@ using RegTable = unordered_map<QuadVal, unique_ptr<Reg>>;
 
 class RegAlloc : public BfsCFGWalker {
 private:
+    const bool verbose;
     shared_ptr<FuncAST> curr_func;
     vector<RegTable *> tables;
     const size_t saved_num; // num of available saved register
@@ -26,7 +27,8 @@ protected:
 
 public:
 
-    explicit RegAlloc(size_t saved_num): saved_num(saved_num) {}
+    explicit RegAlloc(size_t saved_num, bool verbose=false)
+        : saved_num(saved_num), verbose(verbose) {}
 
     vector<RegTable *> alloc(BasicBlock *start, shared_ptr<FuncAST> func) {
         curr_func = func;

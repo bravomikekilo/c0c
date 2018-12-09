@@ -14,7 +14,7 @@ string InstList::genDirectiveByType(Type t) const
     if (t.isArray()) {
         return ".space " + std::to_string(t.sizeOf());
     } else {
-        return ".word";
+        return ".space 4";
     }
 }
 string InstList::toString() {

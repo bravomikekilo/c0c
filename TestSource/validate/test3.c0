@@ -86,8 +86,9 @@ void main()
     int in1, in2;
     int sum;
     scanf(j);
-        scanf(BS,bs);  
-    
+    scanf(BS,bs);
+
+
     if (j != 4)
         printf(" j != 4 ");
     sum = fac3(j + 1);
@@ -99,7 +100,7 @@ void main()
     in1 = a + BS;
     in2 = b + bs;
     fac2(in1, in2);
-    
+
     temp = -fac4()+sum*2-bs*(BS+div-'+');
     printf(" this is temp:", temp);
 }

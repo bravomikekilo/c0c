@@ -20,7 +20,11 @@ public:
 
     // Inherited via Inst
     virtual string toString() override {
-        return fmt::format("{} {}, {}, {}", op(), dst->toString(), lhs->toString(), rhs->toString());
+        if(lhs->getKind() == Reg::Kind::Int) {
+            return fmt::format("{} {}, {}, {}", op(), dst->toString(), rhs->toString(), lhs->toString());
+        } else {
+            return fmt::format("{} {}, {}, {}", op(), dst->toString(), lhs->toString(), rhs->toString());
+        }
     }
 };
 
@@ -49,6 +53,14 @@ protected:
 public:
     SubI(unique_ptr<Reg>&& dst, unique_ptr<Reg>&& lhs, unique_ptr<Reg>&& rhs)
         :ArithInst(std::move(lhs), std::move(rhs), std::move(dst)) {}
+
+    string toString() override {
+         if(lhs->getKind() == Reg::Kind::Int) {
+            return fmt::format("{0} {1}, {2}, {3}\nneg {1}, {1}", op(), dst->toString(), rhs->toString(), lhs->toString());
+        } else {
+            return fmt::format("{} {}, {}, {}", op(), dst->toString(), lhs->toString(), rhs->toString());
+        }
+    }
 
 
 };

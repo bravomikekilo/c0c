@@ -86,8 +86,8 @@ void main()
     int in1, in2;
     int sum;
     scanf(j);
-        scanf(BS,bs);  
-    
+    scanf(BS, bs);
+
     if (j != 4)
         printf(" j != 4 ");
     sum = fac3(j + 1);
