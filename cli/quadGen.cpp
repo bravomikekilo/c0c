@@ -33,14 +33,18 @@ int main(int argc, char **argv) {
 
     if (argc < 2) return -1;
     bool only_asm = false;
+    bool escape_str = true;
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--asm") == 0) {
             only_asm = true;
         }
+
+        if (strcmp(argv[i], "--raw") == 0) {
+            escape_str = false;
+        }
     }
 
     std::string source = C0::getFileContents(argv[1]);
-    // std::cout << source << std::endl;
 
     auto parser = C0::Parser::fromStr(source);
 
@@ -93,7 +97,7 @@ int main(int argc, char **argv) {
         std::cout << "begin generate code" << std::endl;
     }
 
-    C0::InstList list;
+    C0::InstList list(escape_str);
     list.addGlobal(sym->getGlobalList());
     list.addString(sym->getStringList());
 

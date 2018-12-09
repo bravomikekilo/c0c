@@ -9,17 +9,23 @@ namespace C0 {
 
 using std::list;
 
+
 class InstList {
     
 private:
-    
+    const bool escape;
     vector<pair<string, Type>> global_section;
     vector<pair<int, string>> string_section;
     list<unique_ptr<Inst>> insts;
 
     string genDirectiveByType(Type t) const ;
 
+    string escapeStr(const string &str) const;
+
 public:
+
+    InstList(bool escape=false)
+        :escape(escape) {}
 
     string toString(); // generate whole assembly file
     
