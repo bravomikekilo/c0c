@@ -95,18 +95,21 @@ void mergeLinearRegion(StopN *stop) {
                     auto pred_user = pred->getUser();
                     auto region_cnt = 0;
                     for (auto user : pred_user) {
-                        if (user->getOp() == Nop::Region) {
+                        auto user_op = user->getOp();
+                        if (user_op == Nop::Region) {
                             ++region_cnt;
                         }
                     }
 
                     if (region_cnt == 1) {
-                        for (auto user : pred_user) {
+
+                        pred->addUse(node->getUser());
+
+                        for (auto user : node->getUser()) {
                             user->replace(node, pred);
                         }
-                        pred->getUser().clear();
-                        pred->addUse(node->getUser());
                     }
+
 
                 }
             }

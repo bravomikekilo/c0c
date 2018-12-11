@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
 
     std::cout << C0::ASTDrawer::drawProgram(funcs);
 
-    for(const auto& err: parser.getError()) {
+    for (const auto &err: parser.getError()) {
         std::cout << err << std::endl;
     }
 
@@ -45,25 +45,25 @@ int main(int argc, char **argv) {
 
     C0::Sea ocean(4096);
     C0::PhiCleaner phi_cleaner(ocean);
-    for(auto &func: funcs) {
+    for (auto &func: funcs) {
         C0::SONBuilder builder(ocean, global_offsets);
         func->accept(builder);
 
-        auto [start, stop] = builder.getResult();
-
-        C0::SONDrawer drawer;
-        drawer.draw(stop);
-
-        std::cout << "-------------before optimization------------" << std::endl;
-
-        std::cout << drawer.toDot(func->name) << std::endl;
+        auto[start, stop] = builder.getResult();
 
 
         C0::buildDefUse(stop);
 
         phi_cleaner.optimize(stop);
-        C0::mergeLinearRegion(stop);
 
+        C0::SONDrawer drawer;
+        drawer.draw(stop);
+
+        std::cout << "-------------before merge------------" << std::endl;
+
+        std::cout << drawer.toDot(func->name) << std::endl;
+
+        C0::mergeLinearRegion(stop);
 
 
         drawer.clear();
