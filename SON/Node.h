@@ -52,6 +52,7 @@ enum class Nop {
     ProjRet,
     ProjArg,
     ProjWorld,
+    ProjGlobal,
     InitWorld,
     InitGlobal,
     Phi,
@@ -66,6 +67,7 @@ class Node;
 using UseE = Node *;
 
 class Sea;
+class ProjN;
 
 class Node {
 public:
@@ -180,7 +182,7 @@ public:
     // methods for optimization
 
     virtual void SCCPType() {};
-    virtual void SCCPType(void *projection) {}
+    virtual void SCCPType(ProjN *n) {exit(-2);}
     virtual UseE SCCPIdentity(Sea &sea)  {};
     virtual UseE SCCPIdentity(Sea &sea, void *projection) {}
 

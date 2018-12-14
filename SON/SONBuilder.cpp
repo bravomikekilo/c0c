@@ -6,6 +6,7 @@
 #include "AST/AST.h"
 #include <utility>
 
+
 namespace C0 {
 
 
@@ -168,9 +169,20 @@ void SONBuilder::visit(C0::CallExpr *e) {
     vector<UseE> globals;
     vector<UseE> args;
 
+    int index = 0;
+    auto undef = sea.alloc<UndefN>();
     for (auto &arg: e->args) {
+        ++index;
         arg->accept(*this);
-        args.push_back(right_val);
+
+        if(index <= 4) {
+            args.push_back(right_val);
+        } else {
+            auto scalar = right_val;
+            auto pointer = sea.alloc<StackSlotN>(curr_block, -4 * index);
+            auto set = sea.alloc<SetIntN>(curr_block, pointer, undef, scalar);
+            args.push_back(set);
+        }
     }
 
     for (auto id: global_ids) {
@@ -183,6 +195,12 @@ void SONBuilder::visit(C0::CallExpr *e) {
     auto new_world = sea.alloc<ProjWorldN>(curr_block, call);
 
     setWorld(new_world);
+
+    for (auto id: global_ids) {
+        auto n_global = sea.alloc<ProjGlobalN>(curr_block, call, id);
+        writeVar(id, n_global);
+    }
+
     right_val = sea.alloc<ProjRetN>(curr_block, call);
 }
 

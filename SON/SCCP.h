@@ -16,12 +16,15 @@ class SCCPOptimizer {
 public:
     struct T {
         enum {Top, Constant, Bottom} height;
+        enum {Pointer, Label, Value} type;
         int constant;
 
         bool operator==(const T &other) const {
             if(height != other.height) return false;
             if(height == Constant) {
-                return constant == other.constant;
+                return type == other.type && constant == other.constant;
+            } else {
+                return true;
             }
         }
 

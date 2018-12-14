@@ -8,9 +8,15 @@
 #include "Node.h"
 #include "common.h"
 
+#include <list>
+
 namespace C0 {
 
 class RegionN : public Node {
+private:
+
+    std::list<UseE> _linear;
+
 public:
     explicit RegionN(const vector<UseE> &use) :Node(Nop::Region, use.size()) {
        for(int i = 0; i < num_uses; ++i) {
@@ -28,6 +34,12 @@ public:
         uses[0] = one;
         uses[1] = two;
     }
+
+    std::list<UseE> &getLinear() {
+        return _linear;
+    }
+
+    void Linearization();
 };
 
 class IfN : public Node {

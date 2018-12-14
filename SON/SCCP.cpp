@@ -5,7 +5,7 @@
 
 #include "SCCP.h"
 #include <stack>
-
+#include "Payload.h"
 using std::stack;
 
 namespace C0 {
@@ -24,7 +24,7 @@ void SCCPOptimizer::initialize(StopN *stop) {
         if(visited.count(node)) continue;
 
         visited.insert(node);
-        auto load = new T{T::Top, 0};
+        auto load = new T{T::Top, T::Value, 0};
         payloads.push_back(load);
         node->setPayload(load);
 
@@ -53,7 +53,6 @@ void SCCPOptimizer::opt(pair<RegionN*, StopN *> graph) {
     initialize(stop);
 
     // compute all lattice
-    start->Payload<T>()->height = T::Bottom;
 
     stack<UseE> worklist;
     worklist.push(start);

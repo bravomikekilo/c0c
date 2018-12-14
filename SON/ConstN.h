@@ -76,6 +76,8 @@ public:
         return fmt::format("{}:{}#{}", base, label, offset);
     }
 
+    void SCCPType() override;
+
 };
 
 class StackSlotN: public ConstN {
@@ -92,6 +94,8 @@ public:
         auto base = Node::str();
         return fmt::format("{}:{}", base, offset);
     }
+
+    void SCCPType() override;
 
 };
 

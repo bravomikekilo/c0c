@@ -9,22 +9,17 @@
 
 namespace C0 {
 
-class ProjWorldN : public Node {
-public:
-    ProjWorldN(UseE region, UseE up): Node(Nop::ProjWorld, 2) {
-        uses[0] = region;
-        uses[1] = up;
-    }
-};
-
+/// represent initial value of World
 class InitWorldN : public Node {
 public:
     explicit InitWorldN(UseE start_region): Node(Nop::InitWorld, 1) {
         uses[0] = start_region;
     }
 
+    void SCCPType() override;
 };
 
+/// represent initial value of a global, so it can't be a constant
 class InitGlobalN : public Node {
 private:
     string name;
@@ -39,7 +34,7 @@ public:
     }
 };
 
-
+/// represent initial value of a argument, so it can't be a constant
 class ProjArgN : public Node {
 
 private:
@@ -56,19 +51,11 @@ public:
         return Node::str() + ":" + std::to_string(n);
     }
 
+    void SCCPType() override;
 
 };
 
-class ProjRetN : public Node {
-
-public:
-    ProjRetN(UseE region, UseE up): Node(Nop::ProjRet, 2) {
-        uses[0] = region;
-        uses[1] = up;
-    }
-
-};
-
+/// phi function
 class PhiN : public Node {
 
 public:
@@ -97,6 +84,8 @@ class UndefN : public Node {
 public:
     explicit UndefN(UseE region) : Node(Nop::Undef, 0) { }
     explicit UndefN() : Node(Nop::Undef, 0) { }
+
+    void SCCPType() override;
 
 };
 

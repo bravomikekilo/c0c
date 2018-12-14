@@ -96,7 +96,8 @@ string StringTable::findStr(int id) {
 
 void FuncTable::insertFunc(shared_ptr<FuncAST> func) {
     auto name = func->name;
-    auto ast = make_shared<FuncAST>(func->name, func->retType, func->args);
+    auto args = func->args;
+    auto ast = make_shared<FuncAST>(func->name, func->retType, args);
     table.insert(pair(name, ast));
 }
 

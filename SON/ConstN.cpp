@@ -27,5 +27,23 @@ void ConstCharN::SCCPType() {
 }
 
 
+void GlobalAddrN::SCCPType() {
+    typedef SCCPOptimizer::T T;
+    auto type = this->Payload<T>();
+
+    type->height = T::Top;
+    type->type = T::Label;
+    type->constant = offset;
+}
+
+
+void StackSlotN::SCCPType() {
+    typedef SCCPOptimizer::T T;
+    auto type = this->Payload<T>();
+
+    type->height = T::Top;
+    type->type = T::Pointer;
+    type->constant = offset;
+}
 
 }

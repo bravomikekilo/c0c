@@ -17,27 +17,36 @@ public:
         uses[1] = lhs;
         uses[2] = rhs;
     }
+
 };
 
 
 class AddN: public ArithN {
 public:
     AddN(UseE region, UseE lhs, UseE rhs): ArithN(Nop::Add, region, lhs, rhs) {}
+
+    void SCCPType() override;
 };
 
 class SubN: public ArithN {
 public:
     SubN(UseE region, UseE lhs, UseE rhs): ArithN(Nop::Sub, region, lhs, rhs) {}
+
+    void SCCPType() override;
 };
 
 class MulN: public ArithN {
 public:
     MulN(UseE region, UseE lhs, UseE rhs): ArithN(Nop::Mul, region, lhs, rhs) {}
+
+    void SCCPType() override;
 };
 
 class DivN: public ArithN {
 public:
     DivN(UseE region, UseE lhs, UseE rhs): ArithN(Nop::Div, region, lhs, rhs) {}
+
+    void SCCPType() override;
 };
 
 

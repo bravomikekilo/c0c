@@ -68,6 +68,8 @@ string nopToStr(Nop op) {
             return "ProjArg";
         case Nop::ProjWorld:
             return "ProjWorld";
+        case Nop::ProjGlobal:
+            return "ProjGlobal";
         case Nop::InitWorld:
             return "InitWorld";
         case Nop::InitGlobal:
