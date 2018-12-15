@@ -48,13 +48,22 @@ global_{变量名称name}
 1. 算术节点,表示算术运算的结果
 2. 比较节点,表示比较结果
 3. Print节点,表示Print完成后的World
-4. Call节点,产生tuple(ret, world, global....)
+4. Call节点,产生tuple(ret, world, global...)
 5. Read节点,产生tuple(ret, world)
 6. Get节点,产生ret
 7. Set节点,产生global
+8. Region节点,表示控制流图中的一个基本块,产生一个control value
+8. if节点,表示控制流图中的一个跳转,产生一个control value的tuple, (true branch, false branch)
+8. ProjIf,取出tuple中的bool, field = 1表示为true branch, 0表示是false branch
 8. ProjWorld节点,取出tuple中的world, field = -1
 9. ProjRet节点,取出tuple中的ret, field = -2
 10. GlobalProj节点,取出global, field = varID
+
+tuple produce node
+1. call 
+2. read
+3. if
+
 
 
 节点设计

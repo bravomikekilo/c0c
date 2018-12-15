@@ -1,0 +1,16 @@
+
+int test() {
+    int x, t;
+    x = 1;
+
+    do {
+        if(x != 1) {
+            x = 2;
+        }
+
+        scanf(t);
+    } while(t);
+
+    return x;
+}
+

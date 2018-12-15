@@ -19,6 +19,9 @@ public:
         uses[3] = rhs;
     }
 
+    void SCCPType() override;
+
+
 };
 
 class SetIntN : public SetN {
@@ -41,6 +44,8 @@ public:
         uses[1] = pointer;
         uses[2] = value;
     }
+
+    void SCCPType() override;
 };
 
 class GetIntN: public GetN {

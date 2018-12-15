@@ -10,16 +10,13 @@
 namespace C0 {
 
 
-struct Payload {
-    enum Kind {
-        BuildContext,
-        SCCP
-    } kind;
+class NLoad {
+public:
     virtual string toStr() {
         return "";
     };
 
-    Payload(Kind kind): kind(kind) {}
+    virtual ~NLoad() = default;
 };
 
 

@@ -10,11 +10,14 @@
 #include "common.h"
 #include "AST/ASTVisitor.h"
 #include "SymTable.h"
+#include "NLoad.h"
 
 namespace C0 {
 
 
-struct BuildContext {
+class BuildContext : public NLoad {
+
+public:
     unordered_map<VarID, UseE> value;
     UseE world;
 
@@ -29,6 +32,12 @@ struct BuildContext {
             value[id] = val;
         }
     }
+
+    string toStr() override {
+        return "BuildContext";
+    }
+
+    ~BuildContext() override = default;
 };
 
 
@@ -36,7 +45,7 @@ class SONBuilder : public ASTVisitor {
 private:
     Sea &sea;
 
-    vector<BuildContext *> contexts;
+    vector<Node *> contexts;
 
     const unordered_map<VarID, int> &global_offsets;
     unordered_map<VarID, int> array_offsets;
@@ -95,8 +104,8 @@ public:
 
     ~SONBuilder() override {
         // free all allocated build context
-        for (const auto ptr: contexts) {
-            delete ptr;
+        for (auto region: contexts) {
+            region->freePayload();
         }
     }
 

@@ -8,6 +8,7 @@
 #include "common.h"
 #define FMT_HEADER_ONLY
 #include "fmt/format.h"
+#include "NLoad.h"
 
 namespace C0 {
 
@@ -74,7 +75,7 @@ public:
     using User = unordered_set<UseE>;
 
 private:
-    void *_payload = nullptr;
+    NLoad *_payload = nullptr;
     int visit_flag = 0;
 
 protected:
@@ -86,13 +87,19 @@ protected:
 
 public:
 
-    void setPayload(void *payload) {
+    void setPayload(NLoad *payload) {
+        delete _payload;
         _payload = payload;
+    }
+
+    void freePayload() {
+        delete _payload;
+        _payload = nullptr;
     }
 
     template<typename T>
     T *Payload() {
-        return (T *) _payload;
+        return (T *)_payload;
     }
 
     void clearDefUse() { user = nullptr; }
@@ -172,7 +179,11 @@ public:
 
 
     virtual string str() {
-        return fmt::format("#{} {}", size(), nopToStr(op));
+        if(_payload) {
+            return fmt::format("$:{2} #{0} {1} ", size(), nopToStr(op), _payload->toStr());
+        } else {
+            return fmt::format("#{} {}", size(), nopToStr(op));
+        }
     };
 
     virtual ~Node() {

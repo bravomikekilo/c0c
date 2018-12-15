@@ -53,6 +53,10 @@ public:
         return fmt::format("{}:{}", Node::str(), func_name);
     }
 
+    void SCCPType() override;
+
+    void SCCPType(ProjN *n) override;
+
 };
 
 
@@ -71,6 +75,8 @@ public:
         uses[1] = world;
         uses[2] = arg;
     }
+
+    void SCCPType() override;
 };
 
 class PrintIntN: public PrintN {
@@ -99,6 +105,10 @@ public:
         uses[0] = region;
         uses[1] = world;
     }
+
+    void SCCPType() override;
+
+    void SCCPType(ProjN *n) override;
 
 };
 

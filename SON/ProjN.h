@@ -14,23 +14,30 @@ namespace C0 {
 class ProjN : public Node {
 public:
     const int field;
-    ProjN(int n, Nop op, size_t num_uses):Node(op, num_uses), field(n) {}
+    UseE up;
+    ProjN(int n, UseE up, Nop op, size_t num_uses):Node(op, num_uses), field(n), up(up) {}
+
+    void SCCPType() override {
+        up->SCCPType(this);
+    }
+
+
 };
 
 /// project world from a Read node
-class ProjWorldN : public Node {
+class ProjWorldN : public ProjN {
 public:
-    ProjWorldN(UseE region, UseE up): Node(Nop::ProjWorld, 2) {
+    ProjWorldN(UseE region, UseE up): ProjN(-1, up, Nop::ProjWorld, 2) {
         uses[0] = region;
         uses[1] = up;
     }
 };
 
 /// project return value from Read node
-class ProjRetN : public Node {
+class ProjRetN : public ProjN {
 
 public:
-    ProjRetN(UseE region, UseE up): Node(Nop::ProjRet, 2) {
+    ProjRetN(UseE region, UseE up): ProjN(-1, up, Nop::ProjRet, 2) {
         uses[0] = region;
         uses[1] = up;
     }
@@ -40,16 +47,28 @@ public:
 };
 
 /// projection global value from call node
-class ProjGlobalN: public Node {
+class ProjGlobalN: public ProjN {
 private:
     VarID id;
 public:
     ProjGlobalN(UseE region, UseE up, VarID id)
-        : Node(Nop::ProjGlobal, 2), id(id) {
+        : ProjN(id, up, Nop::ProjGlobal, 2), id(id) {
         uses[0] = region;
         uses[1] = up;
     }
 
+};
+
+class IfProjN : public ProjN {
+
+public:
+    explicit IfProjN(UseE up, bool branch) :ProjN(branch ? 1 : 0, up, Nop::IfProj, 1) {
+        uses[0] = up;
+    }
+
+    string str() override {
+        return Node::str() + ":" + (field ? "true" : "false");
+    }
 };
 
 }

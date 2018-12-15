@@ -5,10 +5,35 @@
 
 #include "SCCP.h"
 #include <stack>
-#include "Payload.h"
+#include "NLoad.h"
+
+#define FMT_HEADER_ONLY
+
+#include "fmt/format.h"
+
+#include "SONDrawer.h"
+#include <iostream>
+#include <fstream>
+
 using std::stack;
 
 namespace C0 {
+
+string SCCPOptimizer::T::toStr() {
+    if (height == T::Top) {
+        return "Top";
+    } else if (height == T::Bottom) {
+        return "Bottom";
+    } else {
+        if (type == T::Pointer) {
+            return "P:" + std::to_string(constant);
+        } else if (type == T::Label) {
+            return "L:" + std::to_string(constant);
+        } else {
+            return "V:" + std::to_string(constant);
+        }
+    }
+};
 
 void SCCPOptimizer::initialize(StopN *stop) {
 
@@ -16,21 +41,21 @@ void SCCPOptimizer::initialize(StopN *stop) {
 
     stack<UseE> s;
     s.push(stop);
+    visited.insert(stop);
 
     // initialize all node with Top
-    while(!s.empty()) {
-        auto node = s.top(); s.pop();
+    while (!s.empty()) {
+        auto node = s.top();
+        s.pop();
 
-        if(visited.count(node)) continue;
-
-        visited.insert(node);
-        auto load = new T{T::Top, T::Value, 0};
-        payloads.push_back(load);
+        auto load = new T(T::Top, T::Value, 0);
+        payloads.push_back(node);
         node->setPayload(load);
 
-        for(auto use: *node) {
-            if(visited.count(use) == 0) {
+        for (auto use: *node) {
+            if (!visited.count(use)) {
                 s.push(use);
+                visited.insert(use);
             }
         }
 
@@ -40,13 +65,13 @@ void SCCPOptimizer::initialize(StopN *stop) {
 
 
 void SCCPOptimizer::freePayloads() {
-    for(auto *load: payloads) {
-        delete load;
+    for (auto node: payloads) {
+        node->freePayload();
     }
     payloads.clear();
 }
 
-void SCCPOptimizer::opt(pair<RegionN*, StopN *> graph) {
+void SCCPOptimizer::analysis(pair<RegionN *, StopN *> graph) {
     auto start = graph.first;
     auto stop = graph.second;
 
@@ -57,20 +82,39 @@ void SCCPOptimizer::opt(pair<RegionN*, StopN *> graph) {
     stack<UseE> worklist;
     worklist.push(start);
 
-    while(!worklist.empty()) {
-        auto head = worklist.top(); worklist.pop();
+    auto drawer = SONDrawer();
+    int index = 0;
+
+    while (!worklist.empty()) {
+
+        auto head = worklist.top();
+        worklist.pop();
         auto old = *head->Payload<T>();
         head->SCCPType();
-        if(old != *head->Payload<T>()) {
-            for(auto user: head->getUser()) {
+        if (old != *head->Payload<T>()) {
+
+            ++index;
+            drawer.draw(stop);
+            std::ofstream stream;
+            stream.open(fmt::format("sccp/{}_sccp.dot", index));
+            stream << drawer.toDot("test") << std::endl;
+            stream.close();
+            drawer.clear();
+
+            for (auto user: head->getUser()) {
                 worklist.push(user);
             }
         }
 
     }
 
+}
 
-    freePayloads();
+void SCCPOptimizer::transform(pair<RegionN *, StopN *> graph) {
+
+
+
+
 }
 
 }

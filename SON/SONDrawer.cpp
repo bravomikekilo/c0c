@@ -97,7 +97,7 @@ string SONDrawer::toDot(const string &graph_name) {
 
     std::stringstream stream;
 
-    string graph_header = fmt::format("digraph {} {{\nnode[shape=record]\nrankdir=\"BT\"\n", graph_name);
+    string graph_header = fmt::format("digraph {} {{\nnode[shape=box]\nrankdir=\"BT\"\n", graph_name);
 
     stream << graph_header << std::endl;
 

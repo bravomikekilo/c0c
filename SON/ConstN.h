@@ -73,7 +73,7 @@ public:
 
     string str() override {
         auto base = Node::str();
-        return fmt::format("{}:{}#{}", base, label, offset);
+        return fmt::format("{}:{}+{}", base, label, offset);
     }
 
     void SCCPType() override;

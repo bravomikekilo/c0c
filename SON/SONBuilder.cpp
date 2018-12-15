@@ -602,7 +602,7 @@ void SONBuilder::visit(FuncAST *e) {
 void SONBuilder::addContext(RegionN *region) {
     auto context = new BuildContext();
     region->setPayload(context);
-    contexts.push_back(context);
+    contexts.push_back(region);
 }
 
 

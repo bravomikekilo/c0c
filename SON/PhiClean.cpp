@@ -52,6 +52,10 @@ void PhiCleaner::optimize(StopN *stop) {
             new_node = undef;
         }
 
+        for(auto use: *phi) {
+            use->getUser().erase(phi);
+        }
+
         for (auto user: phi->getUser()) {
             if (user != phi) {
                 user->replace(phi, new_node);

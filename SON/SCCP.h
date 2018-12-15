@@ -6,6 +6,7 @@
 #define C0_OPT_H
 
 #include "SON.h"
+#include "NLoad.h"
 
 namespace C0 {
 
@@ -14,10 +15,16 @@ namespace C0 {
 class SCCPOptimizer {
 
 public:
-    struct T {
-        enum {Top, Constant, Bottom} height;
-        enum {Pointer, Label, Value} type;
+    class T : public NLoad {
+    public:
+        enum Height {Top, Constant, Bottom};
+        enum Height height;
+        enum CType {Pointer, Label, Value};
+        enum CType type;
         int constant;
+
+        T(Height h, CType t, int c)
+            :height(h), type(t), constant(c) {}
 
         bool operator==(const T &other) const {
             if(height != other.height) return false;
@@ -31,16 +38,19 @@ public:
         bool operator!=(const T &other) const {
             return !(*this == other);
         }
+
+        string toStr() override;
     };
 
 private:
-    vector<T*> payloads;
+    vector<Node *> payloads;
 
     void initialize(StopN *stop);
-    void freePayloads();
 
 public:
-    void opt(pair<RegionN *, StopN *> graph);
+    void analysis(pair<RegionN *, StopN *> graph);
+    void transform(pair<RegionN *, StopN *> graph);
+    void freePayloads();
 
     ~SCCPOptimizer() {
         freePayloads();

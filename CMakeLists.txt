@@ -27,5 +27,5 @@ add_executable(Grammar Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp ${AST_FILE
 
 add_executable(QuadGen cli/quadGen.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp ${AST_FILE} ${QUAD_FILE} ${ASM_FILE} ${NAIVE_GEN_FILE} TypeChecker.cpp)
 
-add_executable(SON cli/seaOfNode.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp TypeChecker.cpp ${SON_FILE} ${AST_FILE} ${ASM_MODULE} SON/Payload.h SON/ArithN.cpp SON/MiscN.cpp SON/ProjN.h)
+add_executable(SON cli/seaOfNode.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp TypeChecker.cpp ${SON_FILE} ${AST_FILE} ${ASM_MODULE})
 

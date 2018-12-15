@@ -32,6 +32,8 @@ public:
     string str() override {
         return fmt::format("{}:{}", Node::str(), name);
     }
+
+    void SCCPType() override;
 };
 
 /// represent initial value of a argument, so it can't be a constant
@@ -55,6 +57,7 @@ public:
 
 };
 
+
 /// phi function
 class PhiN : public Node {
 
@@ -77,7 +80,10 @@ public:
         uses[0] = region;
     }
 
+    void SCCPType() override;
+
 };
+
 
 class UndefN : public Node {
 

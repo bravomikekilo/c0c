@@ -40,6 +40,8 @@ public:
     }
 
     void Linearization();
+
+    void SCCPType() override;
 };
 
 class IfN : public Node {
@@ -48,20 +50,10 @@ public:
         uses[0] = up;
         uses[1] = predict;
     }
-};
 
-class IfProjN : public Node {
-private:
-    bool branch;
+    void SCCPType() override;
 
-public:
-    explicit IfProjN(UseE up, bool branch) :Node(Nop::IfProj, 1), branch(branch) {
-        uses[0] = up;
-    }
-
-    string str() override {
-        return Node::str() + ":" + (branch ? "true" : "false");
-    }
+    void SCCPType(ProjN *n) override;
 };
 
 
@@ -97,6 +89,8 @@ public:
     string str() override {
         return fmt::format("{}:{}", Node::str(), has_ret ? "ret" : "void") ;
     }
+
+    void SCCPType() override;
 
 };
 

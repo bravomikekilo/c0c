@@ -8,6 +8,7 @@
 #include "SON/Sea.h"
 #include "SON/SONBuilder.h"
 #include "SON/SONDrawer.h"
+#include "SON/SCCP.h"
 #include "SON/PhiClean.h"
 #include "AST/ASTDrawer.h"
 
@@ -46,11 +47,16 @@ int main(int argc, char **argv) {
     C0::Sea ocean(4096);
     C0::PhiCleaner phi_cleaner(ocean);
     for (auto &func: funcs) {
-        C0::SONBuilder builder(ocean, global_offsets);
-        func->accept(builder);
+        C0::RegionN *start;
+        C0::StopN *stop;
 
-        auto[start, stop] = builder.getResult();
-
+        {
+            C0::SONBuilder builder(ocean, global_offsets);
+            func->accept(builder);
+            auto graph = builder.getResult();
+            start = graph.first;
+            stop = graph.second;
+        }
 
         C0::buildDefUse(stop);
 
@@ -70,6 +76,16 @@ int main(int argc, char **argv) {
         drawer.draw(stop);
 
         std::cout << "-------------after optimization------------" << std::endl;
+
+        std::cout << drawer.toDot(func->name) << std::endl;
+
+        C0::SCCPOptimizer sccp;
+        sccp.analysis(std::pair(start, stop));
+
+        drawer.clear();
+        drawer.draw(stop);
+
+        std::cout << "-------------after sccp label--------------" << std::endl;
 
         std::cout << drawer.toDot(func->name) << std::endl;
 

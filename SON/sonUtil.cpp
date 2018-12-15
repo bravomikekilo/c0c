@@ -103,6 +103,8 @@ void mergeLinearRegion(StopN *stop) {
 
                     if (region_cnt == 1) {
 
+                        pred->getUser().erase(node);
+
                         pred->addUse(node->getUser());
 
                         for (auto user : node->getUser()) {
