@@ -42,9 +42,18 @@ void GlobalAddrN::SCCPType() {
     if (uses[0]->Payload<T>()->height == T::Bottom) {
         type->height = T::Constant;
         type->type = T::Label;
+        type->label = {label};
         type->constant = offset;
     } else {
         type->height = T::Top;
+    }
+}
+
+UseE GlobalAddrN::sameLabel(int offset, Sea &sea) {
+    if(offset == this->offset) {
+        return this;
+    } else {
+        return sea.alloc<GlobalAddrN>(uses[0], offset, label);
     }
 }
 
@@ -62,4 +71,12 @@ void StackSlotN::SCCPType() {
     }
 }
 
+UseE ConstN::SCCPIdentity(Sea &sea) {
+    typedef SCCPOptimizer::T T;
+    if(uses[0]->Payload<T>()->height == T::Top) {
+        return nullptr;
+    } else {
+        return this;
+    }
+}
 }

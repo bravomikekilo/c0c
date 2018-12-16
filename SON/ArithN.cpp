@@ -4,6 +4,8 @@
 
 #include "ArithN.h"
 #include "SCCP.h"
+#include "Sea.h"
+#include "ConstN.h"
 
 namespace C0 {
 
@@ -147,6 +149,31 @@ void DivN::SCCPType() {
 
     type->type = r_type->type;
     type->constant = l_type->constant / r_type->constant;
+}
+
+UseE ArithN::SCCPIdentity(Sea &sea) {
+    typedef SCCPOptimizer::T T;
+
+    auto type = Payload<T>();
+    if(type->height == T::Top) {
+        return nullptr;
+    }
+
+    if(type->height == T::Bottom) {
+        return this;
+    }
+
+    UseE ret = nullptr;
+
+    if(type->type == T::Value) {
+        ret = sea.alloc<ConstIntN>(uses[0], type->constant);
+    } else if(type->type == T::Pointer) {
+        ret = sea.alloc<StackSlotN>(uses[0], type->constant);
+    } else {
+        ret = sea.alloc<GlobalAddrN>(uses[0], type->constant, type->label.value());
+    }
+
+    return ret;
 }
 
 }

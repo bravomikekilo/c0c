@@ -6,7 +6,9 @@
 #define C0_NODE_H
 
 #include "common.h"
+
 #define FMT_HEADER_ONLY
+
 #include "fmt/format.h"
 #include "NLoad.h"
 
@@ -68,6 +70,7 @@ class Node;
 using UseE = Node *;
 
 class Sea;
+
 class ProjN;
 
 class Node {
@@ -99,7 +102,7 @@ public:
 
     template<typename T>
     T *Payload() {
-        return (T *)_payload;
+        return (T *) _payload;
     }
 
     void clearDefUse() { user = nullptr; }
@@ -107,19 +110,19 @@ public:
     void initDefUse() { user = make_unique<User>(); }
 
     void addUse(UseE use) {
-        if(user) {
+        if (user) {
             user->insert(use);
         }
     }
 
     void addUse(User &other) {
-        if(user) {
+        if (user) {
             user->insert(other.begin(), other.end());
         }
     }
 
     size_t getNumUse() {
-        if(user == nullptr) return 0;
+        if (user == nullptr) return 0;
         else return user->size();
     }
 
@@ -140,7 +143,7 @@ public:
         uses = arr;
     }
 
-    Nop getOp() {return op;}
+    Nop getOp() { return op; }
 
     UseE at(size_t index) {
         return uses[index];
@@ -163,8 +166,8 @@ public:
     const UseE *cend() { return uses + num_uses; }
 
     bool replace(UseE old, UseE n) {
-        for(auto &use: *this) {
-            if(use == old) {
+        for (auto &use: *this) {
+            if (use == old) {
                 use = n;
                 return true;
             }
@@ -179,7 +182,7 @@ public:
 
 
     virtual string str() {
-        if(_payload) {
+        if (_payload) {
             return fmt::format("$:{2} #{0} {1} ", size(), nopToStr(op), _payload->toStr());
         } else {
             return fmt::format("#{} {}", size(), nopToStr(op));
@@ -193,9 +196,12 @@ public:
     // methods for optimization
 
     virtual void SCCPType() {};
-    virtual void SCCPType(ProjN *n) {exit(-2);}
-    virtual UseE SCCPIdentity(Sea &sea)  {};
-    virtual UseE SCCPIdentity(Sea &sea, void *projection) {}
+
+    virtual void SCCPType(ProjN *n) { exit(-2); }
+
+    virtual UseE SCCPIdentity(Sea &sea);
+
+    virtual UseE SCCPIdentity(Sea &sea, ProjN *projection);
 
 };
 

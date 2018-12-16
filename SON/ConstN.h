@@ -8,6 +8,8 @@
 #include "Node.h"
 #define FMT_HEADER_ONLY
 #include "fmt/format.h"
+#include "SCCP.h"
+#include "Sea.h"
 
 namespace C0 {
 
@@ -17,9 +19,7 @@ public:
         uses[0] = region;
     }
 
-    UseE SCCPIdentity(Sea &sea) override {
-        return this;
-    }
+    UseE SCCPIdentity(Sea &sea) override;
 };
 
 class ConstIntN: public ConstN {
@@ -38,7 +38,6 @@ public:
 
     // methods for SCCP
     void SCCPType() override;
-
 };
 
 class ConstCharN: public ConstN {
@@ -77,6 +76,8 @@ public:
     }
 
     void SCCPType() override;
+
+    UseE sameLabel(int offset, Sea &sea);
 
 };
 

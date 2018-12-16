@@ -21,6 +21,9 @@ public:
         up->SCCPType(this);
     }
 
+    UseE SCCPIdentity(Sea &sea) override {
+        return up->SCCPIdentity(sea, this);
+    }
 
 };
 
@@ -42,7 +45,6 @@ public:
         uses[1] = up;
     }
 
-    void SCCPType() override;
 
 };
 
@@ -69,7 +71,9 @@ public:
     string str() override {
         return Node::str() + ":" + (field ? "true" : "false");
     }
+
 };
+
 
 }
 

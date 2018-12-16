@@ -6,6 +6,7 @@
 #include "SCCP.h"
 #include <stack>
 #include "NLoad.h"
+#include "SON.h"
 
 #define FMT_HEADER_ONLY
 
@@ -14,6 +15,8 @@
 #include "SONDrawer.h"
 #include <iostream>
 #include <fstream>
+#include "sonUtil.h"
+#include "PhiClean.h"
 
 using std::stack;
 
@@ -110,11 +113,69 @@ void SCCPOptimizer::analysis(pair<RegionN *, StopN *> graph) {
 
 }
 
-void SCCPOptimizer::transform(pair<RegionN *, StopN *> graph) {
+void SCCPOptimizer::transform(pair<RegionN *, StopN *> graph, Sea &sea) {
 
+    auto start = graph.first;
+    auto stop = graph.second;
 
+    unordered_set<UseE> visited;
+    stack<UseE> worklist;
+    worklist.push(stop);
 
+    visited.insert(stop);
 
+    while (!worklist.empty()) {
+
+        auto head = worklist.top();
+        worklist.pop();
+
+        auto id = head->SCCPIdentity(sea);
+
+        /*
+        auto &head_user = head->getUser();
+        for(auto iter = head_user.begin(); iter != head_user.end();) {
+            auto user = *iter;
+            auto user_t = user->Payload<T>();
+            if(user_t->height != T::Bottom) {
+                auto ori = iter++;
+                head_user.erase(ori);
+            } else {
+                ++iter;
+            }
+        }
+        */
+
+        if (id != head) {
+            std::cout << "replace" << std::endl;
+            for(auto user: head->getUser()) {
+                auto user_t = user->Payload<T>();
+                if(user_t->height != T::Top) {
+                    user->replace(head, id);
+                }
+            }
+            if (id != nullptr) {
+                for (auto use : *id) {
+                    if (!visited.count(use)) {
+                        visited.insert(use);
+                        worklist.push(use);
+                    }
+                }
+            }
+        } else {
+            for (auto use : *head) {
+                if (!visited.count(use)) {
+                    visited.insert(use);
+                    worklist.push(use);
+                }
+            }
+        }
+    }
+
+    cleanDefUse(stop);
+    buildDefUse(stop);
+
+    PhiCleaner cleaner(sea);
+    cleaner.optimize(stop);
+    mergeLinearRegion(stop);
 }
-
 }

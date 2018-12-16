@@ -20,6 +20,8 @@ public:
 
     virtual bool cmp(int lhs, int rhs) = 0;
     void SCCPType() override;
+
+    UseE SCCPIdentity(Sea &sea) override;
 };
 
 

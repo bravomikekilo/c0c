@@ -3,6 +3,8 @@
 //
 
 #include "Node.h"
+#include "ProjN.h"
+#include "SCCP.h"
 
 namespace C0 {
 
@@ -81,4 +83,23 @@ string nopToStr(Nop op) {
     }
 }
 
+UseE Node::SCCPIdentity(Sea &sea, ProjN *projection) {
+    typedef SCCPOptimizer::T T;
+    auto t = projection->Payload<T>();
+    if (t->height == T::Top) {
+        return nullptr;
+    } else {
+        return projection;
+    }
+}
+
+UseE Node::SCCPIdentity(Sea &sea) {
+    typedef SCCPOptimizer::T T;
+    auto t = this->Payload<T>();
+    if (t->height == T::Top) {
+        return nullptr;
+    } else {
+        return this;
+    }
+}
 }

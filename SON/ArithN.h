@@ -18,6 +18,11 @@ public:
         uses[2] = rhs;
     }
 
+    virtual int arith(int x, int y) = 0;
+
+    UseE SCCPIdentity(Sea &sea) override;
+
+
 };
 
 
@@ -26,6 +31,10 @@ public:
     AddN(UseE region, UseE lhs, UseE rhs): ArithN(Nop::Add, region, lhs, rhs) {}
 
     void SCCPType() override;
+
+    int arith(int x, int y) override {
+        return x + y;
+    }
 };
 
 class SubN: public ArithN {
@@ -33,6 +42,10 @@ public:
     SubN(UseE region, UseE lhs, UseE rhs): ArithN(Nop::Sub, region, lhs, rhs) {}
 
     void SCCPType() override;
+
+    int arith(int x, int y) override {
+        return x - y;
+    }
 };
 
 class MulN: public ArithN {
@@ -40,6 +53,9 @@ public:
     MulN(UseE region, UseE lhs, UseE rhs): ArithN(Nop::Mul, region, lhs, rhs) {}
 
     void SCCPType() override;
+    int arith(int x, int y) override {
+        return x * y;
+    }
 };
 
 class DivN: public ArithN {
@@ -47,6 +63,10 @@ public:
     DivN(UseE region, UseE lhs, UseE rhs): ArithN(Nop::Div, region, lhs, rhs) {}
 
     void SCCPType() override;
+
+    int arith(int x, int y) override {
+        return x / y;
+    }
 };
 
 

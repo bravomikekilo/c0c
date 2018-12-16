@@ -21,6 +21,8 @@ public:
 
     void SCCPType() override;
 
+    UseE SCCPIdentity(Sea &sea) override;
+
 
 };
 
@@ -46,6 +48,9 @@ public:
     }
 
     void SCCPType() override;
+
+    UseE SCCPIdentity(Sea &sea) override;
+
 };
 
 class GetIntN: public GetN {

@@ -42,6 +42,8 @@ public:
     void Linearization();
 
     void SCCPType() override;
+
+    UseE SCCPIdentity(Sea &sea) override;
 };
 
 class IfN : public Node {
@@ -54,6 +56,10 @@ public:
     void SCCPType() override;
 
     void SCCPType(ProjN *n) override;
+
+    UseE SCCPIdentity(Sea &sea) override;
+
+    UseE SCCPIdentity(Sea &sea, ProjN *projection) override;
 };
 
 

@@ -82,6 +82,8 @@ public:
 
     void SCCPType() override;
 
+    UseE SCCPIdentity(Sea &sea) override;
+
 };
 
 

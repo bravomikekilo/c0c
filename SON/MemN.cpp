@@ -25,6 +25,16 @@ void SetN::SCCPType() {
 
 }
 
+UseE SetN::SCCPIdentity(Sea &sea) {
+    typedef SCCPOptimizer::T T;
+    auto type = Payload<T>();
+    if(type->height == T::Top) {
+        return nullptr;
+    } else {
+        return this;
+    }
+}
+
 void GetN::SCCPType() {
     typedef SCCPOptimizer::T T;
     auto type = Payload<T>();
@@ -41,6 +51,16 @@ void GetN::SCCPType() {
         type->height = T::Bottom;
     }
 
+}
+
+UseE GetN::SCCPIdentity(Sea &sea) {
+    typedef SCCPOptimizer::T T;
+    auto type = Payload<T>();
+    if(type->height == T::Top) {
+        return nullptr;
+    } else {
+        return this;
+    }
 }
 
 }

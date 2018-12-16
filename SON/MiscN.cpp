@@ -4,20 +4,11 @@
 
 #include "MiscN.h"
 #include "SCCP.h"
+#include "ConstN.h"
+#include "Sea.h"
 
 namespace C0 {
 
-
-void ProjRetN::SCCPType() {
-    typedef SCCPOptimizer::T T;
-    auto type = Payload<T>();
-    auto up_type = uses[1]->Payload<T>();
-    if(up_type->height == T::Top) {
-        type->height = T::Top;
-    } else {
-        type->height = T::Bottom;
-    }
-}
 
 
 void ProjArgN::SCCPType() {
@@ -75,6 +66,52 @@ void PhiN::SCCPType() {
 
     }
 
+
+}
+
+UseE PhiN::SCCPIdentity(Sea &sea) {
+    typedef SCCPOptimizer::T T;
+    auto type = Payload<T>();
+    if(type->height == T::Top) {
+        return nullptr;
+    } else if(type->height == T::Bottom) {
+
+        auto sz = size();
+        size_t null_num = 0;
+        for(auto i = 0; i < sz; ++i) {
+            auto use = uses[i];
+            if(use == nullptr || use->Payload<T>()->height == T::Top) {
+                ++null_num;
+            }
+        }
+
+        if(null_num != 0) {
+            auto new_arr = new UseE[sz - null_num];
+
+            for (auto i = 0, j = 0; i < sz; ++i) {
+                auto use = uses[i];
+                if (use == nullptr || use->Payload<T>()->height == T::Top) {
+                    continue;
+                }
+                new_arr[j] = use;
+                ++j;
+            }
+
+            delete[] uses;
+            uses = new_arr;
+            num_uses = sz - null_num;
+        }
+
+        return this;
+    }
+
+    if(type->type == T::Value) {
+        return sea.alloc<ConstIntN>(uses[0], type->constant);
+    } else if(type->type == T::Pointer) {
+        return sea.alloc<StackSlotN>(uses[0], type->constant);
+    } else {
+        return sea.alloc<GlobalAddrN>(uses[0], type->constant, type->label.value());
+    }
 
 }
 

@@ -61,13 +61,15 @@ int main(int argc, char **argv) {
         C0::buildDefUse(stop);
 
         phi_cleaner.optimize(stop);
-
         C0::SONDrawer drawer;
         drawer.draw(stop);
 
+        /*
         std::cout << "-------------before merge------------" << std::endl;
 
         std::cout << drawer.toDot(func->name) << std::endl;
+
+        */
 
         C0::mergeLinearRegion(stop);
 
@@ -86,6 +88,15 @@ int main(int argc, char **argv) {
         drawer.draw(stop);
 
         std::cout << "-------------after sccp label--------------" << std::endl;
+
+        std::cout << drawer.toDot(func->name) << std::endl;
+
+        sccp.transform(std::pair(start, stop), ocean);
+
+        std::cout << "------------after sccp transform-----------" << std::endl;
+
+        drawer.clear();
+        drawer.draw(stop);
 
         std::cout << drawer.toDot(func->name) << std::endl;
 

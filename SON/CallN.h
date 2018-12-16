@@ -77,6 +77,8 @@ public:
     }
 
     void SCCPType() override;
+
+    UseE SCCPIdentity(Sea &sea) override;
 };
 
 class PrintIntN: public PrintN {
@@ -109,6 +111,10 @@ public:
     void SCCPType() override;
 
     void SCCPType(ProjN *n) override;
+
+    UseE SCCPIdentity(Sea &sea) override;
+
+    UseE SCCPIdentity(Sea &sea, ProjN *projection) override;
 
 };
 

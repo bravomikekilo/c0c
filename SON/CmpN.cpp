@@ -4,6 +4,8 @@
 
 #include "CmpN.h"
 #include "SCCP.h"
+#include "Sea.h"
+#include "ConstN.h"
 
 namespace C0 {
 
@@ -43,6 +45,19 @@ void CmpN::SCCPType() {
     }
 
     type->height = T::Bottom;
+}
+
+UseE CmpN::SCCPIdentity(Sea &sea) {
+    typedef SCCPOptimizer::T T;
+    auto type = Payload<T>();
+
+    if(type->height == T::Top) {
+        return nullptr;
+    } else if(type->height == T::Bottom) {
+        return this;
+    } else {
+        return sea.alloc<ConstIntN>(uses[0], type->constant);
+    }
 }
 
 
