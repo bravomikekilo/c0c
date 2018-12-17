@@ -9,6 +9,7 @@
 #include "common.h"
 
 #include <list>
+#include <functional>
 
 namespace C0 {
 
@@ -18,6 +19,9 @@ private:
     std::list<UseE> _linear;
 
 public:
+
+    int bid = -1;
+
     explicit RegionN(const vector<UseE> &use) :Node(Nop::Region, use.size()) {
        for(int i = 0; i < num_uses; ++i) {
            uses[i] = use[i];
@@ -44,6 +48,41 @@ public:
     void SCCPType() override;
 
     UseE SCCPIdentity(Sea &sea) override;
+
+    void visitPred(std::function<void(RegionN *)>);
+
+    template<typename T>
+    void visitPred(void *func(RegionN *, T *env), T *env) {
+        for(auto use : *this) {
+            auto use_op = use->getOp();
+            if(use_op == Nop::Region) {
+                func(use, env);
+            } else if(use_op == Nop::IfProj) {
+                func(use->front()->front(), env);
+            }
+        }
+    }
+
+    void visitPost(std::function<void(RegionN *)>);
+
+    template<typename T>
+    void visitPost(void (*func)(RegionN *, T *env), T *env) {
+        for(auto user: getUser()) {
+            auto user_op = user->getOp();
+            if(user_op == Nop::Region) {
+                func(reinterpret_cast<RegionN *>(user), env);
+            } else if(user_op == Nop::If) {
+                for(auto proj : user->getUser()) {
+                    auto region = *proj->getUser().begin();
+                    func(reinterpret_cast<RegionN *>(region), env);
+                }
+            }
+        }
+    }
+
+    string str() override;
+
+
 };
 
 class IfN : public Node {

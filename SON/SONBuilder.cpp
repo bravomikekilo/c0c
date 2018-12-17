@@ -175,7 +175,7 @@ void SONBuilder::visit(C0::CallExpr *e) {
         ++index;
         arg->accept(*this);
 
-        if(index <= 4) {
+        if (index <= 4) {
             args.push_back(right_val);
         } else {
             auto scalar = right_val;
@@ -216,8 +216,6 @@ void SONBuilder::visit(AsStmt *e) {
 void SONBuilder::visit(ExprStmt *e) {
     e->exp->accept(*this);
 }
-
-
 
 
 void SONBuilder::visit(IfStmt *e) {
@@ -352,11 +350,11 @@ void C0::SONBuilder::visit(C0::WhileStmt *e) {
     curr_block = body_block;
     e->body->accept(*this);
 
-    if(waiting.empty()) {
+    if (waiting.empty()) {
         waiting.push_back(curr_block);
     }
 
-    for(auto wait: waiting) {
+    for (auto wait: waiting) {
         cond_block->push_back(wait);
     }
 
@@ -425,6 +423,7 @@ void SONBuilder::visit(ForStmt *e) {
     e->body->accept(*this);
 
     if (!has_return) {
+        /*
         if (waiting.empty()) {
             if (e->after.has_value()) {
                 e->after.value()->accept(*this);
@@ -434,11 +433,42 @@ void SONBuilder::visit(ForStmt *e) {
             auto after_block = sea.alloc<RegionN>(waiting);
             addContext(after_block);
             sealBlock(after_block);
+
+            curr_block = after_block;
+
             cond_block->push_back(after_block);
         }
+        */
+
+
+        if (e->after.has_value()) {
+            if (!waiting.empty()) {
+                auto after_block = sea.alloc<RegionN>(waiting);
+                addContext(after_block);
+                sealBlock(after_block);
+                curr_block = after_block;
+                waiting.clear();
+                waiting.push_back(curr_block);
+            } else {
+                waiting.push_back(curr_block);
+            }
+            e->after.value()->accept(*this);
+        } else {
+            if (waiting.empty()) {
+                waiting.push_back(curr_block);
+            }
+        }
+
+
+        for (auto block: waiting) {
+            cond_block->push_back(block);
+        }
+        waiting.clear();
+
     } else {
         has_return = false;
     }
+
 
     sealBlock(cond_block);
     waiting.push_back(false_branch);

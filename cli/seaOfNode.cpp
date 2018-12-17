@@ -96,9 +96,13 @@ int main(int argc, char **argv) {
         std::cout << "------------after sccp transform-----------" << std::endl;
 
         drawer.clear();
-        drawer.draw(stop);
+        drawer.draw(stop, true);
 
         std::cout << drawer.toDot(func->name) << std::endl;
+
+        std::cout << "------------find dominance -----------" << std::endl;
+
+
 
     }
 

@@ -46,7 +46,7 @@ void SONDrawer::addNode(UseE src_node, int id, string str) {
     }
 }
 
-void SONDrawer::draw(StopN *stop) {
+void SONDrawer::draw(StopN *stop, bool with_use) {
 
     // first get id for every node
     int next_id = 1;
@@ -86,6 +86,12 @@ void SONDrawer::draw(StopN *stop) {
             ++index;
             if (visited.count(use)) continue;
             s.push(use);
+        }
+
+        if(with_use) {
+            for(auto user: head->getUser()) {
+                def_use_edge.emplace_back(node_id[head], node_id[user]);
+            }
         }
     }
 
@@ -130,8 +136,15 @@ string SONDrawer::toDot(const string &graph_name) {
         stream << "label=\"" << std::get<2>(edge) << "\"\n];" << std::endl;
     }
 
-    stream << "}\n\n";
+    for(auto &edge: def_use_edge) {
+        stream << "\"node" << std::to_string(edge.first) << "\" -> ";
+        stream << "\"node" << std::to_string(std::get<1>(edge)) << "\"[\n";
+        stream << "style=\"dashed\";\n"
+               << "color=green;\n"
+               << "constraint=false;\n" << "];\n";
+    }
 
+    stream << "}\n\n";
     return stream.str();
 }
 

@@ -6,8 +6,12 @@
 #include "ControlN.h"
 #include "SCCP.h"
 #include "ProjN.h"
+#define FMT_HEADER_ONLY
+
+#include "fmt/format.h"
 
 #include <stack>
+
 using std::list;
 
 
@@ -48,8 +52,8 @@ void RegionN::Linearization() {
             this->_linear.push_front(head);
         }
 
-        for(auto use : *head) {
-            if(!visited.count(use) && use->front() == this) {
+        for (auto use : *head) {
+            if (!visited.count(use) && use->front() == this) {
                 s.push(use);
             }
         }
@@ -114,6 +118,39 @@ UseE RegionN::SCCPIdentity(Sea &sea) {
     }
 }
 
+void RegionN::visitPred(std::function<void(RegionN *)> func) {
+        for(auto use : *this) {
+            auto use_op = use->getOp();
+            if(use_op == Nop::Region) {
+                func(reinterpret_cast<RegionN *>(use));
+            } else if(use_op == Nop::IfProj) {
+                func(reinterpret_cast<RegionN *>(use->front()->front()));
+            }
+        }
+}
+
+void RegionN::visitPost(std::function<void(RegionN *)> func) {
+    for (auto user: getUser()) {
+        auto user_op = user->getOp();
+        if (user_op == Nop::Region) {
+            func(reinterpret_cast<RegionN *>(user));
+        } else if (user_op == Nop::If) {
+            for (auto proj : user->getUser()) {
+                auto region = *proj->getUser().begin();
+                func(reinterpret_cast<RegionN *>(region));
+            }
+        }
+    }
+}
+
+string RegionN::str() {
+    if(bid < 0) {
+        return Node::str();
+    } else {
+        return fmt::format("BB#{} {}", bid, Node::str());
+    }
+}
+
 void StopN::SCCPType() {
     typedef SCCPOptimizer::T T;
     auto type = Payload<T>();
@@ -172,9 +209,9 @@ UseE IfN::SCCPIdentity(Sea &sea) {
 UseE IfN::SCCPIdentity(Sea &sea, ProjN *projection) {
     typedef SCCPOptimizer::T T;
     auto type_t = projection->Payload<T>();
-    if(type_t->height == T::Top) {
+    if (type_t->height == T::Top) {
         return nullptr;
-    } else if(type_t->height == T::Bottom){
+    } else if (type_t->height == T::Bottom) {
         return projection;
     } else {
         return uses[0];

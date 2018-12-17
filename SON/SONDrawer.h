@@ -24,6 +24,7 @@ private:
     unordered_map<UseE, int> node_id;
 
     vector<tuple<int, int, string>> edges;
+    vector<pair<int, int>> def_use_edge;
 
     void addEdge(UseE src_node, int src, int dst, string label);
     void addNode(UseE src_node, int id, string str);
@@ -31,7 +32,7 @@ private:
 
 public:
 
-    void draw(StopN *stop);
+    void draw(StopN *stop, bool with_use = false);
 
     string toDot(const string &graph_name);
 
@@ -41,6 +42,7 @@ public:
         floatNode.clear();
         node_id.clear();
         edges.clear();
+        def_use_edge.clear();
     }
 
 };

@@ -1,0 +1,20 @@
+void fortest(){
+    int i, var1;
+
+    printf("start fortest");
+
+    var1 = 34;
+    for(i=0;i<=10;i=i+2) {
+        if(i==7) printf(i); else if(i==8) printf(i);
+    }
+
+    printf("at fortest");
+    printf("var1 before:", var1);
+
+    for(i=0;(6-5+2)*2-6;i=i-5) {
+        printf("fuck up");
+        for(var1=10;var1>=0;var1=var1-8);
+    }
+    // printf("var1:", var1);
+    return;
+}

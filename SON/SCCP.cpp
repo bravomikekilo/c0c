@@ -85,8 +85,10 @@ void SCCPOptimizer::analysis(pair<RegionN *, StopN *> graph) {
     stack<UseE> worklist;
     worklist.push(start);
 
+    /*
     auto drawer = SONDrawer();
     int index = 0;
+    */
 
     while (!worklist.empty()) {
 
@@ -96,6 +98,7 @@ void SCCPOptimizer::analysis(pair<RegionN *, StopN *> graph) {
         head->SCCPType();
         if (old != *head->Payload<T>()) {
 
+            /*
             ++index;
             drawer.draw(stop);
             std::ofstream stream;
@@ -103,6 +106,7 @@ void SCCPOptimizer::analysis(pair<RegionN *, StopN *> graph) {
             stream << drawer.toDot("test") << std::endl;
             stream.close();
             drawer.clear();
+            */
 
             for (auto user: head->getUser()) {
                 worklist.push(user);
