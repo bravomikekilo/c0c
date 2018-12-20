@@ -179,6 +179,10 @@ void C0::TypeChecker::visit(C0::AsStmt *e) {
         errors.emplace_back("inconsistent assign type");
     }
 
+    if(e->lhs->constEval(*curr_table).has_value()) {
+        errors.emplace_back("can't assign to const value");
+    }
+
 }
 
 void C0::TypeChecker::visit(C0::ExprStmt *e) {

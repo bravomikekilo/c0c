@@ -15,7 +15,7 @@ Parser Parser::fromStr(const string &str) {
 
 bool Parser::checkSemicolon() {
     auto ret = lexer.peek().is(Sep::Semicolon);
-    if (!ret) report("missing semicolon");
+    if (!ret) addError(lexer.headPos(), "missing semicolon");
     else lexer.next();
 
     return ret;
@@ -32,7 +32,7 @@ unique_ptr<ExprAST> Parser::parseFactor() {
             lexer.next();
             return make_unique<IntExpr>(pos, v);
         } else {
-            errors.emplace_back("duplicate +");
+            addError(lexer.headPos(), "duplicate +");
             return parseFactor();
         }
     }
@@ -45,7 +45,7 @@ unique_ptr<ExprAST> Parser::parseFactor() {
             lexer.next();
             return make_unique<IntExpr>(pos, -v);
         } else {
-            errors.emplace_back("duplicate -");
+            addError(lexer.headPos(), "duplicate -");
             return parseFactor();
         }
     }
@@ -57,7 +57,7 @@ unique_ptr<ExprAST> Parser::parseFactor() {
         if (lexer.peek().is(Sep::RPar)) {
             lexer.next();
         } else {
-            report("missing )");
+            addError(lexer.headPos(), "missing )");
         }
         return ret;
     }
@@ -94,7 +94,7 @@ unique_ptr<ExprAST> Parser::parseFactor() {
                 if (lexer.peek().is(Sep::Comma)) {
                     lexer.next();
                 } else {
-                    errors.emplace_back("missing , in function call");
+                    addError(lexer.headPos(), "missing , in function call");
                 }
                 args.push_back(parseExpr());
             }
@@ -103,10 +103,9 @@ unique_ptr<ExprAST> Parser::parseFactor() {
         }
 
         if (id == 0) {
-            errors.push_back(fmt::format(
-                    "row:{} col:{} unknown variable: {}",
-                    head_pos.ln,
-                    head_pos.col,
+            addError(head_pos, fmt::format(
+                    "{} unknown variable: {}",
+                    head_pos.toStr(),
                     name));
         }
         if (lexer.peek().is(Sep::LBar)) {
@@ -122,7 +121,7 @@ unique_ptr<ExprAST> Parser::parseFactor() {
         return make_unique<VarExpr>(head_pos, id);
     }
 
-    report("missing factor");
+    addError(lexer.headPos(), "missing factor");
     return nullptr;
 }
 
@@ -285,12 +284,12 @@ unique_ptr<IfStmt> Parser::parseIf() {
     auto head_pos = lexer.headPos();
     lexer.next();
     if (lexer.peek().is(Sep::LPar)) lexer.next();
-    else report("missing (");
+    else addError(lexer.headPos(), "missing (");
 
     auto cond = parseCond();
 
     if (lexer.peek().is(Sep::RPar)) lexer.next();
-    else report("missing )");
+    else addError(lexer.headPos(), "missing )");
 
     auto body = parseStmt();
 
@@ -352,12 +351,12 @@ unique_ptr<WhileStmt> Parser::parseWhile() {
     auto head_pos = lexer.headPos();
     lexer.next();
     if (lexer.peek().is(Sep::LPar)) lexer.next();
-    else report("missing (");
+    else addError(lexer.headPos(), "missing (");
 
     auto cond = parseCond();
 
     if (lexer.peek().is(Sep::RPar)) lexer.next();
-    else report("missing )");
+    else addError(lexer.headPos(), "missing )");
 
     auto body = parseStmt();
 
@@ -412,7 +411,7 @@ void Parser::tryParseVar(bool global) {
         lexer.next();
         do {
             if (!lexer.peek().is(LexKind::Ident)) {
-                errors.emplace_back("missing a variable name");
+                addError("missing a variable name");
                 if (lexer.peek().is(Sep::Semicolon)) {
                     break;
                 }
@@ -429,23 +428,23 @@ void Parser::tryParseVar(bool global) {
                     } else {
                         if (lexer.peek().is(Sep::RBar)) {
                             length = 0;
-                            errors.emplace_back("missing length in array variable");
+                            addError(lexer.headPos(), "missing length in array variable");
                         } else {
-                            errors.emplace_back("invalid length of array variable");
+                            addError(lexer.headPos(), "invalid length of array variable");
                             lexer.next();
                         }
                     }
                     expect(Sep::RBar, "miss ] in array variable");
                     Type t(baseType, length);
                     if (curr_table->hasVarInScope(name)) {
-                        errors.push_back("multiple definition of variable:" + name);
+                        addError(lexer.headPos(), "multiple definition of variable:" + name);
                     } else {
                         curr_table->insert(SymTerm{popVarID(), t, name, global, {}});
                     }
                 } else { // scalar variable
                     Type t(baseType);
                     if (curr_table->hasVarInScope(name)) {
-                        errors.push_back("multiple definition of variable:" + name);
+                        addError(lexer.headPos(), "multiple definition of variable:" + name);
                     } else {
                         curr_table->insert(SymTerm{popVarID(), t, name, global, {}});
                     }
@@ -457,7 +456,7 @@ void Parser::tryParseVar(bool global) {
             }
 
             if (lexer.peek().is(LexKind::Eof)) {
-                errors.push_back("missing ; in var definition");
+                addError(lexer.headPos(), "missing ; in var definition");
                 break;
             }
             if (lexer.peek().is(Sep::Comma)) {
@@ -481,14 +480,15 @@ void Parser::tryParseConst(bool global) {
         }
 
         if (baseType == BaseTypeK::Error) {
-            errors.emplace_back("can't find type for const");
+            addError("can't find type for const");
         }
         // auto baseType = lexer.peek().is(Keyword::CHAR) ? BaseTypeK::Char : BaseTypeK::Int;
         do {
             if (!lexer.peek().is(LexKind::Ident)) {
-                errors.emplace_back("miss a variable name");
+                addError("miss a variable name");
             } else {
                 auto name = lexer.peek().getString();
+                auto name_pos = lexer.headPos();
                 lexer.next();
                 expect(Sep::Assign, "miss = in const");
                 int val = 0;
@@ -503,7 +503,7 @@ void Parser::tryParseConst(bool global) {
                         val = lexer.peek().getInt();
                         lexer.next();
                     } else {
-                        errors.emplace_back("can't find const value");
+                        addError("can't find const value");
                     }
                 } else if (lexer.peek().is(Op::Sub)) {
                     lexer.next();
@@ -511,18 +511,18 @@ void Parser::tryParseConst(bool global) {
                         val = -lexer.peek().getInt();
                         lexer.next();
                     } else {
-                        errors.emplace_back("can't find const value");
+                        addError("can't find const value");
                     }
                 } else if (lexer.peek().is(LexKind::Char)) {
                     val = lexer.peek().getChar();
                     lexer.next();
                 } else {
-                    errors.emplace_back("can't find const value");
+                    addError("can't find const value");
                 }
 
                 Type t(baseType);
                 if (curr_table->hasVarInScope(name)) {
-                    errors.push_back("multiple definition of variable:" + name);
+                    addError(name_pos, "multiple definition of variable:" + name);
                 } else {
                     curr_table->insert(SymTerm{popVarID(), t, name, global, {val}});
                 }
@@ -543,9 +543,10 @@ pair<vector<shared_ptr<FuncAST>>, shared_ptr<SymTable>> Parser::parseProg() {
         auto func_pos = lexer.headPos();
         lexer.next();
         if (!lexer.peek().is(LexKind::Ident)) {
-            errors.emplace_back("miss a variable or function name");
+            addError("miss a variable or function name");
         }
         auto first_name = lexer.peek().getString();
+        auto name_pos = lexer.headPos();
         lexer.next();
         if (lexer.peek().is(Sep::LPar)) {
             auto func = parseFunc(func_pos, Type(baseType), first_name);
@@ -561,23 +562,23 @@ pair<vector<shared_ptr<FuncAST>>, shared_ptr<SymTable>> Parser::parseProg() {
             } else {
                 if (lexer.peek().is(Sep::RBar)) {
                     length = 0;
-                    errors.emplace_back("missing length in array variable");
+                    addError("missing length in array variable");
                 } else {
-                    errors.emplace_back("invalid length in array variable");
+                    addError("invalid length in array variable");
                     lexer.next();
                 }
             }
             expect(Sep::RBar, "miss ] in array variable");
             Type t(baseType, length);
             if (curr_table->hasVarInScope(first_name)) {
-                errors.push_back("multiple definition of variable:" + first_name);
+                addError(name_pos, "multiple definition of variable:" + first_name);
             } else {
                 curr_table->insert(SymTerm{popVarID(), t, first_name, true, {}});
             }
         } else {
             Type t(baseType);
             if (curr_table->hasVarInScope(first_name)) {
-                errors.push_back("multiple definition of variable:" + first_name);
+                addError(name_pos, "multiple definition of variable:" + first_name);
             } else {
                 curr_table->insert(SymTerm{popVarID(), t, first_name, true, {}});
             }
@@ -587,9 +588,10 @@ pair<vector<shared_ptr<FuncAST>>, shared_ptr<SymTable>> Parser::parseProg() {
         while (lexer.peek().is(Sep::Comma)) {
             lexer.next();
             if (!lexer.peek().is(LexKind::Ident)) {
-                errors.emplace_back("miss a variable name");
+                addError("miss a variable name");
             } else {
                 auto name = lexer.peek().getString();
+                auto name_pos = lexer.headPos();
                 lexer.next();
                 if (lexer.peek().is(Sep::LBar)) {
                     lexer.next();
@@ -600,23 +602,23 @@ pair<vector<shared_ptr<FuncAST>>, shared_ptr<SymTable>> Parser::parseProg() {
                     } else {
                         if (lexer.peek().is(Sep::RBar)) {
                             length = 0;
-                            errors.emplace_back("missing length in array variable");
+                            addError("missing length in array variable");
                         } else {
-                            errors.emplace_back("invalid length of array variable");
+                            addError("invalid length of array variable");
                             lexer.next();
                         }
                     }
                     expect(Sep::RBar, "miss ] in array variable");
                     Type t(baseType, length);
                     if (curr_table->hasVarInScope(name)) {
-                        errors.push_back("multiple definition of variable:" + name);
+                        addError(name_pos, "multiple definition of variable:" + name);
                     } else {
                         curr_table->insert(SymTerm{popVarID(), t, name, true, {}});
                     }
                 } else { // scalar variable
                     Type t(baseType);
                     if (curr_table->hasVarInScope(name)) {
-                        errors.push_back("multiple definition of variable:" + name);
+                        addError(name_pos, "multiple definition of variable:" + name);
                     } else {
                         curr_table->insert(SymTerm{popVarID(), t, name, true, {}});
                     }
@@ -679,7 +681,7 @@ shared_ptr<FuncAST> Parser::parseFunc() {
         func_name = lexer.peek().getString();
         lexer.next();
     } else {
-        errors.emplace_back("can't find function name");
+        addError(lexer.headPos(), "can't find function name");
     }
 
     auto func = parseFunc(func_pos, retType, func_name);
@@ -710,13 +712,13 @@ shared_ptr<FuncAST> Parser::parseFunc(Pos func_pos, Type ret, string func_name) 
                 return {};
             }
             if (lexer.peek().is(Sep::LCur)) {
-                errors.emplace_back("missing )");
+                addError(lexer.headPos(), "missing )");
                 break;
             }
             if (lexer.peek().is(Sep::Comma)) {
                 lexer.next();
             } else {
-                errors.emplace_back("missing comma");
+                addError(lexer.headPos(), "missing comma");
             }
 
             auto arg_type = parseArgType();
@@ -742,7 +744,7 @@ shared_ptr<FuncAST> Parser::parseFunc(Pos func_pos, Type ret, string func_name) 
 
     while (!lexer.peek().is(Sep::RCur)) {
         if (lexer.peek().is(LexKind::Eof)) {
-            errors.emplace_back("missing } at end of file");
+            addError(lexer.headPos(), "missing } at end of file");
             break;
         }
         stmts.push_back(parseStmt());
@@ -754,7 +756,7 @@ shared_ptr<FuncAST> Parser::parseFunc(Pos func_pos, Type ret, string func_name) 
     auto r = make_shared<FuncAST>(func_pos, curr_table, func_name, ret, std::move(args), std::move(stmts));
     curr_table = prev_table;
     if (curr_table->hasFunc(func_name)) {
-        errors.push_back(fmt::format(
+        addError(func_pos, fmt::format(
                 "{} multiple definition of function:{}",
                 func_pos.toStr(),
                 func_name
@@ -772,7 +774,7 @@ unique_ptr<StmtAST> Parser::parseRead() {
     vector<unique_ptr<VarExpr>> args;
     expect(Sep::LPar, "missing ( in read");
     if (!lexer.peek().is(LexKind::Ident)) {
-        errors.emplace_back("can't find variable in read");
+        addError("can't find variable in read");
         if (lexer.peek().is(Sep::RPar)) {
             lexer.next();
             finish = true;
@@ -784,7 +786,7 @@ unique_ptr<StmtAST> Parser::parseRead() {
         auto var_id = curr_table->findVarByName(var_name);
         VarID id = 0;
         if (!var_id.has_value()) {
-            errors.push_back("unknown variable:" + var_name);
+            addError(var_pos, "unknown variable:" + var_name);
         } else {
             id = var_id.value();
         }
@@ -797,7 +799,7 @@ unique_ptr<StmtAST> Parser::parseRead() {
             if (lexer.peek().is(Sep::Comma)) {
                 lexer.next();
             } else {
-                errors.emplace_back("missing , in read");
+                addError("missing , in read");
             }
             if (lexer.peek().is(LexKind::Ident)) {
                 auto var_name = lexer.peek().getString();
@@ -806,13 +808,13 @@ unique_ptr<StmtAST> Parser::parseRead() {
                 auto var_id = curr_table->findVarByName(var_name);
                 VarID id = 0;
                 if (!var_id.has_value()) {
-                    errors.push_back("unknown variable:" + var_name);
+                    addError(var_pos, "unknown variable:" + var_name);
                 } else {
                     id = var_id.value();
                 }
                 args.push_back(std::move(make_unique<VarExpr>(var_pos, id)));
             } else {
-                errors.emplace_back("missing variable in read");
+                addError("missing variable in read");
                 lexer.next();
             }
         }

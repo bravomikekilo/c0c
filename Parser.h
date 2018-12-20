@@ -78,13 +78,19 @@ public:
 private:
     bool checkSemicolon();
 
-    void report(const string &err) {
-        errors.push_back(err);
-    }
 
     VarID popVarID() {
         return nextVarID++;
 
+    }
+
+    void addError(Pos pos, const string &msg) {
+        errors.push_back(fmt::format("line:{}, col:{}: {}", pos.ln, pos.col, msg));
+    }
+
+    void addError(const string &msg) {
+        auto pos = lexer.headPos();
+        errors.push_back(fmt::format("line:{}, col:{}: {}", pos.ln, pos.col, msg));
     }
 
     vector<string> errors;
@@ -100,7 +106,7 @@ private:
             lexer.next();
             return true;
         } else {
-            report(err);
+            addError(lexer.headPos(), err);
             return false;
         }
     }
