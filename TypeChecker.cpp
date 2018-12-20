@@ -30,7 +30,6 @@ void C0::TypeChecker::visit(C0::OpExpr *e) {
 
         if (right_type.isError()) return;
 
-        if (right_type.is(BaseTypeK::Char) || right_type.is(BaseTypeK::Int)) return;
 
         if (right_type.isArray()) {
             addError(e->rhs->getPos(), "array can't be right hand side of index");
@@ -38,6 +37,15 @@ void C0::TypeChecker::visit(C0::OpExpr *e) {
 
         if (right_type.is(BaseTypeK::Void)) {
             addError(e->rhs->getPos(), "void can't be right hand side of index");
+        }
+
+        auto rconst = e->rhs->constEval(*curr_table);
+        if (rconst.has_value() && (rconst.value() >= left_type.getLength() || rconst.value() < 0)) {
+            addError(e->getPos(),
+                     fmt::format("array index out of bound, index {} with index {}",
+                             left_type.toString(), rconst.value()
+                     )
+            );
         }
 
         return;
@@ -261,6 +269,7 @@ void C0::TypeChecker::visit(C0::ForStmt *e) {
         e->after.value()->accept(*this);
     }
 
+    e->body->accept(*this);
 
 }
 
@@ -278,13 +287,15 @@ void C0::TypeChecker::visit(PrintStmt *e) {
         return;
     }
 
+    e->expr.value()->accept(*this);
+
     auto expr_type = e->expr.value()->outType(curr_table);
     if (expr_type.isArray()) {
-        addError(e->getPos(), "can't print array");
+        addError(e->expr.value()->getPos(), "can't print array");
     }
 
     if (expr_type.is(BaseTypeK::Void)) {
-        addError(e->getPos(), "can't print void");
+        addError(e->expr.value()->getPos(), "can't print void");
     }
 
 
@@ -292,15 +303,16 @@ void C0::TypeChecker::visit(PrintStmt *e) {
 
 void C0::TypeChecker::visit(ReadStmt *e) {
     for (auto &var: e->vars) {
+        var->accept(*this);
         auto var_type = var->outType(curr_table);
         if (var_type.isError()) continue;
         if (var_type.isArray()) {
-            addError(e->getPos(), "can't read array type");
+            addError(var->getPos(), "can't read array type");
             continue;
         }
 
         if (var_type.is(BaseTypeK::Void)) {
-            addError(e->getPos(), "can't read void type");
+            addError(var->getPos(), "can't read void type");
             continue;
         }
     }

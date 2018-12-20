@@ -31,12 +31,12 @@ string baseTypeToString(BaseTypeK t) {
 }
 
 
-string ArrayT::toString() const {
-    return fmt::format("{}[{}]",
-            baseTypeToString(base),
-            std::to_string(length)
-            );
-
+string Type::toString() const {
+    if(length != 0) {
+        return fmt::format("{}[{}]", baseTypeToString(base_type), length);
+    } else {
+        return baseTypeToString(base_type);
+    }
 }
 
 }

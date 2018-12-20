@@ -44,14 +44,16 @@ int ASTDrawer::popNode() {
 
 void ASTDrawer::visit(IntExpr *e) {
     auto nodeID = popNode();
-    string str = fmt::format("#{} {}\\nInt:{}", nodeID, e->getPos().toStr(), e->v);
+    string str = fmt::format("#{} {}\\nInt:{}\\n {}",
+            nodeID, e->getPos().toStr(), e->v, e->outType(table).toString());
     nodes.push_back(str);
     subID = nodeID;
 }
 
 void ASTDrawer::visit(CharExpr *e) {
     auto nodeID = popNode();
-    string str = fmt::format("#{} {}\\nChar:'{}'", nodeID, e->getPos().toStr(), e->v);
+    string str = fmt::format("#{} {}\\nChar:'{}'",
+            nodeID, e->getPos().toStr(), e->v, e->outType(table).toString());
     nodes.push_back(str);
     subID = nodeID;
 }
@@ -66,12 +68,13 @@ void ASTDrawer::visit(VarExpr *e) {
 
     string str;
     if (term && term->isConst()) {
-        str = fmt::format("#{} {}\\nConst:{} = {}",
+        str = fmt::format("#{} {}\\nConst:{} = {}\\n{}",
                           nodeID,
                           e->getPos().toStr(),
-                          var_name, term->val.value());
+                          var_name, term->val.value(), term->type.toString());
     } else {
-        str = fmt::format("#{} {}\\nVar:{}", nodeID, e->getPos().toStr(), var_name);
+        str = fmt::format("#{} {}\\nVar:{}\\n{}",
+                nodeID, e->getPos().toStr(), var_name, e->outType(table).toString());
     }
 
     nodes.push_back(str);
@@ -186,10 +189,11 @@ void ASTDrawer::visit(CaseStmt *e) {
 void ASTDrawer::visit(OpExpr *e) {
     auto nodeID = popNode();
     string str = fmt::format(
-            "#{} {}\\nOp:{}",
+            "#{} {}\\nOp:{} \\n{}",
             nodeID,
             e->getPos().toStr(),
-            opToString(e->op)
+            opToString(e->op),
+            e->outType(table).toString()
     );
     nodes.push_back(str);
 
@@ -218,7 +222,8 @@ void ASTDrawer::visit(CondAST *e) {
 
 void ASTDrawer::visit(CallExpr *e) {
     auto nodeID = popNode();
-    string str = fmt::format("#{} {}\\nCall:{}", nodeID, e->getPos().toStr(), e->name);
+    string str = fmt::format("#{} {}\\nCall:{}\\n{}",
+            nodeID, e->getPos().toStr(), e->name, e->outType(table).toString());
     nodes.push_back(str);
 
     auto sz = e->args.size();

@@ -423,6 +423,10 @@ void Parser::tryParseVar(bool global) {
                     size_t length = 0;
                     if (lexer.peek().is(LexKind::Int)) {
                         length = lexer.peek().getInt();
+                        if(length <= 0) {
+                            addError(lexer.headPos(), "length of array must greater than 0");
+                            length = INT_MAX;
+                        }
                         lexer.next();
                     } else {
                         if (lexer.peek().is(Sep::RBar)) {
@@ -819,7 +823,6 @@ unique_ptr<StmtAST> Parser::parseRead() {
         }
         lexer.next();
         finish = true;
-
     }
     checkSemicolon();
     return make_unique<ReadStmt>(head_pos, std::move(args));

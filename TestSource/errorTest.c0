@@ -28,6 +28,7 @@ char getChar() {
 
 int main() {
     const int t = 1;
+    int i_arr[1];
     char c_arr[10];
     int x;
 
@@ -39,6 +40,23 @@ int main() {
     x = x + y;  // test undeclared
     c_arr[5] = y; // test undeclared
 
+    printf("inside", c_arr[0]);
+    printf("inside", c_arr);
+    printf("inside", c_arr[4]);
+    printf("inside", c_arr[9]);
+
+    // index out of bound
+    printf("out one", c_arr[10]);
+    printf("out one", c_arr[11]);
+    printf("out one", c_arr[5 * 2]);
+    printf("out one", c_arr[11 - 5 * 2 + 12 / 2 * 3]);
+    printf("out one", c_arr[-1]);
+    printf("out one", c_arr[10 - 11]);
+    printf("out one", c_arr[4 - 3 * 3]);
+
+    printf(i_arr[0]);
+    printf(i_arr[1]);
+    printf(i_arr[t - 2]);
 
     x = charSum('a' * 2, 'b');
 
