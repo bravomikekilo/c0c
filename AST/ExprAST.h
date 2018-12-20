@@ -81,7 +81,25 @@ public:
         auto vl = lhs->constEval(table);
         auto vr = rhs->constEval(table);
         if(vl.has_value() && vr.has_value()) {
-            return {vl.value() + vr.value()};
+            optional<int> ret;
+            switch(op) {
+                case Op::Add:
+                    ret = {vl.value() + vr.value()};
+                    break;
+                case Op::Sub:
+                    ret = {vl.value() - vr.value()};
+                    break;
+                case Op::Mul:
+                    ret = {vl.value() * vr.value()};
+                    break;
+                case Op::Div:
+                    ret = {vl.value() / vr.value()};
+                    break;
+                default:
+                    ret = {};
+                    break;
+            }
+            return ret;
         } else {
             return {};
         }

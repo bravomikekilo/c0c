@@ -25,7 +25,7 @@ void C0::TypeChecker::visit(C0::OpExpr *e) {
 
     if (e->op == C0::Op::Ind) {
         if (!left_type.isArray() && !left_type.isError()) {
-            errors.emplace_back("left hand side of index is not array");
+            addError(e->lhs->getPos(), "left hand side of index is not array");
         }
 
         if (right_type.isError()) return;
@@ -33,34 +33,46 @@ void C0::TypeChecker::visit(C0::OpExpr *e) {
         if (right_type.is(BaseTypeK::Char) || right_type.is(BaseTypeK::Int)) return;
 
         if (right_type.isArray()) {
-            errors.emplace_back("array can't be right hand side of index");
+            addError(e->rhs->getPos(), "array can't be right hand side of index");
         }
 
         if (right_type.is(BaseTypeK::Void)) {
-            errors.emplace_back("void can't be right hand side of index");
+            addError(e->rhs->getPos(), "void can't be right hand side of index");
         }
 
         return;
     }
 
+    if (e->op == C0::Op::Div) {
+        auto rconst = e->rhs->constEval(*curr_table);
+        if (rconst.has_value() && rconst.value() == 0) {
+            addError(e->getPos(), "div by const zero");
+        }
+    }
+
     if (left_type.isArray()) {
-        errors.push_back(
-                fmt::format("array can't be left hand side of {}", opToString(e->op)));
+        addError(
+                e->lhs->getPos(),
+                fmt::format("array can't be left hand side of {}", opToString(e->op))
+        );
     }
 
     if (right_type.isArray()) {
-        errors.push_back(
+        addError(
+                e->rhs->getPos(),
                 fmt::format("array can't be right hand side of {}", opToString(e->op)));
     }
 
 
     if (left_type.is(BaseTypeK::Void)) {
-        errors.push_back(
+        addError(
+                e->lhs->getPos(),
                 fmt::format("void can't be left hand side of {}", opToString(e->op)));
     }
 
     if (right_type.is(BaseTypeK::Void)) {
-        errors.push_back(
+        addError(
+                e->rhs->getPos(),
                 fmt::format("void can't be right hand side of {}", opToString(e->op))
         );
     }
@@ -72,7 +84,7 @@ void C0::TypeChecker::visit(C0::OpExpr *e) {
 void C0::TypeChecker::visit(C0::CallExpr *e) {
     auto func_p = curr_table->findFunc(e->name);
     if (!func_p.has_value()) {
-        errors.push_back("call undefined function:" + e->name);
+        addError(e->getPos(), "call undefined function:" + e->name);
         return;
     }
 
@@ -82,15 +94,17 @@ void C0::TypeChecker::visit(C0::CallExpr *e) {
     auto call_arg_sz = e->args.size();
 
     if (call_arg_sz < func_arg_sz) {
-        errors.push_back(
-                fmt::format("too few argument for {} function", e->name)
+        addError(
+                e->getPos(),
+                fmt::format("too few argument for function {}", e->name)
         );
         return;
     }
 
     if (call_arg_sz > func_arg_sz) {
-        errors.push_back(
-                fmt::format("too many argument for {} function", e->name)
+        addError(
+                e->getPos(),
+                fmt::format("too many argument for function {}", e->name)
         );
         return;
     }
@@ -100,9 +114,10 @@ void C0::TypeChecker::visit(C0::CallExpr *e) {
         auto &c = e->args[i];
         auto call_type = e->args[i]->outType(curr_table);
         if (f.first != call_type) {
-            errors.push_back(
-                    fmt::format("incompatible type of {} and {} in {} call",
-                                f.first.toString(), call_type.toString(), e->name)
+            addError(
+                    e->args[i]->getPos(),
+                    fmt::format("incompatible type of argument {} in {}, expected {}, but get {}",
+                                f.second, e->name, f.first.toString(), call_type.toString())
             );
         }
     }
@@ -116,22 +131,22 @@ void C0::TypeChecker::visit(C0::CondAST *e) {
 
     if (!left_type.isError()) {
         if (left_type.isArray()) {
-            errors.emplace_back("array can't be left hand side of cond");
+            addError(e->lhs->getPos(), "array can't be left hand side of cond");
         }
 
         if (left_type.is(BaseTypeK::Void)) {
-            errors.emplace_back ("void can't be left hand side of cond");
+            addError(e->lhs->getPos(), "void can't be left hand side of cond");
         }
 
     }
 
-    if(!right_type.isError()) {
+    if (!right_type.isError()) {
         if (right_type.isArray()) {
-            errors.emplace_back("array can't be right hand side of cond");
+            addError(e->rhs->getPos(), "array can't be right hand side of cond");
         }
 
         if (right_type.is(BaseTypeK::Void)) {
-            errors.emplace_back ("void can't be right hand side of cond");
+            addError(e->rhs->getPos(), "void can't be right hand side of cond");
         }
 
     }
@@ -176,11 +191,16 @@ void C0::TypeChecker::visit(C0::AsStmt *e) {
     }
 
     if (left_type != right_type) {
-        errors.emplace_back("inconsistent assign type");
+        addError(e->getPos(),
+                 fmt::format(
+                         "incompatible assign type, left {}, right {}",
+                         left_type.toString(), right_type.toString()
+                 )
+        );
     }
 
-    if(e->lhs->constEval(*curr_table).has_value()) {
-        errors.emplace_back("can't assign to const value");
+    if (e->lhs->constEval(*curr_table).has_value()) {
+        addError(e->getPos(), "can't assign to const value");
     }
 
 }
@@ -191,33 +211,33 @@ void C0::TypeChecker::visit(C0::ExprStmt *e) {
 
 // check if return type is consistent with function return type
 void C0::TypeChecker::visit(C0::RetStmt *e) {
-    if(curr_func->retType.is(BaseTypeK::Void)) {
-        if(e->ret.has_value()) {
-            errors.emplace_back("void function can't have return value");
+    if (curr_func->retType.is(BaseTypeK::Void)) {
+        if (e->ret.has_value()) {
+            addError(e->getPos(), "void function can't have return value");
         }
         return;
     }
 
     auto ret_type = curr_func->retType;
-    if(!e->ret.has_value()) {
-        errors.push_back(fmt::format(
+    if (!e->ret.has_value()) {
+        addError(e->getPos(), fmt::format(
                 "return statement with no value, in function returning '{}'",
                 ret_type.toString()
-                ));
+        ));
         return;
     }
 
     auto exp_type = e->ret.value()->outType(curr_table);
-    if(exp_type.isError() || ret_type.isError()) {
+    if (exp_type.isError() || ret_type.isError()) {
         return;
     }
 
-    if(exp_type != ret_type) {
-        errors.push_back(fmt::format(
+    if (exp_type != ret_type) {
+        addError(e->getPos(), fmt::format(
                 "return value type of {} not match function return type '{}'",
                 exp_type.toString(),
                 ret_type.toString()
-                ));
+        ));
     }
 
 }
@@ -248,41 +268,39 @@ void C0::TypeChecker::visit(C0::ForStmt *e) {
 void C0::TypeChecker::visit(C0::FuncAST *e) {
     curr_func = e;
     curr_table = e->table;
-    for(auto &stmt: e->stmts) {
+    for (auto &stmt: e->stmts) {
         stmt->accept(*this);
     }
 }
 
-void C0::TypeChecker::visit(PrintStmt * e)
-{
-    if(!e->expr.has_value()) {
+void C0::TypeChecker::visit(PrintStmt *e) {
+    if (!e->expr.has_value()) {
         return;
     }
 
     auto expr_type = e->expr.value()->outType(curr_table);
-    if(expr_type.isArray()) {
-        errors.emplace_back("can't print array");
+    if (expr_type.isArray()) {
+        addError(e->getPos(), "can't print array");
     }
 
-    if(expr_type.is(BaseTypeK::Void)) {
-        errors.emplace_back("can't print void");
+    if (expr_type.is(BaseTypeK::Void)) {
+        addError(e->getPos(), "can't print void");
     }
 
 
 }
 
-void C0::TypeChecker::visit(ReadStmt * e)
-{
-    for(auto &var: e->vars) {
+void C0::TypeChecker::visit(ReadStmt *e) {
+    for (auto &var: e->vars) {
         auto var_type = var->outType(curr_table);
-        if(var_type.isError()) continue;
-        if(var_type.isArray()) {
-            errors.emplace_back("can't read array type");
+        if (var_type.isError()) continue;
+        if (var_type.isArray()) {
+            addError(e->getPos(), "can't read array type");
             continue;
         }
 
-        if(var_type.is(BaseTypeK::Void)) {
-            errors.emplace_back("can't read void type");
+        if (var_type.is(BaseTypeK::Void)) {
+            addError(e->getPos(), "can't read void type");
             continue;
         }
     }

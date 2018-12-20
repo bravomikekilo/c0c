@@ -47,19 +47,23 @@ public:
 
     void visit(FuncAST *e) override;
 
-    void visit(PrintStmt * e) override;
+    void visit(PrintStmt *e) override;
 
-    void visit(ReadStmt * e) override;
+    void visit(ReadStmt *e) override;
 
     const vector<string> &getErrors() {
         return errors;
     }
 
 private:
+
+    void addError(Pos pos, const string &str) {
+        errors.push_back(fmt::format("line:{} col:{}: {}", pos.ln, pos.col, str));
+    }
+
     vector<string> errors;
     shared_ptr<SymTable> curr_table;
     C0::FuncAST *curr_func = nullptr;
-
 
 
 };

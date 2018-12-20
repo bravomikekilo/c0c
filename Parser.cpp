@@ -104,8 +104,7 @@ unique_ptr<ExprAST> Parser::parseFactor() {
 
         if (id == 0) {
             addError(head_pos, fmt::format(
-                    "{} unknown variable: {}",
-                    head_pos.toStr(),
+                    "undeclared variable: {}",
                     name));
         }
         if (lexer.peek().is(Sep::LBar)) {
@@ -786,7 +785,7 @@ unique_ptr<StmtAST> Parser::parseRead() {
         auto var_id = curr_table->findVarByName(var_name);
         VarID id = 0;
         if (!var_id.has_value()) {
-            addError(var_pos, "unknown variable:" + var_name);
+            addError(var_pos, "undeclared variable:" + var_name);
         } else {
             id = var_id.value();
         }
@@ -808,7 +807,7 @@ unique_ptr<StmtAST> Parser::parseRead() {
                 auto var_id = curr_table->findVarByName(var_name);
                 VarID id = 0;
                 if (!var_id.has_value()) {
-                    addError(var_pos, "unknown variable:" + var_name);
+                    addError(var_pos, "undeclared variable:" + var_name);
                 } else {
                     id = var_id.value();
                 }

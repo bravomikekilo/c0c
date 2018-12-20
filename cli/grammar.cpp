@@ -15,6 +15,7 @@
 using namespace std;
 
 
+
 int main(int argc, char **argv) {
 
     string source_name;
@@ -40,11 +41,13 @@ int main(int argc, char **argv) {
     // std::cout << C0::ASTDrawer::dot(*func) << std::endl;
     std::cout << "----------other output------------" << std::endl;
     if (!parser.getError().empty()) {
-        std::cout << "syntax error" << std::endl;
+        std::cout << "all syntax error" << std::endl;
     }
     for(const auto& err: parser.getError()) {
         std::cout << err << std::endl;
     }
+
+    std::cout << std::endl;
     
     
     for (auto &func : funcs) {
