@@ -1,4 +1,5 @@
 #pragma once
+
 #include "ASTBase.h"
 #include "CondAST.h"
 #include "ExprAST.h"
@@ -8,26 +9,29 @@
 namespace C0 {
 
 
-class StmtAST :
-    public ASTBase
-{
+class StmtAST : public ASTBase {
 public:
+    StmtAST(Pos pos) : ASTBase(pos) {}
+
     ~StmtAST() override = default;
 };
 
 class IfStmt : public StmtAST {
     // Inherited via StmtAST
 public:
-    void accept(ASTVisitor & visitor) override;
-    IfStmt(unique_ptr<CondAST>&& cond, unique_ptr<StmtAST>&& body)
-        :cond(std::move(cond)),
-         trueBranch(std::move(body)),
-         falseBranch({}) {}
+    void accept(ASTVisitor &visitor) override;
 
-    IfStmt(unique_ptr<CondAST>&& cond, unique_ptr<StmtAST>&& trueBranch, unique_ptr<StmtAST>&& falseBranch)
-        :cond(std::move(cond)),
-         trueBranch(std::move(trueBranch)),
-         falseBranch(optional<unique_ptr<StmtAST>>(std::move(falseBranch))) {}
+    IfStmt(Pos pos, unique_ptr<CondAST> &&cond, unique_ptr<StmtAST> &&body)
+            : StmtAST(pos),
+              cond(std::move(cond)),
+              trueBranch(std::move(body)),
+              falseBranch({}) {}
+
+    IfStmt(Pos pos, unique_ptr<CondAST> &&cond, unique_ptr<StmtAST> &&trueBranch, unique_ptr<StmtAST> &&falseBranch)
+            : StmtAST(pos),
+              cond(std::move(cond)),
+              trueBranch(std::move(trueBranch)),
+              falseBranch(optional<unique_ptr<StmtAST>>(std::move(falseBranch))) {}
 
     unique_ptr<CondAST> cond;
     unique_ptr<StmtAST> trueBranch;
@@ -37,52 +41,60 @@ public:
 class BlockStmt : public StmtAST {
     // Inherited via StmtAST
 public:
-    void accept(ASTVisitor & visitor) override;
-    explicit BlockStmt(vector<unique_ptr<StmtAST>>&& stmts)
-        :stmts(std::move(stmts)) {}
+    void accept(ASTVisitor &visitor) override;
+
+    explicit BlockStmt(Pos pos, vector<unique_ptr<StmtAST>> &&stmts)
+            : StmtAST(pos), stmts(std::move(stmts)) {}
 
     vector<unique_ptr<StmtAST>> stmts;
 };
 
-class DoStmt: public StmtAST {
+class DoStmt : public StmtAST {
 public:
     void accept(ASTVisitor &visitor) override {
         visitor.visit(this);
     }
 
-    DoStmt(unique_ptr<StmtAST>&& body, unique_ptr<CondAST>&& cond)
-        :body(std::move(body)), cond(std::move(cond)) {};
+    DoStmt(Pos pos, unique_ptr<StmtAST> &&body, unique_ptr<CondAST> &&cond)
+            : StmtAST(pos), body(std::move(body)), cond(std::move(cond)) {};
 
     unique_ptr<StmtAST> body;
     unique_ptr<CondAST> cond;
 
 };
 
-class ForStmt: public StmtAST {
+class ForStmt : public StmtAST {
 public:
     void accept(ASTVisitor &visitor) override {
         visitor.visit(this);
     }
 
-    explicit ForStmt(unique_ptr<CondAST>&& cond, unique_ptr<StmtAST>&& body)
-        :cond(std::move(cond)), start({}), after({}), body(std::move(body)) {};
+    explicit ForStmt(Pos pos, unique_ptr<CondAST> &&cond, unique_ptr<StmtAST> &&body)
+            : StmtAST(pos),
+              cond(std::move(cond)), start({}), after({}), body(std::move(body)) {};
 
-    explicit ForStmt(unique_ptr<AsStmt>&& start, unique_ptr<CondAST>&& cond, unique_ptr<StmtAST>&& body)
-        :cond(std::move(cond)), start(std::move(start)), after({}), body(std::move(body)) {};
+    explicit ForStmt(Pos pos, unique_ptr<AsStmt> &&start, unique_ptr<CondAST> &&cond, unique_ptr<StmtAST> &&body)
+            : StmtAST(pos),
+              cond(std::move(cond)), start(std::move(start)), after({}), body(std::move(body)) {};
 
-    explicit ForStmt(unique_ptr<AsStmt>&& start,
-                     unique_ptr<CondAST>&& cond,
-                     unique_ptr<AsStmt>&& after,
-                     unique_ptr<StmtAST>&& body)
-        :cond(std::move(cond)), start(std::move(start)), after(std::move(after)), body(std::move(body)) {};
+    explicit ForStmt(Pos pos,
+                     unique_ptr<AsStmt> &&start,
+                     unique_ptr<CondAST> &&cond,
+                     unique_ptr<AsStmt> &&after,
+                     unique_ptr<StmtAST> &&body)
+            : StmtAST(pos),
+              cond(std::move(cond)),
+              start(std::move(start)), after(std::move(after)), body(std::move(body)) {};
 
-    explicit ForStmt(
-            optional<unique_ptr<AsStmt>>&& start,
-            unique_ptr<CondAST>&& cond,
-            optional<unique_ptr<AsStmt>>&& after,
-            unique_ptr<StmtAST>&& body
-            )
-        :cond(std::move(cond)), start(std::move(start)), after(std::move(after)), body(std::move(body)) {};
+
+    explicit ForStmt(Pos pos,
+                     optional<unique_ptr<AsStmt>> &&start,
+                     unique_ptr<CondAST> &&cond,
+                     optional<unique_ptr<AsStmt>> &&after,
+                     unique_ptr<StmtAST> &&body)
+            : StmtAST(pos),
+              cond(std::move(cond)),
+              start(std::move(start)), after(std::move(after)), body(std::move(body)) {};
 
 
     optional<unique_ptr<AsStmt>> start;
@@ -94,10 +106,11 @@ public:
 class WhileStmt : public StmtAST {
     // Inherited via StmtAST
 public:
-    void accept(ASTVisitor & visitor) override;
-    WhileStmt(unique_ptr<CondAST>&& cond, unique_ptr<StmtAST>&& body)
-        :cond(std::move(cond)), body(std::move(body)) {}
-    
+    void accept(ASTVisitor &visitor) override;
+
+    WhileStmt(Pos pos, unique_ptr<CondAST> &&cond, unique_ptr<StmtAST> &&body)
+            :StmtAST(pos), cond(std::move(cond)), body(std::move(body)) {}
+
     unique_ptr<CondAST> cond;
     unique_ptr<StmtAST> body;
 
@@ -106,15 +119,16 @@ public:
 class CaseStmt : public ASTBase {
 public:
     // Inherited via ASTBase
-    void accept(ASTVisitor & visitor) override;
-    explicit CaseStmt(int cond, unique_ptr<StmtAST>&& branch)
-        :cond(cond), branch(std::move(branch)) {}
+    void accept(ASTVisitor &visitor) override;
 
-    explicit CaseStmt(char cond, unique_ptr<StmtAST>&& branch)
-        :cond(cond), branch(std::move(branch)) {}
+    explicit CaseStmt(Pos pos, int cond, unique_ptr<StmtAST> &&branch)
+            : ASTBase(pos), cond(cond), branch(std::move(branch)) {}
 
-    CaseStmt(std::variant<char, int> cond, unique_ptr<StmtAST>&& branch)
-        :cond(std::move(cond)), branch(std::move(branch)) {}
+    explicit CaseStmt(Pos pos, char cond, unique_ptr<StmtAST> &&branch)
+            : ASTBase(pos), cond(cond), branch(std::move(branch)) {}
+
+    CaseStmt(Pos pos, std::variant<char, int> cond, unique_ptr<StmtAST> &&branch)
+            : ASTBase(pos), cond(std::move(cond)), branch(std::move(branch)) {}
 
     std::variant<char, int> cond;
     unique_ptr<StmtAST> branch;
@@ -123,9 +137,10 @@ public:
 class SwitchStmt : public StmtAST {
     // Inherited via StmtAST
 public:
-    void accept(ASTVisitor & visitor) override;
-    SwitchStmt(unique_ptr<ExprAST>&& exp, vector<unique_ptr<CaseStmt>>&& cases)
-        :exp(std::move(exp)), cases(std::move(cases)) {}
+    void accept(ASTVisitor &visitor) override;
+
+    SwitchStmt(Pos pos, unique_ptr<ExprAST> &&exp, vector<unique_ptr<CaseStmt>> &&cases)
+            : StmtAST(pos), exp(std::move(exp)), cases(std::move(cases)) {}
 
     unique_ptr<ExprAST> exp;
     vector<unique_ptr<CaseStmt>> cases;
@@ -134,9 +149,10 @@ public:
 class AsStmt : public StmtAST {
     // Inherited via StmtAST
 public:
-    void accept(ASTVisitor & visitor) override;
-    AsStmt(unique_ptr<ExprAST>&& lhs, unique_ptr<ExprAST>&& rhs)
-        :lhs(std::move(lhs)), rhs(std::move(rhs)) {}
+    void accept(ASTVisitor &visitor) override;
+
+    AsStmt(Pos pos, unique_ptr<ExprAST> &&lhs, unique_ptr<ExprAST> &&rhs)
+            : StmtAST(pos), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
 
     unique_ptr<ExprAST> lhs;
     unique_ptr<ExprAST> rhs;
@@ -145,27 +161,33 @@ public:
 class ExprStmt : public StmtAST {
     // Inherited via StmtAST
 public:
-    void accept(ASTVisitor & visitor) override;
-    explicit ExprStmt(unique_ptr<ExprAST> exp) : exp(std::move(exp)) {}
+    void accept(ASTVisitor &visitor) override;
+
+    ExprStmt(Pos pos, unique_ptr<ExprAST> exp) : StmtAST(pos), exp(std::move(exp)) {}
+
     unique_ptr<ExprAST> exp;
 };
 
 class RetStmt : public StmtAST {
     // Inherited via StmtAST
 public:
-    void accept(ASTVisitor & visitor) override;
-    RetStmt() : ret({}) {}
-    explicit RetStmt(unique_ptr<ExprAST> ret) : ret(std::move(ret)) {}
+    void accept(ASTVisitor &visitor) override;
+
+    RetStmt(Pos pos) : StmtAST(pos), ret({}) {}
+
+    RetStmt(Pos pos, unique_ptr<ExprAST> ret)
+            : StmtAST(pos), ret(std::move(ret)) {}
+
     optional<unique_ptr<ExprAST>> ret;
 };
 
 class EmptyStmt : public StmtAST {
     // Inherited via StmtAST
 public:
-    void accept(ASTVisitor & visitor) override;
-    EmptyStmt() = default;
-};
+    void accept(ASTVisitor &visitor) override;
 
+    EmptyStmt(Pos pos) : StmtAST(pos) {};
+};
 
 
 class PrintStmt : public StmtAST {
@@ -173,8 +195,8 @@ public:
     optional<int> str;
     optional<unique_ptr<ExprAST>> expr;
 
-    PrintStmt(optional<int> str, optional<unique_ptr<ExprAST>>&& expr)
-        :str(std::move(str)), expr(std::move(expr)){}
+    PrintStmt(Pos pos, optional<int> str, optional<unique_ptr<ExprAST>> &&expr)
+            : StmtAST(pos), str(std::move(str)), expr(std::move(expr)) {}
 
     void accept(ASTVisitor &visitor) override {
         return visitor.visit(this);
@@ -187,13 +209,13 @@ public:
 class ReadStmt : public StmtAST {
 public:
     vector<unique_ptr<VarExpr>> vars;
-    explicit ReadStmt(vector<unique_ptr<VarExpr>>&& vars)
-        : vars(std::move(vars)) {}
+
+    explicit ReadStmt(Pos pos, vector<unique_ptr<VarExpr>> &&vars)
+            : StmtAST(pos), vars(std::move(vars)) {}
 
     void accept(ASTVisitor &visitor) override {
         return visitor.visit(this);
     }
-
 
 
 };

@@ -17,7 +17,7 @@ string ASTDrawer::dot(ASTBase &ast) {
 
 string ASTDrawer::drawProgram(vector<shared_ptr<FuncAST>> &funcs) {
     auto drawer = ASTDrawer();
-    for(auto &func: funcs) {
+    for (auto &func: funcs) {
         func->accept(drawer);
     }
     return drawer.genDot();
@@ -44,14 +44,14 @@ int ASTDrawer::popNode() {
 
 void ASTDrawer::visit(IntExpr *e) {
     auto nodeID = popNode();
-    string str = fmt::format("#{}\\nInt:{}", nodeID, e->v);
+    string str = fmt::format("#{} {}\\nInt:{}", nodeID, e->getPos().toStr(), e->v);
     nodes.push_back(str);
     subID = nodeID;
 }
 
 void ASTDrawer::visit(CharExpr *e) {
     auto nodeID = popNode();
-    string str = fmt::format("#{}\\nChar:'{}'", nodeID, e->v);
+    string str = fmt::format("#{} {}\\nChar:'{}'", nodeID, e->getPos().toStr(), e->v);
     nodes.push_back(str);
     subID = nodeID;
 }
@@ -66,10 +66,12 @@ void ASTDrawer::visit(VarExpr *e) {
 
     string str;
     if (term && term->isConst()) {
-        str = fmt::format("#{}\\nConst:{} = {}",
-                                 nodeID, var_name, term->val.value());
+        str = fmt::format("#{} {}\\nConst:{} = {}",
+                          nodeID,
+                          e->getPos().toStr(),
+                          var_name, term->val.value());
     } else {
-        str = fmt::format("#{}\\nVar:{}", nodeID, var_name);
+        str = fmt::format("#{} {}\\nVar:{}", nodeID, e->getPos().toStr(), var_name);
     }
 
     nodes.push_back(str);
@@ -78,7 +80,7 @@ void ASTDrawer::visit(VarExpr *e) {
 
 void ASTDrawer::visit(IfStmt *e) {
     auto nodeID = popNode();
-    string str = fmt::format("#{}\\nIf", nodeID);
+    string str = fmt::format("#{} {}\\nIf", nodeID, e->getPos().toStr());
     nodes.push_back(str);
     e->cond->accept(*this);
     edges.emplace_back(nodeID, subID, "cond");
@@ -94,7 +96,7 @@ void ASTDrawer::visit(IfStmt *e) {
 
 void ASTDrawer::visit(BlockStmt *e) {
     auto nodeID = popNode();
-    string str = fmt::format("#{}\\nBlock", nodeID);
+    string str = fmt::format("#{} {}\\nBlock", nodeID, e->getPos().toStr());
     nodes.push_back(str);
     auto sz = e->stmts.size();
     for (int i = 0; i < sz; ++i) {
@@ -106,7 +108,7 @@ void ASTDrawer::visit(BlockStmt *e) {
 
 void ASTDrawer::visit(WhileStmt *e) {
     auto nodeID = popNode();
-    string str = fmt::format("#{}\\nWhile", nodeID);
+    string str = fmt::format("#{} {}\\nWhile", nodeID, e->getPos().toStr());
     nodes.push_back(str);
     e->cond->accept(*this);
     edges.emplace_back(nodeID, subID, "cond");
@@ -117,7 +119,7 @@ void ASTDrawer::visit(WhileStmt *e) {
 
 void ASTDrawer::visit(SwitchStmt *e) {
     auto nodeID = popNode();
-    string str = fmt::format("#{}\\nSwitch");
+    string str = fmt::format("#{} {}\\nSwitch", nodeID, e->getPos().toStr());
     nodes.push_back(str);
     e->exp->accept(*this);
     edges.emplace_back(nodeID, subID, "value");
@@ -131,7 +133,7 @@ void ASTDrawer::visit(SwitchStmt *e) {
 
 void ASTDrawer::visit(AsStmt *e) {
     auto nodeID = popNode();
-    nodes.push_back(fmt::format("#{}\\nAssign", nodeID));
+    nodes.push_back(fmt::format("#{} {}\\nAssign", nodeID, e->getPos().toStr()));
     e->lhs->accept(*this);
     edges.emplace_back(nodeID, subID, "lhs");
     e->rhs->accept(*this);
@@ -145,7 +147,7 @@ void ASTDrawer::visit(ExprStmt *e) {
 
 void ASTDrawer::visit(RetStmt *e) {
     auto nodeID = popNode();
-    nodes.push_back(fmt::format("#{}\\nRet", nodeID));
+    nodes.push_back(fmt::format("#{} {}\\nRet", nodeID, e->getPos().toStr()));
     if (e->ret.has_value()) {
         e->ret.value()->accept(*this);
         edges.emplace_back(nodeID, subID, "exp");
@@ -155,16 +157,26 @@ void ASTDrawer::visit(RetStmt *e) {
 
 void ASTDrawer::visit(EmptyStmt *e) {
     auto nodeID = popNode();
-    nodes.push_back(fmt::format("#{}\\nEmpty", nodeID));
+    nodes.push_back(fmt::format("#{} {}\\nEmpty", nodeID, e->getPos().toStr()));
     subID = nodeID;
 }
 
 void ASTDrawer::visit(CaseStmt *e) {
     auto nodeID = popNode();
     if (std::holds_alternative<int>(e->cond)) {
-        nodes.push_back(fmt::format("#{}\\nCase<int>:{}", nodeID, std::get<int>(e->cond)));
+        nodes.push_back(fmt::format(
+                "#{} {}\\nCase<int>:{}",
+                nodeID,
+                e->getPos().toStr(),
+                std::get<int>(e->cond))
+        );
     } else {
-        nodes.push_back(fmt::format("#{}\\nCase<char>:{}", nodeID, std::get<char>(e->cond)));
+        nodes.push_back(fmt::format(
+                "#{} {}\\nCase<char>:{}",
+                nodeID,
+                e->getPos().toStr(),
+                std::get<char>(e->cond))
+        );
     }
     e->branch->accept(*this);
     edges.emplace_back(nodeID, subID, "branch");
@@ -173,7 +185,12 @@ void ASTDrawer::visit(CaseStmt *e) {
 
 void ASTDrawer::visit(OpExpr *e) {
     auto nodeID = popNode();
-    string str = fmt::format("#{}\\nOp:{}", nodeID, opToString(e->op));
+    string str = fmt::format(
+            "#{} {}\\nOp:{}",
+            nodeID,
+            e->getPos().toStr(),
+            opToString(e->op)
+    );
     nodes.push_back(str);
 
     e->lhs->accept(*this);
@@ -187,7 +204,7 @@ void ASTDrawer::visit(OpExpr *e) {
 
 void ASTDrawer::visit(CondAST *e) {
     auto nodeID = popNode();
-    string str = fmt::format("#{}\\nCond:{}", nodeID, cmpToString(e->cp));
+    string str = fmt::format("#{} {}\\nCond:{}", nodeID, e->getPos().toStr(), cmpToString(e->cp));
     nodes.push_back(str);
 
     e->lhs->accept(*this);
@@ -201,7 +218,7 @@ void ASTDrawer::visit(CondAST *e) {
 
 void ASTDrawer::visit(CallExpr *e) {
     auto nodeID = popNode();
-    string str = fmt::format("#{}\\nCall:{}", nodeID, e->name);
+    string str = fmt::format("#{} {}\\nCall:{}", nodeID, e->getPos().toStr(), e->name);
     nodes.push_back(str);
 
     auto sz = e->args.size();
@@ -215,7 +232,7 @@ void ASTDrawer::visit(CallExpr *e) {
 
 void ASTDrawer::visit(DoStmt *e) {
     auto nodeID = popNode();
-    string str = fmt::format("#{}\\nDo", nodeID);
+    string str = fmt::format("#{} {}\\nDo", nodeID, e->getPos().toStr());
     nodes.push_back(str);
 
     e->body->accept(*this);
@@ -229,7 +246,7 @@ void ASTDrawer::visit(DoStmt *e) {
 
 void ASTDrawer::visit(ForStmt *e) {
     auto nodeID = popNode();
-    string str = fmt::format("#{}\\nFor", nodeID);
+    string str = fmt::format("#{} {}\\nFor", nodeID, e->getPos().toStr());
     nodes.push_back(str);
 
     if (e->start.has_value()) {
@@ -255,7 +272,10 @@ void ASTDrawer::visit(FuncAST *e) {
     auto nodeID = popNode();
     table = e->table;
 
-    string str = fmt::format("#{}\\nFunc\\nName:{}", nodeID, e->name);
+    string str = fmt::format("#{} {}\\nFunc\\nName:{}",
+                             nodeID,
+                             e->getPos().toStr(),
+                             e->name);
     str += fmt::format("\\nRetType {}", e->retType.toString());
     for (const auto &arg: e->args) {
         str += fmt::format("\\n{} {}", arg.first.toString(), arg.second);
@@ -275,13 +295,13 @@ void ASTDrawer::visit(FuncAST *e) {
 void ASTDrawer::visit(PrintStmt *e) {
     auto nodeID = popNode();
 
-    string str = fmt::format("#{}\\nPrint\\n", nodeID);
-    if(e->str.has_value() || e->expr.has_value()) {
-        if(e->str.has_value()) {
+    string str = fmt::format("#{} {}\\nPrint\\n", nodeID, e->getPos().toStr());
+    if (e->str.has_value() || e->expr.has_value()) {
+        if (e->str.has_value()) {
             str += fmt::format(R"(promote:\"{}\")", table->findStr(e->str.value()));
         }
         nodes.push_back(str);
-        if(e->expr.has_value()) {
+        if (e->expr.has_value()) {
             e->expr.value()->accept(*this);
             edges.emplace_back(nodeID, subID, "expr");
         }
@@ -296,10 +316,10 @@ void ASTDrawer::visit(PrintStmt *e) {
 void ASTDrawer::visit(ReadStmt *e) {
     auto nodeID = popNode();
 
-    string str = fmt::format("#{}\\nRead", nodeID);
+    string str = fmt::format("#{} {}\\nRead", nodeID, e->getPos().toStr());
     nodes.push_back(str);
     auto sz = e->vars.size();
-    for(int i = 0; i < sz; ++i) {
+    for (int i = 0; i < sz; ++i) {
         auto &arg = e->vars[i];
         arg->accept(*this);
         edges.emplace_back(nodeID, subID, "arg" + std::to_string(i + 1));

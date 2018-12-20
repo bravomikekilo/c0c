@@ -18,16 +18,17 @@ optional<Lex> Lexer::skipWhitespace() {
     auto ch = stream.peek();
     while (isspace(ch) || ch == '/') {
 
-        if(ch == '/') {
+        if (ch == '/') {
             stream.get();
-            if(stream.peek() == '/') {
+            head_pos = stream.getPos();
+            if (stream.peek() == '/') {
                 stream.get();
                 ch = stream.peek();
-                while(ch != '\n' && ch != EOF) {
+                while (ch != '\n' && ch != EOF) {
                     stream.get();
                     ch = stream.peek();
                 }
-                if(ch == '\n') {
+                if (ch == '\n') {
                     stream.get();
                     ch = stream.peek();
                 }
@@ -48,20 +49,21 @@ Lex Lexer::parseChar() {
     bool invalid_char = true;
     string err = "'";
     stream.get();
+    head_pos = stream.getPos();
     auto c = stream.peek();
     if (c == EOF) {
         return Lex::Error(err);
     }
     char ch = static_cast<char>(c);
     stream.get();
-    if(ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '_' || isdigit(ch) || isalpha(ch)) {
+    if (ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '_' || isdigit(ch) || isalpha(ch)) {
         invalid_char = false;
     }
 
     err.push_back(ch);
     auto last = stream.peek();
     if (last != '\'' || invalid_char) {
-        for (;last != EOF && last != '\n' && last != '\''; last = stream.peek()) {
+        for (; last != EOF && last != '\n' && last != '\''; last = stream.peek()) {
             err.push_back(last);
             stream.get();
         }
@@ -80,9 +82,10 @@ Lex Lexer::parseString() {
     bool invalid_char = false;
     string raw;
     stream.get();
+    head_pos = stream.getPos();
     auto head = stream.peek();
     for (; head != EOF && head != '\n' && head != '"'; head = stream.peek()) {
-        if(head < 32 || head > 126) {
+        if (head < 32 || head > 126) {
             invalid_char = true;
         }
         raw.push_back(static_cast<char>(head));
@@ -99,6 +102,7 @@ Lex Lexer::parseString() {
 
 Lex Lexer::parseIdentOrKey() {
     std::string raw;
+    head_pos = stream.peekPos();
     for (auto head = stream.peek(); isalnum(head) || head == '_'; head = stream.peek()) {
         raw.push_back(static_cast<char>(head));
         stream.get();
@@ -106,8 +110,7 @@ Lex Lexer::parseIdentOrKey() {
     auto maybekey = isKeyword(raw);
     if (maybekey.has_value()) {
         return Lex(maybekey.value());
-    }
-    else {
+    } else {
         return Lex::Ident(raw);
     }
 }
@@ -121,14 +124,15 @@ Lex Lexer::parseInt() {
     int ret = 0;
     int sign = 1;
 
-    while(stream.peek() == '0') {
+    head_pos = stream.peekPos();
+    while (stream.peek() == '0') {
         chunk.push_back(static_cast<char>(stream.peek()));
         stream.get();
-        if(!hasZero) {
+        if (!hasZero) {
             hasZero = true;
             continue;
         }
-        if(hasZero) { multiZero = true; }
+        if (hasZero) { multiZero = true; }
     }
 
     while (isdigit(stream.peek())) {
@@ -143,11 +147,11 @@ Lex Lexer::parseInt() {
         chunk.push_back(static_cast<char>(stream.peek()));
         ret *= 10;
         ret += stream.get() - '0';
-        if(prev > ret) {
+        if (prev > ret) {
             overflow = true;
         }
     }
-    if(overflow || multiZero || (hasZero && ret != 0)) {
+    if (overflow || multiZero || (hasZero && ret != 0)) {
         errors.push_back(Lex::Error(chunk));
     }
     return Lex(sign * ret);
@@ -157,7 +161,7 @@ Lex Lexer::parseInt() {
 Lex Lexer::parse() {
     auto maybe = skipWhitespace();
 
-    if(maybe.has_value()) {
+    if (maybe.has_value()) {
         return maybe.value();
     }
 
@@ -179,93 +183,110 @@ Lex Lexer::parse() {
     }
 
     switch (head) {
-    case ')':
-        stream.get();
-        return Lex(Sep::RPar);
-    case '(':
-        stream.get();
-        return Lex(Sep::LPar);
-    case ']':
-        stream.get();
-        return Lex(Sep::RBar);
-    case '[':
-        stream.get();
-        return Lex(Sep::LBar);
-    case '}':
-        stream.get();
-        return Lex(Sep::RCur);
-    case '{':
-        stream.get();
-        return Lex(Sep::LCur);
-    case ';':
-        stream.get();
-        return Lex(Sep::Semicolon);
-    case ':':
-        stream.get();
-        return Lex(Sep::Colon);
-    case ',':
-        stream.get();
-        return Lex(Sep::Comma);
-    case '+': 
-        stream.get();
-        return Lex(Op::Add);
-    case '-':
-        stream.get();
-        return Lex(Op::Sub);
-    case '*':
-        stream.get();
-        return Lex(Op::Mul);
+        case ')':
+            stream.get();
+            head_pos = stream.getPos();
+            return Lex(Sep::RPar);
+        case '(':
+            stream.get();
+            head_pos = stream.getPos();
+            return Lex(Sep::LPar);
+        case ']':
+            stream.get();
+            head_pos = stream.getPos();
+            return Lex(Sep::RBar);
+        case '[':
+            stream.get();
+            head_pos = stream.getPos();
+            return Lex(Sep::LBar);
+        case '}':
+            stream.get();
+            head_pos = stream.getPos();
+            return Lex(Sep::RCur);
+        case '{':
+            stream.get();
+            head_pos = stream.getPos();
+            return Lex(Sep::LCur);
+        case ';':
+            stream.get();
+            head_pos = stream.getPos();
+            return Lex(Sep::Semicolon);
+        case ':':
+            stream.get();
+            head_pos = stream.getPos();
+            return Lex(Sep::Colon);
+        case ',':
+            stream.get();
+            head_pos = stream.getPos();
+            return Lex(Sep::Comma);
+        case '+':
+            stream.get();
+            head_pos = stream.getPos();
+            return Lex(Op::Add);
+        case '-':
+            stream.get();
+            head_pos = stream.getPos();
+            return Lex(Op::Sub);
+        case '*':
+            stream.get();
+            head_pos = stream.getPos();
+            return Lex(Op::Mul);
 
-    case '!': {
-        stream.get();
-        auto next = stream.peek();
-        if(next == '=') {
+        case '!': {
             stream.get();
-            return Lex(Cmp::UnEqual);
-        } else {
-            return Lex::Error("!");
-        }
-    }
-
-    case '/':
-        stream.get();
-        return Lex(Op::Div);
-    case '>':
-        stream.get();
-        if (stream.peek() == '=') {
-            stream.get();
-            return Lex(Cmp::GreaterEq);
-        } else {
-            return Lex(Cmp::Greater);
+            head_pos = stream.getPos();
+            auto next = stream.peek();
+            if (next == '=') {
+                stream.get();
+                return Lex(Cmp::UnEqual);
+            } else {
+                return Lex::Error("!");
+            }
         }
 
-    case '<':
-        stream.get();
-        if (stream.peek() == '=') {
+        case '/':
             stream.get();
-            return Lex(Cmp::LessEq);
-        } else {
-            return Lex(Cmp::Less);
-        }
-    case '=':
-        stream.get();
-        if (stream.peek() == '=') {
+            head_pos = stream.getPos();
+            return Lex(Op::Div);
+        case '>':
             stream.get();
-            return Lex(Cmp::Equal);
-        } else {
-            return Lex(Sep::Assign);
+            head_pos = stream.getPos();
+            if (stream.peek() == '=') {
+                stream.get();
+                return Lex(Cmp::GreaterEq);
+            } else {
+                return Lex(Cmp::Greater);
+            }
+
+        case '<':
+            stream.get();
+            head_pos = stream.getPos();
+            if (stream.peek() == '=') {
+                stream.get();
+                return Lex(Cmp::LessEq);
+            } else {
+                return Lex(Cmp::Less);
+            }
+        case '=':
+            stream.get();
+            head_pos = stream.getPos();
+            if (stream.peek() == '=') {
+                stream.get();
+                return Lex(Cmp::Equal);
+            } else {
+                return Lex(Sep::Assign);
+            }
+        default: {
+            string err;
+            head_pos = stream.peekPos();
+            while (!isspace(stream.peek())) {
+                err.push_back(static_cast<char>(stream.get()));
+            }
+            return Lex::Error(err);
         }
-    default: {
-        string err;
-        while (!isspace(stream.peek())) {
-            err.push_back(static_cast<char>(stream.get()));
-        }
-        return Lex::Error(err);
-    }
 
     }
 }
-
 
 
 } // end namespace C0

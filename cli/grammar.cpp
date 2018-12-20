@@ -28,6 +28,7 @@ int main(int argc, char **argv) {
 
 
     string source = C0::getFileContents(source_name.c_str());
+    std::cout << "source:" << std::endl << source << std::endl;
 
     auto parser = C0::Parser::fromStr(source);
     auto [funcs, sym] = parser.parseProg();
@@ -47,12 +48,6 @@ int main(int argc, char **argv) {
     
     
     for (auto &func : funcs) {
-        if (sym->hasFunc(func->name)) {
-            std::cout << "multiple definition of function:" << func->name << std::endl;
-            continue;
-        }
-
-        sym->addFunc(func);
         C0::TypeChecker checker;
         func->accept(checker);
         if (!checker.getErrors().empty()) {

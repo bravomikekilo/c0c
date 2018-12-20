@@ -16,7 +16,8 @@ int main() {
     C0::Lexer lexer(source);
 
     while (!lexer.peek().is(C0::LexKind::Eof)) {
-        std::cout << lexer.peek().toString() << std::endl;
+        std::cout << lexer.peek().toString() << " @";
+        std::cout << lexer.headPos().toStr() << std::endl;
         lexer.next();
     }
 

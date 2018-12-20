@@ -8,12 +8,12 @@ namespace C0 {
 
 using std::tuple;
 
-class ASTDrawer :
-        public ASTVisitor {
+class ASTDrawer :public ASTVisitor {
 public:
     using EdgeType = std::tuple<int, int, string>;
 
     static string dot(ASTBase &ast);
+
     static string drawProgram(vector<shared_ptr<FuncAST>> &funcs);
 
     ASTDrawer()

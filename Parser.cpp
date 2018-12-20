@@ -1,11 +1,15 @@
 #include "Parser.h"
 #include "c0.h"
 
+#define FMT_HEADER_ONLY
+
+#include "fmt/format.h"
+
 
 namespace C0 {
 
-Parser Parser::fromStr(string str) {
-    auto lexer = Lexer(std::move(str));
+Parser Parser::fromStr(const string &str) {
+    auto lexer = Lexer(str);
     return Parser(std::move(lexer));
 }
 
@@ -24,8 +28,9 @@ unique_ptr<ExprAST> Parser::parseFactor() {
         lexer.next();
         if (lexer.peek().is(LexKind::Int)) {
             auto v = head.getInt();
+            auto pos = lexer.headPos();
             lexer.next();
-            return make_unique<IntExpr>(v);
+            return make_unique<IntExpr>(pos, v);
         } else {
             errors.emplace_back("duplicate +");
             return parseFactor();
@@ -36,8 +41,9 @@ unique_ptr<ExprAST> Parser::parseFactor() {
         lexer.next();
         if (lexer.peek().is(LexKind::Int)) {
             auto v = head.getInt();
+            auto pos = lexer.headPos();
             lexer.next();
-            return make_unique<IntExpr>(-v);
+            return make_unique<IntExpr>(pos, -v);
         } else {
             errors.emplace_back("duplicate -");
             return parseFactor();
@@ -58,37 +64,30 @@ unique_ptr<ExprAST> Parser::parseFactor() {
 
     if (head.is(LexKind::Int)) {
         auto v = head.getInt();
+        auto pos = lexer.headPos();
         lexer.next();
-        return make_unique<IntExpr>(v);
+        return make_unique<IntExpr>(pos, v);
     }
 
     if (head.is(LexKind::Char)) {
         auto v = head.getChar();
+        auto pos = lexer.headPos();
         lexer.next();
-        return make_unique<CharExpr>(v);
+        return make_unique<CharExpr>(pos, v);
     }
 
     if (head.is(LexKind::Ident)) {
         auto name = head.getString();
         auto varID = curr_table->findVarByName(name);
         VarID id = varID.value_or(0);
-        /*
-        if (!varID.has_value()) {
-            errors.push_back("unknown variable:" + name);
-        } else {
-            id = varID.value();
-        }
-        */
-
-
-
+        auto head_pos = lexer.headPos();
         lexer.next();
         if (lexer.peek().is(Sep::LPar)) {  // is a function call
             lexer.next();
             vector<unique_ptr<ExprAST>> args;
             if (lexer.peek().is(Sep::RPar)) {
                 lexer.next();
-                return make_unique<CallExpr>(name, std::move(args));
+                return make_unique<CallExpr>(head_pos, name, std::move(args));
             }
             args.push_back(parseExpr());
             while (!lexer.peek().is(Sep::RPar)) {
@@ -100,22 +99,27 @@ unique_ptr<ExprAST> Parser::parseFactor() {
                 args.push_back(parseExpr());
             }
             lexer.next();
-            return make_unique<CallExpr>(name, std::move(args));
+            return make_unique<CallExpr>(head_pos, name, std::move(args));
         }
 
         if (id == 0) {
-            errors.push_back("unknown variable:" + name);
+            errors.push_back(fmt::format(
+                    "row:{} col:{} unknown variable: {}",
+                    head_pos.ln,
+                    head_pos.col,
+                    name));
         }
         if (lexer.peek().is(Sep::LBar)) {
+            auto op_head = lexer.headPos();
             lexer.next();
-            auto var = make_unique<VarExpr>(id);
+            auto var = make_unique<VarExpr>(head_pos, id);
             auto ind = parseExpr();
             expect(Sep::RBar, "loss ] in index");
-            return make_unique<OpExpr>(Op::Ind, std::move(var), std::move(ind));
+            return make_unique<OpExpr>(op_head, Op::Ind, std::move(var), std::move(ind));
         }
 
 
-        return make_unique<VarExpr>(id);
+        return make_unique<VarExpr>(head_pos, id);
     }
 
     report("missing factor");
@@ -128,9 +132,10 @@ unique_ptr<ExprAST> Parser::parseTerm() {
         const auto &head = lexer.peek();
         if (head.is(Op::Mul) || head.is(Op::Div)) {
             auto op = head.getOp();
+            auto op_pos = lexer.headPos();
             lexer.next();
             auto rhs = parseFactor();
-            base = make_unique<OpExpr>(op, std::move(base), std::move(rhs));
+            base = make_unique<OpExpr>(op_pos, op, std::move(base), std::move(rhs));
         } else {
             break;
         }
@@ -140,23 +145,26 @@ unique_ptr<ExprAST> Parser::parseTerm() {
 
 unique_ptr<ExprAST> Parser::parseExpr() {
     optional<Op> pre;
+    optional<Pos> pre_pos;
     if (lexer.peek().is(Op::Add) || lexer.peek().is(Op::Sub)) {
         pre = lexer.peek().getOp();
+        pre_pos = lexer.headPos();
         lexer.next();
     }
     auto base = parseTerm();
 
     if (pre.has_value() && pre.value() == Op::Sub) {
-        auto const_zero = make_unique<IntExpr>(0);
-        base = make_unique<OpExpr>(Op::Sub, std::move(const_zero), std::move(base));
+        auto const_zero = make_unique<IntExpr>(pre_pos.value(), 0);
+        base = make_unique<OpExpr>(pre_pos.value(), Op::Sub, std::move(const_zero), std::move(base));
     }
     while (true) {
         const auto &head = lexer.peek();
         if (head.is(Op::Add) || head.is(Op::Sub)) {
+            auto op_head = lexer.headPos();
             auto op = head.getOp();
             lexer.next();
             auto rhs = parseTerm();
-            base = make_unique<OpExpr>(op, std::move(base), std::move(rhs));
+            base = make_unique<OpExpr>(op_head, op, std::move(base), std::move(rhs));
         } else {
             break;
         }
@@ -167,20 +175,22 @@ unique_ptr<ExprAST> Parser::parseExpr() {
 unique_ptr<CondAST> Parser::parseCond() {
     auto lhs = parseExpr();
     if (lexer.peek().is(LexKind::Cmp)) {
+        auto cp_head = lexer.headPos();
         auto cp = lexer.peek().getCmp();
         lexer.next();
         auto rhs = parseExpr();
-        return make_unique<CondAST>(std::move(lhs), cp, std::move(rhs));
+        return make_unique<CondAST>(cp_head, std::move(lhs), cp, std::move(rhs));
     } else {
-        return make_unique<CondAST>(std::move(lhs));
+        return make_unique<CondAST>(lhs->getPos(), std::move(lhs));
     }
 }
 
 unique_ptr<AsStmt> Parser::parseAs() {
     auto lhs = parseExpr();
+    auto assign_pos = lexer.headPos();
     expect(Sep::Assign, "loss assign in AsStmt");
     auto rhs = parseExpr();
-    return make_unique<AsStmt>(std::move(lhs), std::move(rhs));
+    return make_unique<AsStmt>(assign_pos, std::move(lhs), std::move(rhs));
 }
 
 unique_ptr<StmtAST> Parser::parseStmt() {
@@ -188,7 +198,7 @@ unique_ptr<StmtAST> Parser::parseStmt() {
     const auto &head = lexer.peek();
     if (head.is(Keyword::IF)) {
         return parseIf();
-    } else if (head.is(Keyword::WHILE)){
+    } else if (head.is(Keyword::WHILE)) {
         auto parsed = parseWhile();
         return parsed;
     } else if (head.is(Keyword::DO)) {
@@ -209,29 +219,32 @@ unique_ptr<StmtAST> Parser::parseStmt() {
     } else if (head.is(Keyword::PRINTF)) {
         auto parsed = parsePrint();
         return parsed;
-    } else if (head.is(Keyword::SCANF)){
+    } else if (head.is(Keyword::SCANF)) {
         auto parsed = parseRead();
         return parsed;
     } else if (head.is(Sep::Semicolon)) {
+        auto head_pos = lexer.headPos();
         lexer.next();
-        return make_unique<EmptyStmt>();
+        return make_unique<EmptyStmt>(head_pos);
     }
 
     auto lhs = parseExpr();
 
     if (lexer.peek().is(Sep::Assign)) {
+        auto assign_pos = lexer.headPos();
         lexer.next();
         auto rhs = parseExpr();
         checkSemicolon();
-        return make_unique<AsStmt>(std::move(lhs), std::move(rhs));
+        return make_unique<AsStmt>(assign_pos, std::move(lhs), std::move(rhs));
     }
 
     checkSemicolon();
-    return make_unique<ExprStmt>(std::move(lhs));
+    return make_unique<ExprStmt>(lhs->getPos(), std::move(lhs));
 
 }
 
 unique_ptr<CaseStmt> Parser::parseCase() {
+    auto head_pos = lexer.headPos();
     lexer.next(); // jump over case keyword
     const auto &head = lexer.peek();
     std::variant<char, int> cond;
@@ -246,10 +259,11 @@ unique_ptr<CaseStmt> Parser::parseCase() {
 
     expect(Sep::Colon, "loss colon"); // jump over colon
     auto branch = parseStmt();
-    return make_unique<CaseStmt>(cond, std::move(branch));
+    return make_unique<CaseStmt>(head_pos, cond, std::move(branch));
 }
 
 unique_ptr<SwitchStmt> Parser::parseSwitch() {
+    auto head_pos = lexer.headPos();
     lexer.next(); // jump over switch keyword
 
     expect(Sep::LPar, "loss (");
@@ -263,11 +277,12 @@ unique_ptr<SwitchStmt> Parser::parseSwitch() {
     }
     expect(Sep::RCur, "loss }");
 
-    return make_unique<SwitchStmt>(std::move(exp), std::move(cases));
+    return make_unique<SwitchStmt>(head_pos, std::move(exp), std::move(cases));
 
 }
 
 unique_ptr<IfStmt> Parser::parseIf() {
+    auto head_pos = lexer.headPos();
     lexer.next();
     if (lexer.peek().is(Sep::LPar)) lexer.next();
     else report("missing (");
@@ -282,13 +297,14 @@ unique_ptr<IfStmt> Parser::parseIf() {
     if (lexer.peek().is(Keyword::ELSE)) { // parse else
         lexer.next();
         auto other = parseStmt();
-        return make_unique<IfStmt>(std::move(cond), std::move(body), std::move(other));
+        return make_unique<IfStmt>(head_pos, std::move(cond), std::move(body), std::move(other));
     }
 
-    return make_unique<IfStmt>(std::move(cond), std::move(body));
+    return make_unique<IfStmt>(head_pos, std::move(cond), std::move(body));
 }
 
 unique_ptr<ForStmt> Parser::parseFor() {
+    auto head_pos = lexer.headPos();
     lexer.next();
     expect(Sep::LPar, "loss (");
     optional<unique_ptr<AsStmt>> start;
@@ -314,11 +330,12 @@ unique_ptr<ForStmt> Parser::parseFor() {
 
     auto body = parseStmt();
 
-    return make_unique<ForStmt>(std::move(start), std::move(cond), std::move(after), std::move(body));
+    return make_unique<ForStmt>(head_pos, std::move(start), std::move(cond), std::move(after), std::move(body));
 
 }
 
 unique_ptr<DoStmt> Parser::parseDo() {
+    auto head_pos = lexer.headPos();
     lexer.next(); // jump over keyword do
     auto body = parseStmt();
     expect(Keyword::WHILE, "loss while after do");
@@ -327,11 +344,12 @@ unique_ptr<DoStmt> Parser::parseDo() {
     expect(Sep::RPar, "loss )");
     checkSemicolon();
 
-    return make_unique<DoStmt>(std::move(body), std::move(cond));
+    return make_unique<DoStmt>(head_pos, std::move(body), std::move(cond));
 
 }
 
 unique_ptr<WhileStmt> Parser::parseWhile() {
+    auto head_pos = lexer.headPos();
     lexer.next();
     if (lexer.peek().is(Sep::LPar)) lexer.next();
     else report("missing (");
@@ -343,32 +361,34 @@ unique_ptr<WhileStmt> Parser::parseWhile() {
 
     auto body = parseStmt();
 
-    return make_unique<WhileStmt>(std::move(cond), std::move(body));
+    return make_unique<WhileStmt>(head_pos, std::move(cond), std::move(body));
 }
 
 unique_ptr<StmtAST> Parser::parseBlock() {
+    auto head_pos = lexer.headPos();
     lexer.next();
     if (lexer.peek().is(Sep::RCur)) {
         lexer.next();
-        return make_unique<EmptyStmt>();
+        return make_unique<EmptyStmt>(head_pos);
     }
     vector<unique_ptr<StmtAST>> stmts;
     while (!lexer.peek().is(Sep::RCur)) {
         stmts.push_back(parseStmt());
     }
     lexer.next();
-    return make_unique<BlockStmt>(std::move(stmts));
+    return make_unique<BlockStmt>(head_pos, std::move(stmts));
 }
 
 unique_ptr<RetStmt> Parser::parseRet() {
+    auto head_pos = lexer.headPos();
     lexer.next();
     if (lexer.peek().is(Sep::Semicolon)) {
         lexer.next();
-        return make_unique<RetStmt>();
+        return make_unique<RetStmt>(head_pos);
     }
     auto exp = parseExpr();
     checkSemicolon();
-    return make_unique<RetStmt>(std::move(exp));
+    return make_unique<RetStmt>(head_pos, std::move(exp));
 }
 
 bool isVarHead(const Lex &lex) {
@@ -427,7 +447,7 @@ void Parser::tryParseVar(bool global) {
                     if (curr_table->hasVarInScope(name)) {
                         errors.push_back("multiple definition of variable:" + name);
                     } else {
-                        curr_table->insert(SymTerm{ popVarID(), t, name, global, {} });
+                        curr_table->insert(SymTerm{popVarID(), t, name, global, {}});
                     }
                 }
             }
@@ -520,6 +540,7 @@ pair<vector<shared_ptr<FuncAST>>, shared_ptr<SymTable>> Parser::parseProg() {
     tryParseConst(true);
     while (isVarHead(lexer.peek())) {
         auto baseType = lexer.peek().is(Keyword::CHAR) ? BaseTypeK::Char : BaseTypeK::Int;
+        auto func_pos = lexer.headPos();
         lexer.next();
         if (!lexer.peek().is(LexKind::Ident)) {
             errors.emplace_back("miss a variable or function name");
@@ -527,7 +548,7 @@ pair<vector<shared_ptr<FuncAST>>, shared_ptr<SymTable>> Parser::parseProg() {
         auto first_name = lexer.peek().getString();
         lexer.next();
         if (lexer.peek().is(Sep::LPar)) {
-            auto func = parseFunc(Type(baseType), first_name);
+            auto func = parseFunc(func_pos, Type(baseType), first_name);
             funcs.push_back(func);
             // func_table.insert(pair(first_name, func));
             break;
@@ -601,11 +622,6 @@ pair<vector<shared_ptr<FuncAST>>, shared_ptr<SymTable>> Parser::parseProg() {
                     }
                 }
             }
-            /*
-            if (lexer.peek().is(Sep::Comma)) {
-                lexer.next();
-            }
-            */
         };
         checkSemicolon();
     }
@@ -655,6 +671,7 @@ Type Parser::parseArgType() {
 }
 
 shared_ptr<FuncAST> Parser::parseFunc() {
+    auto func_pos = lexer.headPos();
     auto retType = parseRetType();
 
     string func_name;
@@ -665,12 +682,12 @@ shared_ptr<FuncAST> Parser::parseFunc() {
         errors.emplace_back("can't find function name");
     }
 
-    auto func = parseFunc(retType, func_name);
+    auto func = parseFunc(func_pos, retType, func_name);
 
     return func;
 }
 
-shared_ptr<FuncAST> Parser::parseFunc(Type ret, string func_name) {
+shared_ptr<FuncAST> Parser::parseFunc(Pos func_pos, Type ret, string func_name) {
 
     expect(Sep::LPar, "missing ( in function");
     auto prev_table = curr_table;
@@ -734,13 +751,22 @@ shared_ptr<FuncAST> Parser::parseFunc(Type ret, string func_name) {
     lexer.next();
 
 
-    auto r = make_shared<FuncAST>(curr_table, func_name, ret, std::move(args), std::move(stmts));
+    auto r = make_shared<FuncAST>(func_pos, curr_table, func_name, ret, std::move(args), std::move(stmts));
     curr_table = prev_table;
-    curr_table->addFunc(r);
+    if (curr_table->hasFunc(func_name)) {
+        errors.push_back(fmt::format(
+                "{} multiple definition of function:{}",
+                func_pos.toStr(),
+                func_name
+        ));
+    } else {
+        curr_table->addFunc(r);
+    }
     return r;
 }
 
 unique_ptr<StmtAST> Parser::parseRead() {
+    auto head_pos = lexer.headPos();
     lexer.next();
     bool finish = false;
     vector<unique_ptr<VarExpr>> args;
@@ -753,6 +779,7 @@ unique_ptr<StmtAST> Parser::parseRead() {
         }
     } else {
         auto var_name = lexer.peek().getString();
+        auto var_pos = lexer.headPos();
         lexer.next();
         auto var_id = curr_table->findVarByName(var_name);
         VarID id = 0;
@@ -761,7 +788,7 @@ unique_ptr<StmtAST> Parser::parseRead() {
         } else {
             id = var_id.value();
         }
-        args.push_back(std::move(make_unique<VarExpr>(id)));
+        args.push_back(std::move(make_unique<VarExpr>(var_pos, id)));
     }
 
     if (!finish) {
@@ -774,6 +801,7 @@ unique_ptr<StmtAST> Parser::parseRead() {
             }
             if (lexer.peek().is(LexKind::Ident)) {
                 auto var_name = lexer.peek().getString();
+                auto var_pos = lexer.headPos();
                 lexer.next();
                 auto var_id = curr_table->findVarByName(var_name);
                 VarID id = 0;
@@ -782,7 +810,7 @@ unique_ptr<StmtAST> Parser::parseRead() {
                 } else {
                     id = var_id.value();
                 }
-                args.push_back(std::move(make_unique<VarExpr>(id)));
+                args.push_back(std::move(make_unique<VarExpr>(var_pos, id)));
             } else {
                 errors.emplace_back("missing variable in read");
                 lexer.next();
@@ -793,10 +821,11 @@ unique_ptr<StmtAST> Parser::parseRead() {
 
     }
     checkSemicolon();
-    return make_unique<ReadStmt>(std::move(args));
+    return make_unique<ReadStmt>(head_pos, std::move(args));
 }
 
 unique_ptr<StmtAST> Parser::parsePrint() {
+    auto head_pos = lexer.headPos();
     lexer.next();
     expect(Sep::LPar, "missing print");
     optional<int> str;
@@ -811,7 +840,7 @@ unique_ptr<StmtAST> Parser::parsePrint() {
         lexer.next();
         optional<unique_ptr<ExprAST>> exp;
         checkSemicolon();
-        return make_unique<PrintStmt>(str, std::move(exp));
+        return make_unique<PrintStmt>(head_pos, str, std::move(exp));
     }
 
     if (str.has_value()) {
@@ -822,7 +851,7 @@ unique_ptr<StmtAST> Parser::parsePrint() {
 
     expect(Sep::RPar, "missing ) in print");
     checkSemicolon();
-    return make_unique<PrintStmt>(str, std::move(exp));
+    return make_unique<PrintStmt>(head_pos, str, std::move(exp));
 
 }
 

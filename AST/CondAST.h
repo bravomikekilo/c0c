@@ -10,11 +10,11 @@ class CondAST :
     public ASTBase
 {
 public:
-    CondAST(unique_ptr<ExprAST>&& lhs, Cmp cp, unique_ptr<ExprAST>&& rhs)
-        :lhs(std::move(lhs)), cp(cp), rhs(std::move(rhs)){}
+    CondAST(Pos pos, unique_ptr<ExprAST>&& lhs, Cmp cp, unique_ptr<ExprAST>&& rhs)
+        :ASTBase(pos), lhs(std::move(lhs)), cp(cp), rhs(std::move(rhs)){}
 
-    explicit CondAST(unique_ptr<ExprAST>&& exp)
-        :lhs(std::move(exp)), cp(Cmp::UnEqual), rhs(make_unique<IntExpr>(0)) {}
+    explicit CondAST(Pos pos, unique_ptr<ExprAST>&& exp)
+        :ASTBase(pos), lhs(std::move(exp)), cp(Cmp::UnEqual), rhs(make_unique<IntExpr>(lhs->getPos(), 0)) {}
     unique_ptr<ExprAST> lhs;
     Cmp cp;
     unique_ptr<ExprAST> rhs;

@@ -11,8 +11,10 @@ namespace C0 {
 
 class ExprAST: public ASTBase {
 public:
+    ExprAST(Pos pos): ASTBase(pos) {}
     ~ExprAST() override = default;
     virtual Type outType(shared_ptr<SymTable> table) = 0;
+    virtual optional<int> constEval(const SymTable &table) = 0;
 };
 
 class IntExpr: public ExprAST {
@@ -20,11 +22,15 @@ public:
     void accept(ASTVisitor &visitor) override {
         visitor.visit(this);
     }
-    explicit IntExpr(int v) : v(v) {}
+    explicit IntExpr(Pos pos, int v) :ExprAST(pos), v(v) {}
 
     Type outType(shared_ptr<SymTable> table) override {
         return Type(BaseTypeK::Int);
     };
+
+    optional<int> constEval(const SymTable &table) override {
+        return {v};
+    }
 
     int v;
 };
@@ -34,10 +40,14 @@ public:
     void accept(ASTVisitor &visitor) override {
         visitor.visit(this);
     }
-    explicit CharExpr(char v) : v(v) {};
+    explicit CharExpr(Pos pos, char v) :ExprAST(pos), v(v) {};
 
     Type outType(shared_ptr<SymTable> table) override {
         return Type(BaseTypeK::Char);
+    }
+
+    optional<int> constEval(const SymTable &table) override {
+        return {v};
     }
 
     char v;
@@ -49,8 +59,8 @@ public:
         visitor.visit(this);
     }
 
-    OpExpr(Op op, unique_ptr<ExprAST>&& lhs, unique_ptr<ExprAST>&& rhs)
-        :op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {};
+    OpExpr(Pos pos, Op op, unique_ptr<ExprAST>&& lhs, unique_ptr<ExprAST>&& rhs)
+        :ExprAST(pos), op(op), lhs(std::move(lhs)), rhs(std::move(rhs)) {};
     Op op;
     unique_ptr<ExprAST> lhs;
     unique_ptr<ExprAST> rhs;
@@ -67,6 +77,16 @@ public:
         }
     }
 
+    optional<int> constEval(const SymTable &table) override {
+        auto vl = lhs->constEval(table);
+        auto vr = rhs->constEval(table);
+        if(vl.has_value() && vr.has_value()) {
+            return {vl.value() + vr.value()};
+        } else {
+            return {};
+        }
+    }
+
 };
 
 
@@ -76,7 +96,7 @@ public:
     void accept(ASTVisitor &visitor) override {
         visitor.visit(this);
     }
-    explicit VarExpr(VarID id):varID(id) { }
+    VarExpr(Pos pos, VarID id):ExprAST(pos), varID(id) { }
     VarID varID;
 
     Type outType(shared_ptr<SymTable> table) override {
@@ -87,6 +107,15 @@ public:
             return term->type;
         }
     }
+
+    optional<int> constEval(const SymTable &table) override {
+        auto term = table.findVarByID(varID);
+        if(term && term->isConst()) {
+            return term->val.value();
+        } else {
+            return {};
+        }
+    }
 };
 
 class CallExpr : public  ExprAST {
@@ -95,13 +124,17 @@ public:
         visitor.visit(this);
     }
 
-    CallExpr(string name, vector<unique_ptr<ExprAST>>&& args)
-        :name(std::move(name)), args(std::move(args)) {};
+    CallExpr(Pos pos, string name, vector<unique_ptr<ExprAST>>&& args)
+        :ExprAST(pos), name(std::move(name)), args(std::move(args)) {};
 
     string name;
     vector<unique_ptr<ExprAST>> args;
 
     Type outType(shared_ptr<SymTable> table) override;
+
+    optional<int> constEval(const SymTable &table) override {
+        return {};
+    }
 
 };
 

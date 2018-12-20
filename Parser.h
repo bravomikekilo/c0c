@@ -11,7 +11,7 @@ namespace C0 {
 class Parser {
 
 public:
-    static Parser fromStr(string str);
+    static Parser fromStr(const string &str);
 
     explicit Parser(Lexer lexer)
             : lexer(std::move(lexer)), global_table(SymTable::createGlobalTable()) {
@@ -62,7 +62,7 @@ public:
 
     shared_ptr<FuncAST> parseFunc();
 
-    shared_ptr<FuncAST> parseFunc(Type ret, string func_name);
+    shared_ptr<FuncAST> parseFunc(Pos func_pos, Type ret, string func_name);
 
     Type parseRetType();
 
