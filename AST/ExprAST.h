@@ -14,6 +14,7 @@ public:
     ExprAST(Pos pos): ASTBase(pos) {}
     ~ExprAST() override = default;
     virtual Type outType(shared_ptr<SymTable> table) = 0;
+    virtual bool isLeftValue() {return false;};
     virtual optional<int> constEval(const SymTable &table) = 0;
 };
 
@@ -105,6 +106,10 @@ public:
         }
     }
 
+    bool isLeftValue() override {
+        return op == C0::Op::Ind;
+    }
+
 };
 
 
@@ -133,6 +138,10 @@ public:
         } else {
             return {};
         }
+    }
+
+    bool isLeftValue() override {
+        return true;
     }
 };
 

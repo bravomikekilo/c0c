@@ -39,6 +39,7 @@ int main() {
     x = void_ret(x, x) + x;  // test void
     x = x + y;  // test undeclared
     c_arr[5] = y; // test undeclared
+    1 = 2;              // invalid left value
 
     printf("inside", c_arr[0]);
     printf("inside", c_arr);

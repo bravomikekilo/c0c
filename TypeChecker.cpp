@@ -191,6 +191,10 @@ void C0::TypeChecker::visit(C0::AsStmt *e) {
 
     // check if type is consistent
 
+    if(!e->lhs->isLeftValue()) {
+        addError(e->lhs->getPos(), "invalid left value");
+    }
+
     auto left_type = e->lhs->outType(curr_table);
     auto right_type = e->rhs->outType(curr_table);
 
