@@ -3,4 +3,5 @@
 .vs
 cmake-build-debug
 assembly/*
+workbench/*
 

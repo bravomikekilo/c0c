@@ -38,10 +38,10 @@ vector<RegionN *> computeDominanceTree(pair<RegionN *, StopN *> graph) {
     while(!s.empty()) {
         auto head = s.top(); s.pop();
         if(head.second) {
+            head.first->bid = index++;
             postOrder.push_back(head.first);
         } else{
             auto node = head.first;
-            node->bid = index++;
 
             start->visitPost([&](RegionN *region) {
                 if (!visited.count(region)) {
@@ -65,9 +65,10 @@ vector<RegionN *> computeDominanceTree(pair<RegionN *, StopN *> graph) {
         for(auto sz = postOrder.size() - 1; sz > 0; --sz) {
             auto region = postOrder[sz];
             RegionN *new_idom = nullptr;
+
             bool first = true;
             region->visitPred([&](RegionN *pred){
-                if(first) {
+                if(first && ret[pred->bid] != nullptr) {
                     first = false;
                     new_idom = pred;
                 } else {

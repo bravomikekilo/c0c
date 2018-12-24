@@ -10,6 +10,7 @@
 #include "SON/SONDrawer.h"
 #include "SON/SCCP.h"
 #include "SON/PhiClean.h"
+#include "SON/FineDrawer.h"
 #include "AST/ASTDrawer.h"
 
 #include "Parser.h"
@@ -21,18 +22,18 @@
 
 
 int main(int argc, char **argv) {
-    std::cout << "hello world" << std::endl;
-    if (argc != 2) {
+    if (argc < 2) {
         return -1;
     }
 
     std::string source = C0::getFileContents(argv[1]);
+    std::cout << "##$$ source.c0" << std::endl;
     std::cout << source << std::endl;
     auto parser = C0::Parser::fromStr(source);
 
     auto[funcs, sym] = parser.parseProg();
 
-    std::cout << "------------AST------------" << std::endl;
+    std::cout << "##$$ AST.dot" << std::endl;
 
     std::cout << C0::ASTDrawer::drawProgram(funcs);
 
@@ -40,7 +41,7 @@ int main(int argc, char **argv) {
         std::cout << err << std::endl;
     }
 
-    std::cout << "------------Sea Of Node------------" << std::endl;
+    // std::cout << "------------Sea Of Node------------" << std::endl;
 
     auto global_offsets = C0::getGlobalOffset(sym->getVarInScope());
 
@@ -62,7 +63,10 @@ int main(int argc, char **argv) {
 
         phi_cleaner.optimize(stop);
         C0::SONDrawer drawer;
+
+        std::cout << "##$$ " << func->name << "/origin.dot" << std::endl;
         drawer.draw(stop);
+        std::cout << drawer.toDot(func->name) << std::endl;
 
         /*
         std::cout << "-------------before merge------------" << std::endl;
@@ -77,8 +81,9 @@ int main(int argc, char **argv) {
         drawer.clear();
         drawer.draw(stop);
 
-        std::cout << "-------------after optimization------------" << std::endl;
+        // std::cout << "-------------after optimization------------" << std::endl;
 
+        std::cout << "##$$ " << func->name << "/after_merge.dot" << std::endl;
         std::cout << drawer.toDot(func->name) << std::endl;
 
         C0::SCCPOptimizer sccp;
@@ -87,21 +92,30 @@ int main(int argc, char **argv) {
         drawer.clear();
         drawer.draw(stop);
 
-        std::cout << "-------------after sccp label--------------" << std::endl;
+        // std::cout << "-------------after sccp label--------------" << std::endl;
+
+        std::cout << "##$$ " << func->name << "/sccp_label.dot" << std::endl;
 
         std::cout << drawer.toDot(func->name) << std::endl;
 
         sccp.transform(std::pair(start, stop), ocean);
 
-        std::cout << "------------after sccp transform-----------" << std::endl;
+        // std::cout << "------------after sccp transform-----------" << std::endl;
+
+        std::cout << "##$$ " << func->name << "/sccp_transform.dot" << std::endl;
 
         drawer.clear();
         drawer.draw(stop, true);
 
         std::cout << drawer.toDot(func->name) << std::endl;
 
-        std::cout << "------------find dominance -----------" << std::endl;
+        // std::cout << "------------control flow-----------" << std::endl;
 
+        std::cout << "##$$ " << func->name << "/control_flow.dot" << std::endl;
+
+        C0::FineDrawer fine_drawer;
+        fine_drawer.draw(stop);
+        std::cout << fine_drawer.toDot(func->name) << std::endl;
 
 
     }
