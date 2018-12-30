@@ -57,16 +57,15 @@ public:
 
     void visit(FuncAST *e) override;
 
-    BasicBlock *getResult() {return start_block;}
-
-
-    ~CFGConverter() override = default;
-
     void visit(PrintStmt *e) override;
 
     void visit(ReadStmt *e) override;
 
     void visit(PareExpr *e) override;
+
+    BasicBlock *getResult() {return start_block;}
+
+    ~CFGConverter() override = default;
 
 
 private:

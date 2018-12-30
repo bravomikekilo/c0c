@@ -401,8 +401,16 @@ void CFGConverter::visit(PrintStmt *e) {
         } else {
             curr_block->insts.back().dst = exp_val;
         }
+
+        ExprAST *exp = e->expr.value().get();
+
+        while(exp->outType(curr_table).is(BaseTypeK::Num)) {
+            auto *n = (PareExpr *)exp;
+            exp = n->exp.get();
+        }
+
         curr_block->insts.emplace_back(str_id, exp_val,
-                                       e->expr.value()->outType(curr_table).is(BaseTypeK::Char)
+                                       exp->outType(curr_table).is(BaseTypeK::Char)
         );
     }
     freeAllTempReg();

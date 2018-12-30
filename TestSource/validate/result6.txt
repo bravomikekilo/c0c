@@ -1,6 +1,11 @@
 输入
 1 1 +
 输出
+a
+b
+c
+d
+11
 print string and expr, got char: l
 test expr\n
 58
@@ -10,6 +15,11 @@ test expr\n
 输入
 11 10 -
 输出
+a
+b
+c
+d
+11
  !#$&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~
 test expr\n
 58
@@ -19,6 +29,11 @@ test expr\n
 输入
 1 -1 =
 输出
+a
+b
+c
+d
+11
 print string and expr, got char: o
 test expr\n
 58
