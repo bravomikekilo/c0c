@@ -34,7 +34,12 @@ using std::vector;
 
 int main(int argc, char **argv) {
 
-    if (argc < 2) return -1;
+    string source_name;
+    if (argc < 2) {
+        std::cin >> source_name;
+    } else {
+        source_name = argv[1];
+    }
     bool verbose = false;
     bool escape_str = true;
     for (int i = 1; i < argc; ++i) {
@@ -49,7 +54,7 @@ int main(int argc, char **argv) {
 
     bool has_error = false;
 
-    std::string source = C0::getFileContents(argv[1]);
+    std::string source = C0::getFileContents(source_name.c_str());
 
     auto parser = C0::Parser::fromStr(source);
 
