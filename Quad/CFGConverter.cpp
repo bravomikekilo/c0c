@@ -418,6 +418,10 @@ void CFGConverter::visit(ReadStmt *e) {
 
 }
 
+void CFGConverter::visit(PareExpr *e) {
+    e->exp->accept(*this);
+}
+
 
 }
 

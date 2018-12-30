@@ -52,6 +52,7 @@ unique_ptr<ExprAST> Parser::parseFactor() {
 
     // parse paranthese expression
     if (head.is(Sep::LPar)) {
+        auto p_pos = lexer.headPos();
         lexer.next();
         auto ret = parseExpr();
         if (lexer.peek().is(Sep::RPar)) {
@@ -59,7 +60,7 @@ unique_ptr<ExprAST> Parser::parseFactor() {
         } else {
             addError(lexer.headPos(), "missing )");
         }
-        return ret;
+        return make_unique<PareExpr>(p_pos, std::move(ret));
     }
 
     if (head.is(LexKind::Int)) {
@@ -340,7 +341,7 @@ unique_ptr<DoStmt> Parser::parseDo() {
     expect(Sep::LPar, "loss (");
     auto cond = parseCond();
     expect(Sep::RPar, "loss )");
-    checkSemicolon();
+    // checkSemicolon();
 
     return make_unique<DoStmt>(head_pos, std::move(body), std::move(cond));
 
@@ -384,7 +385,9 @@ unique_ptr<RetStmt> Parser::parseRet() {
         lexer.next();
         return make_unique<RetStmt>(head_pos);
     }
+    expect(Sep::LPar, "missing ( in ret");
     auto exp = parseExpr();
+    expect(Sep::RPar, "missing ) in ret");
     checkSemicolon();
     return make_unique<RetStmt>(head_pos, std::move(exp));
 }

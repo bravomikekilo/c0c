@@ -333,4 +333,18 @@ void ASTDrawer::visit(ReadStmt *e) {
     subID = nodeID;
 }
 
+void ASTDrawer::visit(PareExpr *e) {
+
+    auto nodeID = popNode();
+
+    string str = fmt::format("#{} {}\\n()", nodeID, e->getPos().toStr());
+    nodes.push_back(str);
+
+    e->exp->accept(*this);
+    edges.emplace_back(nodeID, subID, "");
+
+    subID = nodeID;
+
+}
+
 }

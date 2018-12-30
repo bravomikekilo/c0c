@@ -18,15 +18,21 @@ using std::list;
 namespace C0 {
 
 
-void RegionN::Linearization() {
+void RegionN::schedule() {
+    order.clear(); // clear previous schedule
     vector<UseE> phis;
+    UseE jmp = nullptr;
     std::stack<UseE> s;
     unordered_set<UseE> visited;
     visited.insert(this);
 
     for (auto user: getUser()) {
         auto user_op = user->getOp();
-        if (user_op == Nop::Region || user_op == Nop::If) { continue; }
+        if (user_op == Nop::Region) { continue; } // jump over control
+        if (user_op == Nop::If) {
+            jmp = user;
+            continue;
+        }
 
         bool is_head = true;
         for (auto user_user: user->getUser()) {
@@ -49,7 +55,7 @@ void RegionN::Linearization() {
         if (head->getOp() == Nop::Phi) {
             phis.push_back(head);
         } else {
-            this->_linear.push_front(head);
+            this->order.push_front(head);
         }
 
         for (auto use : *head) {
@@ -58,6 +64,10 @@ void RegionN::Linearization() {
             }
         }
 
+    }
+
+    if(jmp) {
+        order.push_back(jmp);
     }
 
 }

@@ -8,6 +8,7 @@ class CharExpr;
 class VarExpr;
 class OpExpr;
 class CallExpr;
+class PareExpr;
 
 class CondAST;
 
@@ -37,6 +38,7 @@ public:
     virtual void visit(VarExpr *e) = 0;
     virtual void visit(OpExpr *e) = 0;
     virtual void visit(CallExpr *e) = 0;
+    virtual void visit(PareExpr *e) = 0;
 
     virtual void visit(CondAST *e) = 0;
 

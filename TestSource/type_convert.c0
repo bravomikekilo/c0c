@@ -1,0 +1,17 @@
+
+int retA() {
+    return (('a'));
+}
+
+int retB() {
+    const char ret = 'b';
+    return ((ret));
+}
+
+
+int main() {
+    printf(retB());
+    printf(retA());
+}
+
+

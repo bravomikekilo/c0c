@@ -11,6 +11,7 @@
 #include "SON/SCCP.h"
 #include "SON/PhiClean.h"
 #include "SON/FineDrawer.h"
+#include "SON/dominance.h"
 #include "AST/ASTDrawer.h"
 
 #include "Parser.h"
@@ -41,7 +42,6 @@ int main(int argc, char **argv) {
         std::cout << err << std::endl;
     }
 
-    // std::cout << "------------Sea Of Node------------" << std::endl;
 
     auto global_offsets = C0::getGlobalOffset(sym->getVarInScope());
 
@@ -68,12 +68,6 @@ int main(int argc, char **argv) {
         drawer.draw(stop);
         std::cout << drawer.toDot(func->name) << std::endl;
 
-        /*
-        std::cout << "-------------before merge------------" << std::endl;
-
-        std::cout << drawer.toDot(func->name) << std::endl;
-
-        */
 
         C0::mergeLinearRegion(stop);
 
@@ -81,7 +75,6 @@ int main(int argc, char **argv) {
         drawer.clear();
         drawer.draw(stop);
 
-        // std::cout << "-------------after optimization------------" << std::endl;
 
         std::cout << "##$$ " << func->name << "/after_merge.dot" << std::endl;
         std::cout << drawer.toDot(func->name) << std::endl;
@@ -92,7 +85,6 @@ int main(int argc, char **argv) {
         drawer.clear();
         drawer.draw(stop);
 
-        // std::cout << "-------------after sccp label--------------" << std::endl;
 
         std::cout << "##$$ " << func->name << "/sccp_label.dot" << std::endl;
 
@@ -100,7 +92,6 @@ int main(int argc, char **argv) {
 
         sccp.transform(std::pair(start, stop), ocean);
 
-        // std::cout << "------------after sccp transform-----------" << std::endl;
 
         std::cout << "##$$ " << func->name << "/sccp_transform.dot" << std::endl;
 
@@ -109,13 +100,19 @@ int main(int argc, char **argv) {
 
         std::cout << drawer.toDot(func->name) << std::endl;
 
-        // std::cout << "------------control flow-----------" << std::endl;
 
         std::cout << "##$$ " << func->name << "/control_flow.dot" << std::endl;
+
+
+        auto tree = C0::computeDominanceTree(std::pair(start, stop));
 
         C0::FineDrawer fine_drawer;
         fine_drawer.draw(stop);
         std::cout << fine_drawer.toDot(func->name) << std::endl;
+
+
+
+
 
 
     }

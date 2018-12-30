@@ -27,7 +27,7 @@ void arrange(int unuse0,int unuse1,int unuse2,int unuse3,int level){
         else
             ;
         i = i + 1; 
-    }while(i<n);
+    }while(i<n)
 }
 
 void foo_recursion(){
@@ -113,7 +113,7 @@ void main(){
             if(op == 'v')     {{{{value();}}}}
 
         }else;
-    }while(0);
+    }while(0)
     
     return;
 } 

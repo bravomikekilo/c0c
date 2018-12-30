@@ -127,15 +127,15 @@ int testReturnInt(int a) {
 char testReturnChar(int a) {
 
     if(a == 1) {
-        return 'a';
+        return ('a');
     }
 
     if(a == 2) {
-        return 'b';
+        return ('b');
     } 
 
     if(a == 3) {
-        return 'c';
+        return ('c');
     }
 
     return ('_');

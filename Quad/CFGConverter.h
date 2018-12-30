@@ -66,6 +66,8 @@ public:
 
     void visit(ReadStmt *e) override;
 
+    void visit(PareExpr *e) override;
+
 
 private:
     Quad &lastInst() {

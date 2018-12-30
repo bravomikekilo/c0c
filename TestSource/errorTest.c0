@@ -7,7 +7,7 @@ void void_ret(int x, int y) {
 
 // a int return function
 int sum(int x, int y) {
-    return x + y;
+    return (x + y);
 }
 
 int charSum(char x, char y) {
@@ -16,14 +16,14 @@ int charSum(char x, char y) {
     t = 2 * x + y;
     t = 2 * t;
     r = sum(t, x + y);
-    return t;
+    return (t);
 }
 
 // a char return function
 char getChar() {
     char ch;
     scanf(ch);
-    return ch;
+    return (ch);
 }
 
 int main() {

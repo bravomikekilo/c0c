@@ -16,7 +16,7 @@ namespace C0 {
 class RegionN : public Node {
 private:
 
-    std::list<UseE> _linear;
+    std::list<UseE> order;
 
 public:
 
@@ -39,11 +39,11 @@ public:
         uses[1] = two;
     }
 
-    std::list<UseE> &getLinear() {
-        return _linear;
+    std::list<UseE> &getOrder() {
+        return order;
     }
 
-    void Linearization();
+    void schedule();
 
     void SCCPType() override;
 

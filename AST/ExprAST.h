@@ -67,6 +67,9 @@ public:
     unique_ptr<ExprAST> rhs;
 
     Type outType(shared_ptr<SymTable> table) override {
+        auto lt = lhs->outType(table);
+        auto rt = rhs->outType(table);
+
         if(op != C0::Op::Ind) {
             return Type(BaseTypeK::Int);
         } else {
@@ -163,6 +166,24 @@ public:
         return {};
     }
 
+};
+
+class PareExpr : public ExprAST {
+public:
+
+    void accept(ASTVisitor &visitor) override {
+        visitor.visit(this);
+    }
+
+    PareExpr(Pos pos, unique_ptr<ExprAST>&& exp):ExprAST(pos), exp(std::move(exp)) {}
+
+    unique_ptr<ExprAST> exp;
+
+    Type outType(shared_ptr<SymTable> table) override;
+
+    optional<int> constEval(const SymTable &table) override {
+        return exp->constEval(table);
+    }
 };
 
 

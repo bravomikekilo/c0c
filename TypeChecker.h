@@ -55,6 +55,8 @@ public:
         return errors;
     }
 
+    void visit(PareExpr *e) override;
+
 private:
 
     void addError(Pos pos, const string &str) {

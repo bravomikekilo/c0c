@@ -122,6 +122,7 @@ void C0::TypeChecker::visit(C0::CallExpr *e) {
         auto &c = e->args[i];
         auto call_type = e->args[i]->outType(curr_table);
         if (f.first != call_type) {
+            if(call_type.is(BaseTypeK::Num)) continue;
             addError(
                     e->args[i]->getPos(),
                     fmt::format("incompatible type of argument {} in {}, expected {}, but get {}",
@@ -202,7 +203,16 @@ void C0::TypeChecker::visit(C0::AsStmt *e) {
         return;
     }
 
+    if (e->lhs->constEval(*curr_table).has_value()) {
+        addError(e->getPos(), "can't assign to const value");
+    }
+
     if (left_type != right_type) {
+
+        if(right_type.is(BaseTypeK::Num)) {
+            return;
+        }
+
         addError(e->getPos(),
                  fmt::format(
                          "incompatible assign type, left {}, right {}",
@@ -211,9 +221,6 @@ void C0::TypeChecker::visit(C0::AsStmt *e) {
         );
     }
 
-    if (e->lhs->constEval(*curr_table).has_value()) {
-        addError(e->getPos(), "can't assign to const value");
-    }
 
 }
 
@@ -245,6 +252,7 @@ void C0::TypeChecker::visit(C0::RetStmt *e) {
     }
 
     if (exp_type != ret_type) {
+        if(exp_type.is(BaseTypeK::Num)) return;
         addError(e->getPos(), fmt::format(
                 "return value type of {} not match function return type '{}'",
                 exp_type.toString(),
@@ -320,4 +328,8 @@ void C0::TypeChecker::visit(ReadStmt *e) {
             continue;
         }
     }
+}
+
+void C0::TypeChecker::visit(C0::PareExpr *e) {
+    e->exp->accept(*this);
 }

@@ -43,19 +43,20 @@ vector<RegionN *> computeDominanceTree(pair<RegionN *, StopN *> graph) {
         } else{
             auto node = head.first;
 
-            start->visitPost([&](RegionN *region) {
+            s.push(pair(node, true));
+            node->visitPost([&](RegionN *region) {
                 if (!visited.count(region)) {
                     visited.insert(region);
                     s.push(pair(region, false));
                 }
             });
 
-            s.push(pair(node, true));
         }
     }
 
 
     vector<RegionN *> ret(index, nullptr);
+
     ret[start->bid] = start;
     bool changed = true;
 
