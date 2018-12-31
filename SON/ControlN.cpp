@@ -6,6 +6,7 @@
 #include "ControlN.h"
 #include "SCCP.h"
 #include "ProjN.h"
+
 #define FMT_HEADER_ONLY
 
 #include "fmt/format.h"
@@ -22,7 +23,7 @@ void RegionN::schedule() {
     order.clear(); // clear previous schedule
     vector<UseE> phis;
     UseE jmp = nullptr;
-    std::stack<UseE> s;
+    std::stack<pair<UseE, bool>> s;
     unordered_set<UseE> visited;
     visited.insert(this);
 
@@ -31,6 +32,7 @@ void RegionN::schedule() {
         if (user_op == Nop::Region) { continue; } // jump over control
         if (user_op == Nop::If) {
             jmp = user;
+            s.push(pair(jmp->at(1), false));
             continue;
         }
 
@@ -43,31 +45,41 @@ void RegionN::schedule() {
         }
 
         if (is_head) {
-            s.push(user);
+            s.push(pair(user, false));
             visited.insert(user);
         }
     }
 
 
     while (!s.empty()) {
-        auto head = s.top();
+        auto[head, is_post] = s.top();
         s.pop();
-        if (head->getOp() == Nop::Phi) {
-            phis.push_back(head);
-        } else {
-            this->order.push_front(head);
+
+        if (is_post) {
+            if (head->getOp() == Nop::Phi) {
+                phis.push_back(head);
+            } else {
+                this->order.push_back(head);
+            }
+            continue;
         }
 
+        s.push(pair(head, true));
+        visited.insert(head);
         for (auto use : *head) {
             if (!visited.count(use) && use->front() == this) {
-                s.push(use);
+                s.push(pair(use, false));
             }
         }
 
     }
 
-    if(jmp) {
+    if (jmp) {
         order.push_back(jmp);
+    }
+
+    for(auto phi: phis) {
+        order.push_front(phi);
     }
 
 }
@@ -129,14 +141,14 @@ UseE RegionN::SCCPIdentity(Sea &sea) {
 }
 
 void RegionN::visitPred(std::function<void(RegionN *)> func) {
-        for(auto use : *this) {
-            auto use_op = use->getOp();
-            if(use_op == Nop::Region) {
-                func(reinterpret_cast<RegionN *>(use));
-            } else if(use_op == Nop::IfProj) {
-                func(reinterpret_cast<RegionN *>(use->front()->front()));
-            }
+    for (auto use : *this) {
+        auto use_op = use->getOp();
+        if (use_op == Nop::Region) {
+            func(reinterpret_cast<RegionN *>(use));
+        } else if (use_op == Nop::IfProj) {
+            func(reinterpret_cast<RegionN *>(use->front()->front()));
         }
+    }
 }
 
 void RegionN::visitPost(std::function<void(RegionN *)> func) {
@@ -154,11 +166,23 @@ void RegionN::visitPost(std::function<void(RegionN *)> func) {
 }
 
 string RegionN::str() {
-    if(bid < 0) {
+    if (bid < 0) {
         return Node::str();
     } else {
         return fmt::format("BB#{} {}", bid, Node::str());
     }
+}
+
+void RegionN::initLiveness() {
+    // build use set
+
+    // build def set
+
+    liveIn = make_unique<std::set<UseE>>(useSet->begin(), useSet->end());
+    liveIn->erase(defSet->begin(), defSet->end());
+
+    liveOut = make_unique<std::set<UseE>>();
+
 }
 
 void StopN::SCCPType() {
@@ -227,6 +251,23 @@ UseE IfN::SCCPIdentity(Sea &sea, ProjN *projection) {
         return uses[0];
     }
     // return Node::SCCPIdentity(sea, projection);
+}
+
+string IfN::asText() {
+    auto bulk = Node::asText();
+    int true_id;
+    int false_id;
+
+    for(auto user: this->getUser()){
+        auto proj = (IfProjN *)user;
+        auto post = (RegionN *)(*proj->getUser().begin());
+        if(proj->field) {
+            true_id = post->bid;
+        } else {
+            false_id = post->bid;
+        }
+    }
+    return fmt::format("{} true:BB{} false:BB{}", bulk, true_id, false_id);
 }
 
 

@@ -95,6 +95,10 @@ public:
 
     void SCCPType() override;
 
+    bool asCode() override;
+
+    string exprAsUse() override;
+
 };
 
 

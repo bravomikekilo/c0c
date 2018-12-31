@@ -737,5 +737,9 @@ void C0::SONBuilder::visit(C0::CaseStmt *e) {}
 
 void C0::SONBuilder::visit(C0::SwitchStmt *e) {}
 
+void SONBuilder::visit(PareExpr *e) {
+    e->exp->accept(*this);
+}
+
 
 } // end namespace C0

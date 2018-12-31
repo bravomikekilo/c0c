@@ -159,6 +159,8 @@ public:
 
     void sealBlock(RegionN *block);
 
+    void visit(PareExpr *e) override;
+
 
 };
 

@@ -21,6 +21,14 @@ void ConstIntN::SCCPType() {
     }
 }
 
+string ConstIntN::exprAsUse() {
+    return std::to_string(v);
+}
+
+bool ConstIntN::asCode() {
+    return false;
+}
+
 
 void ConstCharN::SCCPType() {
     typedef SCCPOptimizer::T T;
@@ -32,6 +40,14 @@ void ConstCharN::SCCPType() {
     } else {
         type->height = T::Top;
     }
+}
+
+bool ConstCharN::asCode() {
+    return false;
+}
+
+string ConstCharN::exprAsUse() {
+    return fmt::format("'{}'", v);
 }
 
 
@@ -57,6 +73,14 @@ UseE GlobalAddrN::sameLabel(int offset, Sea &sea) {
     }
 }
 
+bool GlobalAddrN::asCode() {
+    return false;
+}
+
+string GlobalAddrN::exprAsUse() {
+    return fmt::format("{}({})", label, offset);
+}
+
 
 void StackSlotN::SCCPType() {
     typedef SCCPOptimizer::T T;
@@ -71,6 +95,14 @@ void StackSlotN::SCCPType() {
     }
 }
 
+bool StackSlotN::asCode() {
+    return false;
+}
+
+string StackSlotN::exprAsUse() {
+    return fmt::format("$sp({})", offset);
+}
+
 UseE ConstN::SCCPIdentity(Sea &sea) {
     typedef SCCPOptimizer::T T;
     if(uses[0]->Payload<T>()->height == T::Top) {
@@ -78,5 +110,9 @@ UseE ConstN::SCCPIdentity(Sea &sea) {
     } else {
         return this;
     }
+}
+
+string ConstN::asText() {
+    return Node::asText() + " " + exprAsUse();
 }
 }

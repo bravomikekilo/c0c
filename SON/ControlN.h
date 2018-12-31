@@ -10,6 +10,7 @@
 
 #include <list>
 #include <functional>
+#include <set>
 
 namespace C0 {
 
@@ -19,6 +20,15 @@ private:
     std::list<UseE> order;
 
 public:
+
+    // init use, def , live in and live out set
+    void initLiveness();
+
+    unique_ptr<std::set<UseE>> useSet = nullptr;
+    unique_ptr<std::set<UseE>> defSet = nullptr;
+
+    unique_ptr<std::set<UseE>> liveIn = nullptr;
+    unique_ptr<std::set<UseE>> liveOut = nullptr;
 
     int bid = -1;
 
@@ -99,6 +109,8 @@ public:
     UseE SCCPIdentity(Sea &sea) override;
 
     UseE SCCPIdentity(Sea &sea, ProjN *projection) override;
+
+    string asText() override;
 };
 
 

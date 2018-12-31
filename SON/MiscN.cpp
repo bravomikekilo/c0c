@@ -24,6 +24,14 @@ void UndefN::SCCPType() {
     type->height = T::Bottom;
 }
 
+bool UndefN::asCode() {
+    return false;
+}
+
+string UndefN::exprAsUse() {
+    return "undef";
+}
+
 
 void InitWorldN::SCCPType() {
     typedef SCCPOptimizer::T T;

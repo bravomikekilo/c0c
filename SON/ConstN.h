@@ -20,6 +20,8 @@ public:
     }
 
     UseE SCCPIdentity(Sea &sea) override;
+
+    string asText() override;
 };
 
 class ConstIntN: public ConstN {
@@ -38,6 +40,12 @@ public:
 
     // methods for SCCP
     void SCCPType() override;
+
+    string exprAsUse() override;
+
+    bool asCode() override;
+
+
 };
 
 class ConstCharN: public ConstN {
@@ -55,6 +63,10 @@ public:
 
     // methods for SCCP
     void SCCPType() override;
+
+    bool asCode() override;
+
+    string exprAsUse() override;
 
 };
 
@@ -79,6 +91,10 @@ public:
 
     UseE sameLabel(int offset, Sea &sea);
 
+    bool asCode() override;
+
+    string exprAsUse() override;
+
 };
 
 class StackSlotN: public ConstN {
@@ -97,6 +113,10 @@ public:
     }
 
     void SCCPType() override;
+
+    bool asCode() override;
+
+    string exprAsUse() override;
 
 };
 

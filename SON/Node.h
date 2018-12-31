@@ -6,6 +6,7 @@
 #define C0_NODE_H
 
 #include "common.h"
+#include "Arch/Reg.h"
 
 #define FMT_HEADER_ONLY
 
@@ -89,6 +90,27 @@ protected:
     unique_ptr<User> user = nullptr;
 
 public:
+
+    int serial = -1;
+
+    virtual bool asCode() {
+        return true;
+    }
+
+    virtual string exprAsUse() {
+        return "v" + std::to_string(serial);
+    }
+
+    virtual string asText() {
+        string base = fmt::format("v{} = {}", std::to_string(serial), nopToStr(op));
+        auto sz = this->size();
+        for(size_t i = 1; i < sz; ++i) {
+            base += " ";
+            base += this->at(i)->exprAsUse();
+        }
+        return base;
+    };
+
 
     void setPayload(NLoad *payload) {
         delete _payload;
@@ -202,6 +224,12 @@ public:
     virtual UseE SCCPIdentity(Sea &sea);
 
     virtual UseE SCCPIdentity(Sea &sea, ProjN *projection);
+
+    virtual bool needReg() {
+        return true;
+    };
+
+    unique_ptr<Reg> reg = nullptr;
 
 };
 
