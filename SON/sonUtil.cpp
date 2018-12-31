@@ -60,7 +60,7 @@ void cleanDefUse(StopN *stop) {
         node->clearDefUse();
 
         for (auto use: *node) {
-            if (visited.count(use)) continue;
+            if (visited.count(use) || use == nullptr) continue;
             s.push(use);
         }
     }

@@ -101,6 +101,17 @@ public:
 
 };
 
+// copy will not show up before sccp
+// it is only used in the register allocation phrase
+class CopyN : public Node {
+public:
+    CopyN(UseE region, UseE src) : Node(Nop::Copy, 2) {
+        uses[0] = region;
+        uses[1] = src;
+    }
+
+};
+
 
 }
 

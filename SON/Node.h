@@ -60,7 +60,8 @@ enum class Nop {
     InitWorld,
     InitGlobal,
     Phi,
-    Undef
+    Undef,
+    Copy
 
 };
 
