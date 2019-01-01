@@ -23,7 +23,7 @@ void buildDefUse(StopN *stop) {
 
         if (visited.count(node)) {
             for (auto use: *node) {
-                use->addUse(node);
+                use->addUser(node);
             }
             continue;
         }
@@ -105,7 +105,7 @@ void mergeLinearRegion(StopN *stop) {
 
                         pred->getUser().erase(node);
 
-                        pred->addUse(node->getUser());
+                        pred->addUser(node->getUser());
 
                         for (auto user : node->getUser()) {
                             user->replace(node, pred);

@@ -15,7 +15,7 @@ class ProjN : public Node {
 public:
     const int field;
     UseE up;
-    ProjN(int n, UseE up, Nop op, size_t num_uses):Node(op, num_uses), field(n), up(up) {}
+    ProjN(int field, UseE up, Nop op, size_t num_uses):Node(op, num_uses), field(field), up(up) {}
 
     void SCCPType() override {
         up->SCCPType(this);
@@ -59,6 +59,8 @@ public:
         uses[1] = up;
     }
 
+    string asText() override;
+
 };
 
 class IfProjN : public ProjN {
@@ -71,6 +73,8 @@ public:
     string str() override {
         return Node::str() + ":" + (field ? "true" : "false");
     }
+
+    string asText() override;
 
 };
 

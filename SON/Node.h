@@ -98,9 +98,7 @@ public:
         return true;
     }
 
-    virtual string exprAsUse() {
-        return "v" + std::to_string(serial);
-    }
+    virtual string exprAsUse();
 
     virtual string asText() {
         string base = fmt::format("v{} = {}", std::to_string(serial), nopToStr(op));
@@ -132,13 +130,13 @@ public:
 
     void initDefUse() { user = make_unique<User>(); }
 
-    void addUse(UseE use) {
+    void addUser(UseE use) {
         if (user) {
             user->insert(use);
         }
     }
 
-    void addUse(User &other) {
+    void addUser(User &other) {
         if (user) {
             user->insert(other.begin(), other.end());
         }

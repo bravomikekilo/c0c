@@ -7,6 +7,7 @@
 
 #include "Node.h"
 #include "common.h"
+#include "Pos.h"
 
 #include <list>
 #include <functional>
@@ -19,7 +20,12 @@ private:
 
     std::list<UseE> order;
 
+    // additional pos information for
+    Pos pos;
+
 public:
+
+    Pos getPos() { return pos; }
 
     // init use, def , live in and live out set
     void initLiveness();
@@ -32,19 +38,19 @@ public:
 
     int bid = -1;
 
-    explicit RegionN(const vector<UseE> &use) :Node(Nop::Region, use.size()) {
+    explicit RegionN(Pos pos, const vector<UseE> &use) :Node(Nop::Region, use.size()), pos(pos) {
        for(int i = 0; i < num_uses; ++i) {
            uses[i] = use[i];
        }
     }
 
-    RegionN() : Node(Nop::Region, 0) {}
+    RegionN(Pos pos) : Node(Nop::Region, 0), pos(pos) {}
 
-    explicit RegionN(UseE use) :Node(Nop::Region, 1) {
+    explicit RegionN(Pos pos, UseE use) :Node(Nop::Region, 1), pos(pos) {
         uses[0] = use;
     }
 
-    explicit RegionN(UseE one, UseE two) :Node(Nop::Region, 2) {
+    explicit RegionN(Pos pos, UseE one, UseE two) :Node(Nop::Region, 2), pos(pos) {
         uses[0] = one;
         uses[1] = two;
     }

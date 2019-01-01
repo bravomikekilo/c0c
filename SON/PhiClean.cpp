@@ -59,7 +59,7 @@ void PhiCleaner::optimize(StopN *stop) {
         for (auto user: phi->getUser()) {
             if (user != phi) {
                 user->replace(phi, new_node);
-                new_node->addUse(user);
+                new_node->addUser(user);
 
                 if (user->getOp() == Nop::Phi) {
                     auto p = (PhiN *) user;

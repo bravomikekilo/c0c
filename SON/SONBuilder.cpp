@@ -225,7 +225,7 @@ void SONBuilder::visit(IfStmt *e) {
     auto else_branch = sea.alloc<IfProjN>(Cond, false);
 
     if (e->falseBranch.has_value()) {
-        auto then_block = sea.alloc<RegionN>(then_branch);
+        auto then_block = sea.alloc<RegionN>(e->trueBranch->getPos(), then_branch);
         addContext(then_block);
         sealBlock(then_block);
         curr_block = then_block;
@@ -242,7 +242,7 @@ void SONBuilder::visit(IfStmt *e) {
         std::swap(then_waiting, waiting);
 
 
-        auto else_block = sea.alloc<RegionN>(else_branch);
+        auto else_block = sea.alloc<RegionN>(e->falseBranch.value()->getPos(), else_branch);
         addContext(else_block);
         sealBlock(else_block);
         curr_block = else_block;
@@ -260,7 +260,7 @@ void SONBuilder::visit(IfStmt *e) {
         if (waiting.empty()) has_return = true;
 
     } else {
-        auto then_block = sea.alloc<RegionN>(then_branch);
+        auto then_block = sea.alloc<RegionN>(e->trueBranch->getPos(), then_branch);
         addContext(then_block);
         sealBlock(then_block);
         curr_block = then_block;
@@ -288,7 +288,7 @@ void SONBuilder::visit(BlockStmt *e) {
         }
 
         if (!waiting.empty()) {
-            auto block = sea.alloc<RegionN>(waiting);
+            auto block = sea.alloc<RegionN>(stmt->getPos(), waiting);
             addContext(block);
             sealBlock(block);
             waiting.clear();
@@ -333,7 +333,7 @@ void SONBuilder::visit(RetStmt *e) {
 /// useless, wait for extension
 void C0::SONBuilder::visit(C0::WhileStmt *e) {
 
-    auto cond_block = sea.alloc<RegionN>(curr_block);
+    auto cond_block = sea.alloc<RegionN>(e->cond->getPos(), curr_block);
     addContext(cond_block);
     curr_block = cond_block;
 
@@ -343,7 +343,7 @@ void C0::SONBuilder::visit(C0::WhileStmt *e) {
     auto then_branch = sea.alloc<IfProjN>(ifnode, true);
     auto else_branch = sea.alloc<IfProjN>(ifnode, false);
 
-    auto body_block = sea.alloc<RegionN>(then_branch);
+    auto body_block = sea.alloc<RegionN>(e->body->getPos(), then_branch);
     addContext(body_block);
     sealBlock(body_block);
 
@@ -367,7 +367,7 @@ void C0::SONBuilder::visit(C0::WhileStmt *e) {
 
 void SONBuilder::visit(DoStmt *e) {
 
-    auto body_block = sea.alloc<RegionN>(curr_block);
+    auto body_block = sea.alloc<RegionN>(e->body->getPos(), curr_block);
     addContext(body_block);
     curr_block = body_block;
 
@@ -387,7 +387,7 @@ void SONBuilder::visit(DoStmt *e) {
         sealBlock(body_block);
         waiting.push_back(else_branch);
     } else {
-        auto cond_block = sea.alloc<RegionN>(waiting);
+        auto cond_block = sea.alloc<RegionN>(e->cond->getPos(), waiting);
         addContext(cond_block);
         waiting.clear();
         e->cond->accept(*this);
@@ -405,7 +405,7 @@ void SONBuilder::visit(ForStmt *e) {
         e->start.value()->accept(*this);
     }
 
-    auto cond_block = sea.alloc<RegionN>(curr_block);
+    auto cond_block = sea.alloc<RegionN>(e->cond->getPos(), curr_block);
     addContext(cond_block);
 
     curr_block = cond_block;
@@ -415,7 +415,7 @@ void SONBuilder::visit(ForStmt *e) {
     auto true_branch = sea.alloc<IfProjN>(ifn, true);
     auto false_branch = sea.alloc<IfProjN>(ifn, false);
 
-    auto body_block = sea.alloc<RegionN>(true_branch);
+    auto body_block = sea.alloc<RegionN>(e->body->getPos(), true_branch);
     addContext(body_block);
     sealBlock(body_block);
 
@@ -443,7 +443,7 @@ void SONBuilder::visit(ForStmt *e) {
 
         if (e->after.has_value()) {
             if (!waiting.empty()) {
-                auto after_block = sea.alloc<RegionN>(waiting);
+                auto after_block = sea.alloc<RegionN>(e->after.value()->getPos(), waiting);
                 addContext(after_block);
                 sealBlock(after_block);
                 curr_block = after_block;
@@ -538,7 +538,7 @@ void SONBuilder::visit(FuncAST *e) {
     /// build first block and finish init variable
     buildTable();
 
-    start_block = sea.alloc<RegionN>();
+    start_block = sea.alloc<RegionN>(e->getPos());
     addContext(start_block);
     sealBlock(start_block);
     curr_block = start_block;
@@ -563,7 +563,7 @@ void SONBuilder::visit(FuncAST *e) {
 
     setWorld(sea.alloc<InitWorldN>(curr_block));
 
-    last_block = sea.alloc<RegionN>();
+    last_block = sea.alloc<RegionN>(Pos{0, 0});
     addContext(last_block);
     sealBlock(last_block);
 
@@ -597,7 +597,7 @@ void SONBuilder::visit(FuncAST *e) {
         }
 
         if (!waiting.empty()) {
-            auto block = sea.alloc<RegionN>(waiting);
+            auto block = sea.alloc<RegionN>(stmt->getPos(), waiting);
             addContext(block);
             sealBlock(block);
             waiting.clear();
@@ -675,19 +675,25 @@ UseE SONBuilder::readVarRecursive(VarID id, RegionN *region) {
         auto phi = sea.alloc<PhiN>(region);
         val = phi;
         context->incomplete_phi.insert(pair(id, phi));
+        context->writeVar(id, val);
+
     } else if (region->size() == 1) {
         auto pred = region->front();
         while (pred->getOp() != Nop::Region) {
             pred = pred->front();
         }
         val = readVar(id, (RegionN *) pred);
+        context->writeVar(id, val);
     } else {
         auto phi = sea.alloc<PhiN>(region);
         context->writeVar(id, phi);
-        val = addPhiOperands(id, phi);
+        //val = addPhiOperands(id, phi);
+        addPhiOperands(id, phi);
+        val = phi;
+
     }
 
-    context->writeVar(id, val);
+    // context->writeVar(id, val);
     return val;
 }
 

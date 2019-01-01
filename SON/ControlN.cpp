@@ -36,6 +36,15 @@ void RegionN::schedule() {
             continue;
         }
 
+        /*
+        if (user_op == Nop::Phi) {
+            visited.insert(user);
+            phis.push_back(user);
+            continue;
+        }
+        */
+
+
         bool is_head = true;
         for (auto user_user: user->getUser()) {
             if (user_user->getOp() != Nop::Phi && user_user->front() == this) {
@@ -76,6 +85,9 @@ void RegionN::schedule() {
 
     if (jmp) {
         order.push_back(jmp);
+        for(auto user: jmp->getUser()) {
+            order.push_back(user);
+        }
     }
 
     for(auto phi: phis) {
@@ -88,6 +100,11 @@ void RegionN::SCCPType() {
     typedef SCCPOptimizer::T T;
     auto type = Payload<T>();
 
+    if (this->size() == 0) {
+        type->height = T::Bottom;
+        return;
+    }
+
     for (auto use : *this) {
         auto use_t = use->Payload<T>();
         if (use_t->height != T::Top) {
@@ -96,11 +113,13 @@ void RegionN::SCCPType() {
         }
     }
 
+    /*
     if (this->size()) {
         type->height = T::Top;
     } else {
         type->height = T::Bottom;
     }
+    */
 }
 
 UseE RegionN::SCCPIdentity(Sea &sea) {

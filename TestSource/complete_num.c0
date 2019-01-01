@@ -85,7 +85,7 @@ void complete_num(int val)
         leap=0;
       }
 	  i=i+1;
-     }
+    }
     if(leap == 1)
     {
       printf(" ",m);
@@ -95,8 +95,8 @@ void complete_num(int val)
       if( x2 == h )
         printf("          ");
      }
-     leap=1;
-	 m=m+1;
+    leap=1;
+	m=m+1;
   }
 
   printf("          The total is ",h);

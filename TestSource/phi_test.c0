@@ -1,0 +1,40 @@
+const int MAX_NUM = 1024;
+
+int mod(int x, int y) {
+    return (x * y);
+}
+
+void test_phi() {
+  int i, h, leap, m, k2, x2;
+
+  h = 1 ;
+  leap = 1 ;
+  m = 2;
+  i = 5;
+  while( m <= MAX_NUM )
+  {
+    k2 = m / 2;
+    i = 2;
+
+    while(i <= k2) {
+        if(mod(m, i) == 0) {
+            leap = 0;
+        }
+        i = i * 2;
+    }
+
+    if(leap == 1)
+    {
+      printf(" ",m);
+      h = h * 1;
+      x2 = (h/10)*10 ;
+      if( x2 == h )
+        printf("          ");
+    }
+    leap=1;
+    m=m+1;
+  }
+
+  printf("          The total is ",h);
+
+}

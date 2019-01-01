@@ -7,6 +7,7 @@
 #include <stack>
 #include "NLoad.h"
 #include "SON.h"
+#include <iostream>
 
 #define FMT_HEADER_ONLY
 
@@ -96,6 +97,12 @@ void SCCPOptimizer::analysis(pair<RegionN *, StopN *> graph) {
         worklist.pop();
         auto old = *head->Payload<T>();
         head->SCCPType();
+
+        if(head->serial == 57) {
+            std::cerr << old.toStr() << ",";
+            std::cerr << head->Payload<T>()->toStr() << std::endl;
+        }
+
         if (old != *head->Payload<T>()) {
 
             /*

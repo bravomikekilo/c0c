@@ -5,6 +5,7 @@
 #include "Node.h"
 #include "ProjN.h"
 #include "SCCP.h"
+#include "ControlN.h"
 
 namespace C0 {
 
@@ -100,6 +101,22 @@ UseE Node::SCCPIdentity(Sea &sea) {
         return nullptr;
     } else {
         return this;
+    }
+}
+
+string Node::exprAsUse() {
+    if(serial == -1) {
+        string base = nopToStr(op);
+        auto sz = this->size();
+        auto region = (RegionN *)(this->at(0));
+        base += fmt::format(" BB{}", region->bid);
+        // for(size_t i = 1; i < sz; ++i) {
+        // base += " ";
+        // base += this->at(i)->exprAsUse();
+        // }
+        return "(" + base + ")";
+    } else {
+        return "v" + std::to_string(serial);
     }
 }
 }

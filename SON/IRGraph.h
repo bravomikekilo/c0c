@@ -62,7 +62,7 @@ public:
     // reverse post order walk of CFG
     void reversePostOrderWalk(std::function<void(RegionN *)> func);
 
-    string irDump();
+    string irDump(bool draw_payload=false);
 
 
 };

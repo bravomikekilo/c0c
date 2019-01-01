@@ -62,46 +62,55 @@ int main(int argc, char **argv) {
 
 
 
+        C0::IRGraph graph(start, stop);
+
         C0::buildDefUse(stop);
 
-        phi_cleaner.optimize(stop);
-        C0::SONDrawer drawer;
+        std::cout << "##$$ " << func->name << "/raw.ir" << std::endl;
+        graph.buildPostOrder();
+        graph.buildIndex();
 
-        std::cout << "##$$ " << func->name << "/origin.dot" << std::endl;
-        drawer.draw(stop);
-        std::cout << drawer.toDot(func->name) << std::endl;
+        std::cout << graph.irDump(true) << std::endl;
+
+        phi_cleaner.optimize(stop);
+
+        graph.buildPostOrder();
+        graph.buildIndex();
+
+        std::cout << "##$$ " << func->name << "/origin.ir" << std::endl;
+        std::cout << graph.irDump(true) << std::endl;
 
 
         C0::mergeLinearRegion(stop);
 
+        graph.buildPostOrder();
+        graph.buildIndex();
 
-        drawer.clear();
-        drawer.draw(stop);
+        std::cout << "##$$ " << func->name << "/after_merge.ir" << std::endl;
+        std::cout << graph.irDump(true) << std::endl;
 
-
-        std::cout << "##$$ " << func->name << "/after_merge.dot" << std::endl;
-        std::cout << drawer.toDot(func->name) << std::endl;
+        graph.buildPostOrder();
+        graph.buildIndex();
 
         C0::SCCPOptimizer sccp;
         sccp.analysis(std::pair(start, stop));
 
-        drawer.clear();
-        drawer.draw(stop);
 
 
-        std::cout << "##$$ " << func->name << "/sccp_label.dot" << std::endl;
+        std::cout << "##$$ " << func->name << "/sccp_label.ir" << std::endl;
 
-        std::cout << drawer.toDot(func->name) << std::endl;
+        std::cout << graph.irDump(true) << std::endl;
 
         sccp.transform(std::pair(start, stop), ocean);
 
 
-        std::cout << "##$$ " << func->name << "/sccp_transform.dot" << std::endl;
+        std::cout << "##$$ " << func->name << "/sccp_transform.ir" << std::endl;
 
-        drawer.clear();
-        drawer.draw(stop, true);
+        graph.buildPostOrder();
+        graph.buildIndex();
 
-        std::cout << drawer.toDot(func->name) << std::endl;
+
+        std::cout << graph.irDump(true) << std::endl;
 
 
         std::cout << "##$$ " << func->name << "/control_flow.dot" << std::endl;
@@ -110,13 +119,12 @@ int main(int argc, char **argv) {
         fine_drawer.draw(stop);
         std::cout << fine_drawer.toDot(func->name) << std::endl;
 
-        C0::IRGraph graph(start, stop);
 
         graph.buildPostOrder();
         graph.buildIndex();
 
         std::cout << "##$$ " << func->name << "/ir_dump.ir" << std::endl;
-        std::cout << graph.irDump() << std::endl;
+        std::cout << graph.irDump(true) << std::endl;
 
     }
 

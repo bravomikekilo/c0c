@@ -82,6 +82,7 @@ void MulN::SCCPType() {
 
     if(r_type->height == T::Constant) {
         if(r_type->type == T::Value && r_type->constant == 0) {
+            type->height = T::Constant;
             type->type = T::Value;
             type->constant = 0;
             return;
@@ -90,6 +91,7 @@ void MulN::SCCPType() {
 
     if(l_type->height == T::Constant) {
         if(l_type->type == T::Value && l_type->constant == 0) {
+            type->height = T::Constant;
             type->type = T::Value;
             type->constant = 0;
             return;
@@ -126,6 +128,7 @@ void DivN::SCCPType() {
 
     if(l_type->height == T::Constant) {
         if(l_type->type == T::Value && l_type->constant == 0) {
+            type->height = T::Constant;
             type->type = T::Value;
             type->constant = 0;
             return;

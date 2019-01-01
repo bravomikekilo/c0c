@@ -22,7 +22,7 @@ void ConstIntN::SCCPType() {
 }
 
 string ConstIntN::exprAsUse() {
-    return std::to_string(v);
+    return Node::exprAsUse() + ":" + std::to_string(v);
 }
 
 bool ConstIntN::asCode() {
