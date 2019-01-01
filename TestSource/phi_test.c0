@@ -7,7 +7,7 @@ int mod(int x, int y) {
 void test_phi() {
   int i, h, leap, m, k2, x2;
 
-  h = 1 ;
+  h = 4 ;
   leap = 1 ;
   m = 2;
   i = 5;

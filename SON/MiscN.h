@@ -55,6 +55,8 @@ public:
 
     void SCCPType() override;
 
+    string exprAsUse() override;
+
 };
 
 

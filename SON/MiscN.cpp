@@ -17,6 +17,10 @@ void ProjArgN::SCCPType() {
     type->height = T::Bottom;
 }
 
+string ProjArgN::exprAsUse() {
+    return Node::exprAsUse() + ":" + std::to_string(n);
+}
+
 
 void UndefN::SCCPType() {
     typedef SCCPOptimizer::T T;

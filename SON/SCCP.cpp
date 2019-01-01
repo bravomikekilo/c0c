@@ -98,11 +98,6 @@ void SCCPOptimizer::analysis(pair<RegionN *, StopN *> graph) {
         auto old = *head->Payload<T>();
         head->SCCPType();
 
-        if(head->serial == 57) {
-            std::cerr << old.toStr() << ",";
-            std::cerr << head->Payload<T>()->toStr() << std::endl;
-        }
-
         if (old != *head->Payload<T>()) {
 
             /*
@@ -157,7 +152,9 @@ void SCCPOptimizer::transform(pair<RegionN *, StopN *> graph, Sea &sea) {
         */
 
         if (id != head) {
-            std::cout << "replace" << std::endl;
+            std::cout << "replace " << head->exprAsUse() << " with ";
+            std::cout << (id ? id->exprAsUse() : "nullptr")  << std::endl;
+
             for(auto user: head->getUser()) {
                 auto user_t = user->Payload<T>();
                 if(user_t->height != T::Top) {

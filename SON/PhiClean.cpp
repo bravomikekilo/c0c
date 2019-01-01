@@ -52,13 +52,17 @@ void PhiCleaner::optimize(StopN *stop) {
             new_node = undef;
         }
 
+        std::cerr << "replace node " << phi->exprAsUse() << " with " << new_node->exprAsUse() << std::endl;
+
         for(auto use: *phi) {
             use->getUser().erase(phi);
         }
 
         for (auto user: phi->getUser()) {
             if (user != phi) {
+                std::cerr << "replace all " << phi->exprAsUse() << " in " << user->exprAsUse() << " with " << new_node->exprAsUse() << std::endl;
                 user->replace(phi, new_node);
+
                 new_node->addUser(user);
 
                 if (user->getOp() == Nop::Phi) {

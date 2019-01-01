@@ -187,13 +187,14 @@ public:
     const UseE *cend() { return uses + num_uses; }
 
     bool replace(UseE old, UseE n) {
+        bool has = false;
         for (auto &use: *this) {
             if (use == old) {
                 use = n;
-                return true;
+                has = true;
             }
         }
-        return false;
+        return has;
     }
 
 
