@@ -99,6 +99,10 @@ public:
     string str() override;
 
 
+    bool needReg() override {
+        return false;
+    }
+
 };
 
 class IfN : public Node {
@@ -117,6 +121,10 @@ public:
     UseE SCCPIdentity(Sea &sea, ProjN *projection) override;
 
     string asText() override;
+
+    bool needReg() override {
+        return false;
+    }
 };
 
 
@@ -154,6 +162,10 @@ public:
     }
 
     void SCCPType() override;
+
+    bool needReg() override {
+        return false;
+    }
 
 };
 

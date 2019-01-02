@@ -77,6 +77,7 @@ void RegionN::schedule() {
         visited.insert(head);
         for (auto use : *head) {
             if (!visited.count(use) && use->front() == this) {
+                visited.insert(use);
                 s.push(pair(use, false));
             }
         }
@@ -85,12 +86,12 @@ void RegionN::schedule() {
 
     if (jmp) {
         order.push_back(jmp);
-        for(auto user: jmp->getUser()) {
+        for (auto user: jmp->getUser()) {
             order.push_back(user);
         }
     }
 
-    for(auto phi: phis) {
+    for (auto phi: phis) {
         order.push_front(phi);
     }
 
@@ -194,11 +195,29 @@ string RegionN::str() {
 
 void RegionN::initLiveness() {
     // build use set
-
+    useSet = make_unique<std::set<UseE>>();
     // build def set
+    defSet = make_unique<std::set<UseE>>();
+
+    for (auto user: getUser()) {
+        if (user->needReg()) {
+            defSet->insert(user);
+        }
+        if (user->getOp() != Nop::Phi) {
+            for (auto use: *user) {
+                if (use->needReg()) {
+                    useSet->insert(use);
+                }
+            }
+        }
+
+    }
 
     liveIn = make_unique<std::set<UseE>>(useSet->begin(), useSet->end());
-    liveIn->erase(defSet->begin(), defSet->end());
+    for (auto def: *defSet) {
+        liveIn->erase(def);
+    }
+    // liveIn->erase(defSet->begin(), defSet->end());
 
     liveOut = make_unique<std::set<UseE>>();
 
@@ -277,10 +296,10 @@ string IfN::asText() {
     int true_id;
     int false_id;
 
-    for(auto user: this->getUser()){
-        auto proj = (IfProjN *)user;
-        auto post = (RegionN *)(*proj->getUser().begin());
-        if(proj->field) {
+    for (auto user: this->getUser()) {
+        auto proj = (IfProjN *) user;
+        auto post = (RegionN *) (*proj->getUser().begin());
+        if (proj->field) {
             true_id = post->bid;
         } else {
             false_id = post->bid;

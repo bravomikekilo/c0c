@@ -404,10 +404,12 @@ void CFGConverter::visit(PrintStmt *e) {
 
         ExprAST *exp = e->expr.value().get();
 
+        /*
         while(exp->outType(curr_table).is(BaseTypeK::Num)) {
             auto *n = (PareExpr *)exp;
             exp = n->exp.get();
         }
+        */
 
         curr_block->insts.emplace_back(str_id, exp_val,
                                        exp->outType(curr_table).is(BaseTypeK::Char)

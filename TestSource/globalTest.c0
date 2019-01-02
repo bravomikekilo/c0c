@@ -1,0 +1,23 @@
+
+int n;
+int arr[10];
+
+void globalTest()
+{
+
+    int i;
+
+    n = 1;
+    for(i = 0; i < 10; i = i + 1)
+    {
+        n = n + 1;
+    }
+
+    for(i = 0; i < 10; i = i + 1)
+    {
+        arr[i] = i * 2;
+    }
+
+    printf("result:", n);
+
+}

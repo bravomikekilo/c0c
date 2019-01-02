@@ -115,4 +115,8 @@ UseE ConstN::SCCPIdentity(Sea &sea) {
 string ConstN::asText() {
     return Node::asText() + " " + exprAsUse();
 }
+
+bool ConstN::needReg() {
+    return false;
+}
 }

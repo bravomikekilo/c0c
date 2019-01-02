@@ -22,6 +22,10 @@ public:
     UseE SCCPIdentity(Sea &sea) override;
 
     string asText() override;
+
+    bool needReg() override;
+
+
 };
 
 class ConstIntN: public ConstN {

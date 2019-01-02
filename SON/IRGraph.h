@@ -39,13 +39,21 @@ public:
     // find the post order of nodes
     void buildPostOrder();
 
+    const vector<RegionN *> &getPostOrder() {
+        return postOrder;
+    }
+
     void buildIndex();
 
+
+
     // build dominance tree
-    void buildDominance();
+    vector<RegionN *> buildDominance();
 
     // build loop info
     void buildLoopInfo();
+
+    void initLiveness();
 
     // perform liveness analysis
     void liveAnalysis();

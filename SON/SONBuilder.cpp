@@ -12,10 +12,12 @@ namespace C0 {
 
 void SONBuilder::visit(C0::IntExpr *e) {
     right_val = sea.alloc<ConstIntN>(curr_block, e->v);
+    addr = nullptr;
 }
 
 void SONBuilder::visit(C0::CharExpr *e) {
     right_val = sea.alloc<ConstCharN>(curr_block, e->v);
+    addr = nullptr;
 }
 
 void SONBuilder::visit(C0::VarExpr *e) {
@@ -54,6 +56,7 @@ void SONBuilder::visitRightVar(VarExpr *e) {
         } else {
             right_val = sea.alloc<ConstIntN>(curr_block, term->val.value());
         }
+        addr = nullptr;
         return;
     }
     if (term->isGlobal) {
@@ -63,6 +66,8 @@ void SONBuilder::visitRightVar(VarExpr *e) {
         );
     } else if (term->type.isArray()) {
         addr = sea.alloc<StackSlotN>(curr_block, array_offsets[e->varID]);
+    } else {
+        addr = nullptr;
     }
     right_val = readVar(e->varID);
     var_id = e->varID;
@@ -103,19 +108,64 @@ void SONBuilder::visitLeftOp(OpExpr *e) {
 
 void SONBuilder::visitRightOp(OpExpr *e) {
     e->lhs->accept(*this);
-    auto base = addr;
+    auto left_base = addr;
     auto lhs = right_val;
+
     e->rhs->accept(*this);
     auto rhs = right_val;
+    auto right_base = addr;
 
+    if (e->op == Op::Ind) { // ind use address and other use value
+        if (e->lhs->outType(curr_table).getBase().is(BaseTypeK::Char)) {
+            auto pointer = sea.alloc<AddN>(curr_block, left_base, rhs);
+            right_val = sea.alloc<GetCharN>(curr_block, pointer, lhs);
+        } else {
+            auto expand = sea.alloc<MulN>(curr_block, rhs, sea.alloc<ConstIntN>(curr_block, 4));
+            auto pointer = sea.alloc<AddN>(curr_block, left_base, expand);
+            right_val = sea.alloc<GetIntN>(curr_block, pointer, lhs);
+        }
+    } else {
+        // if is global value, generate get inst
+        if (left_base) {
+            if (e->lhs->outType(curr_table).getBase().is(BaseTypeK::Char)) {
+                lhs = sea.alloc<GetCharN>(curr_block, left_base, lhs);
+            } else {
+                lhs = sea.alloc<GetIntN>(curr_block, left_base, lhs);
+            }
+        }
+
+        if (right_base) {
+            if (e->rhs->outType(curr_table).getBase().is(BaseTypeK::Char)) {
+                rhs = sea.alloc<GetCharN>(curr_block, right_base, rhs);
+            } else {
+                rhs = sea.alloc<GetIntN>(curr_block, right_base, rhs);
+            }
+        }
+
+        switch (e->op) {
+            case Op::Add:
+                right_val = sea.alloc<AddN>(curr_block, lhs, rhs);
+                break;
+            case Op::Sub:
+                right_val = sea.alloc<SubN>(curr_block, lhs, rhs);
+                break;
+            case Op::Mul:
+                right_val = sea.alloc<MulN>(curr_block, lhs, rhs);
+                break;
+            case Op::Div:
+                right_val = sea.alloc<DivN>(curr_block, lhs, rhs);
+                break;
+        }
+    }
+    /*
     switch (e->op) {
         case Op::Ind: {
             if (e->lhs->outType(curr_table).getBase().is(BaseTypeK::Char)) {
-                auto pointer = sea.alloc<AddN>(curr_block, base, rhs);
+                auto pointer = sea.alloc<AddN>(curr_block, left_base, rhs);
                 right_val = sea.alloc<GetCharN>(curr_block, pointer, lhs);
             } else {
                 auto expand = sea.alloc<MulN>(curr_block, rhs, sea.alloc<ConstIntN>(curr_block, 4));
-                auto pointer = sea.alloc<AddN>(curr_block, base, expand);
+                auto pointer = sea.alloc<AddN>(curr_block, left_base, expand);
                 right_val = sea.alloc<GetIntN>(curr_block, pointer, lhs);
             }
             break;
@@ -133,6 +183,7 @@ void SONBuilder::visitRightOp(OpExpr *e) {
             right_val = sea.alloc<DivN>(curr_block, lhs, rhs);
             break;
     }
+    */
 }
 
 
@@ -573,15 +624,15 @@ void SONBuilder::visit(FuncAST *e) {
     shared_ptr<SymTable> global_table = curr_table->getGlobalTable();
     const auto &global_terms = global_table->getVarInScope();
     for (auto &term: global_terms) {
-
-        auto phi = sea.alloc<PhiN>(last_block);
-        ret_globals.push_back(phi);
-
-        auto id = term.id;
-        global_ids.insert(id);
-        last_global_phi.insert(pair(id, phi));
-        auto init = sea.alloc<InitGlobalN>(start_block, term.name);
-        context->value.insert(pair(id, init));
+        if (!term.isConst()) {
+            auto phi = sea.alloc<PhiN>(last_block);
+            ret_globals.push_back(phi);
+            auto id = term.id;
+            global_ids.insert(id);
+            last_global_phi.insert(pair(id, phi));
+            auto init = sea.alloc<InitGlobalN>(start_block, term.name);
+            context->value.insert(pair(id, init));
+        }
     }
     if (!e->retType.is(BaseTypeK::Void)) {
         ret_phi = sea.alloc<PhiN>(last_block);

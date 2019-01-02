@@ -10,7 +10,9 @@ namespace C0 {
 using std::stack;
 
 RegionN *interSection(RegionN *b1, RegionN *b2, const vector<RegionN *> &dom) {
+
     while(b1 != b2) {
+
         while(b1->bid < b2->bid) {
             b1 = dom[b1->bid];
         }

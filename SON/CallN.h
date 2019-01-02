@@ -57,6 +57,10 @@ public:
 
     void SCCPType(ProjN *n) override;
 
+    bool needReg() override {
+        return false;
+    }
+
 };
 
 
@@ -79,6 +83,10 @@ public:
     void SCCPType() override;
 
     UseE SCCPIdentity(Sea &sea) override;
+
+    bool needReg() override {
+        return false;
+    }
 };
 
 class PrintIntN: public PrintN {

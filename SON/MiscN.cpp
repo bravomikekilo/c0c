@@ -17,8 +17,8 @@ void ProjArgN::SCCPType() {
     type->height = T::Bottom;
 }
 
-string ProjArgN::exprAsUse() {
-    return Node::exprAsUse() + ":" + std::to_string(n);
+string ProjArgN::asText() {
+    return Node::asText() + ":" + std::to_string(n);
 }
 
 
@@ -127,10 +127,33 @@ UseE PhiN::SCCPIdentity(Sea &sea) {
 
 }
 
+bool PhiN::needReg() {
+    auto use_op = uses[1]->getOp();
+    switch (use_op) {
+        case Nop::Undef:
+        case Nop::SetChar:
+        case Nop::SetInt:
+        case Nop::ProjWorld:
+        case Nop::InitWorld:
+        case Nop::ProjGlobal:
+        case Nop::PrintInt:
+        case Nop::PrintChar:
+            return false;
+        case Nop::Phi:
+            return uses[1]->needReg();
+        default:
+            return true;
+    }
+}
+
 void InitGlobalN::SCCPType() {
     typedef SCCPOptimizer::T T;
     auto type = Payload<T>();
     type->height = T::Bottom;
+}
+
+string InitGlobalN::asText() {
+    return Node::asText() + ":" + name;
 }
 
 }

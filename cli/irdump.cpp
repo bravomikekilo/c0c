@@ -34,9 +34,11 @@ int main(int argc, char **argv) {
 
     auto [funcs, sym] = parser.parseProg();
 
+    /*
     std::cout << "##$$ AST.dot" << std::endl;
 
     std::cout << C0::ASTDrawer::drawProgram(funcs);
+    */
 
     for(const auto &err: parser.getError()) {
         std::cout << err << std::endl;
@@ -66,28 +68,30 @@ int main(int argc, char **argv) {
 
         C0::buildDefUse(stop);
 
-        std::cout << "##$$ " << func->name << "/raw.ir" << std::endl;
         graph.buildPostOrder();
         graph.buildIndex();
 
-        std::cout << graph.irDump(true) << std::endl;
+        // std::cout << graph.irDump(true) << std::endl;
 
         phi_cleaner.optimize(stop);
 
         graph.buildPostOrder();
         graph.buildIndex();
 
+        /*
         std::cout << "##$$ " << func->name << "/origin.ir" << std::endl;
         std::cout << graph.irDump(true) << std::endl;
+        */
 
 
         C0::mergeLinearRegion(stop);
 
         graph.buildPostOrder();
         graph.buildIndex();
-
+        /*
         std::cout << "##$$ " << func->name << "/after_merge.ir" << std::endl;
         std::cout << graph.irDump(true) << std::endl;
+        */
 
         graph.buildPostOrder();
         graph.buildIndex();
@@ -98,33 +102,52 @@ int main(int argc, char **argv) {
 
 
         std::cout << "##$$ " << func->name << "/sccp_label.ir" << std::endl;
-
         std::cout << graph.irDump(true) << std::endl;
+
 
         sccp.transform(std::pair(start, stop), ocean);
 
 
-        std::cout << "##$$ " << func->name << "/sccp_transform.ir" << std::endl;
+        // std::cout << "##$$ " << func->name << "/sccp_transform.ir" << std::endl;
+
 
         graph.buildPostOrder();
         graph.buildIndex();
 
 
-        std::cout << graph.irDump(true) << std::endl;
+        // std::cout << graph.irDump(true) << std::endl;
 
 
-        std::cout << "##$$ " << func->name << "/control_flow.dot" << std::endl;
-
+        // std::cout << "##$$ " << func->name << "/control_flow.dot" << std::endl;
         C0::FineDrawer fine_drawer;
         fine_drawer.draw(stop);
-        std::cout << fine_drawer.toDot(func->name) << std::endl;
+        // std::cout << fine_drawer.toDot(func->name) << std::endl;
 
 
         graph.buildPostOrder();
         graph.buildIndex();
 
+        /*
         std::cout << "##$$ " << func->name << "/ir_dump.ir" << std::endl;
         std::cout << graph.irDump(true) << std::endl;
+        */
+
+        std::cout << "##$$ " << func->name << "/liveness.ir" << std::endl;
+        // graph.initLiveness();
+        graph.liveAnalysis();
+        std::cout << graph.irDump(false) << std::endl;
+
+        auto relation = graph.buildDominance();
+        auto order = graph.getPostOrder();
+        int index = 0;
+        for(auto p : relation) {
+            auto region = order[index];
+            assert(region->bid == index);
+            std::cout << "BB" << p->bid << p->getPos().toStr()
+            << " dominance BB" << region->bid << " @" << region->getPos().toStr()
+            << std::endl;
+            ++index;
+        }
 
     }
 

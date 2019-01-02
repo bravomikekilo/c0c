@@ -22,6 +22,10 @@ public:
     void SCCPType() override;
 
     UseE SCCPIdentity(Sea &sea) override;
+
+    bool needReg() override {
+        return false;
+    }
 };
 
 

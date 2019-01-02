@@ -56,6 +56,10 @@ void SCCPOptimizer::initialize(StopN *stop) {
         payloads.push_back(node);
         node->setPayload(load);
 
+        if(node->getOp() == Nop::Undef) {
+            load->height = T::Bottom;
+        }
+
         for (auto use: *node) {
             if (!visited.count(use)) {
                 s.push(use);

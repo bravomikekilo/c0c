@@ -17,6 +17,10 @@ public:
     }
 
     void SCCPType() override;
+
+    bool needReg() override {
+        return false;
+    }
 };
 
 /// represent initial value of a global, so it can't be a constant
@@ -34,6 +38,12 @@ public:
     }
 
     void SCCPType() override;
+
+    bool needReg() override {
+        return false;
+    }
+
+    string asText() override;
 };
 
 /// represent initial value of a argument, so it can't be a constant
@@ -55,7 +65,8 @@ public:
 
     void SCCPType() override;
 
-    string exprAsUse() override;
+    string asText() override;
+
 
 };
 
@@ -86,6 +97,8 @@ public:
 
     UseE SCCPIdentity(Sea &sea) override;
 
+    bool needReg() override;
+
 };
 
 
@@ -100,6 +113,10 @@ public:
     bool asCode() override;
 
     string exprAsUse() override;
+
+    bool needReg() override {
+        return false;
+    }
 
 };
 

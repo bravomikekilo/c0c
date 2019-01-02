@@ -34,6 +34,10 @@ public:
         uses[0] = region;
         uses[1] = up;
     }
+
+    bool needReg() override {
+        return false;
+    }
 };
 
 /// project return value from Read node
@@ -61,6 +65,10 @@ public:
 
     string asText() override;
 
+    bool needReg() override {
+        return false;
+    }
+
 };
 
 class IfProjN : public ProjN {
@@ -75,6 +83,10 @@ public:
     }
 
     string asText() override;
+
+    bool needReg() override {
+        return false;
+    }
 
 };
 

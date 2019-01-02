@@ -45,6 +45,7 @@ void CmpN::SCCPType() {
     }
 
     type->height = T::Bottom;
+
 }
 
 UseE CmpN::SCCPIdentity(Sea &sea) {
