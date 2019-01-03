@@ -1,0 +1,9 @@
+
+int main() {
+    const int t = 100;
+    int x, y;
+    y = 1 + 2 * (3 + -4) / t;
+    x = 1 + 2 + 3;
+
+    printf("hello ", y + x);
+}

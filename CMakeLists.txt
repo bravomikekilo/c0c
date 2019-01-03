@@ -21,11 +21,11 @@ include_directories(${C0_SOURCE_DIR})
 
 add_executable(Lexer Lexer.cpp Lex.cpp util.cpp cli/lexer.cpp AST/ExprAST.cpp SourceStream.cpp SourceStream.h)
 
-add_executable(Quad cli/quad.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp ${AST_FILE} ${QUAD_FILE} AST/ExprAST.cpp TypeChecker.cpp TypeChecker.h Pos.h SourceStream.cpp SourceStream.h)
+add_executable(Quad cli/quad.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp ${AST_FILE} ${QUAD_FILE} AST/ExprAST.cpp TypeChecker.cpp TypeChecker.h Pos.h SourceStream.cpp SourceStream.h Quad/CFGWriter.cpp Quad/CFGWriter.h)
 
 add_executable(Grammar Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp ${AST_FILE} SymTable.cpp cli/grammar.cpp AST/ExprAST.cpp TypeChecker.cpp TypeChecker.h Pos.h SourceStream.cpp SourceStream.h)
 
-add_executable(QuadGen cli/quadGen.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp ${AST_FILE} ${QUAD_FILE} ${ASM_FILE} ${NAIVE_GEN_FILE} TypeChecker.cpp Pos.h SourceStream.cpp SourceStream.h)
+add_executable(QuadGen cli/quadGen.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp ${AST_FILE} ${QUAD_FILE} ${ASM_FILE} ${NAIVE_GEN_FILE} TypeChecker.cpp Pos.h SourceStream.cpp SourceStream.h NaiveGen/ConstFolder.cpp NaiveGen/ConstFolder.h)
 
 add_executable(SON cli/seaOfNode.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp TypeChecker.cpp ${SON_FILE} ${AST_FILE} ${ARCH_FILE} Pos.h SourceStream.cpp SourceStream.h SON/FineDrawer.cpp SON/FineDrawer.h SON/LSect.cpp SON/LSect.h SON/liveness.h SON/IRGraph.cpp SON/IRGraph.h SON/CodeGen.cpp SON/CodeGen.h)
 add_executable(IR cli/irdump.cpp Lexer.cpp Lex.cpp util.cpp Type.cpp Parser.cpp SymTable.cpp TypeChecker.cpp ${SON_FILE} ${AST_FILE} ${ARCH_FILE} Pos.h SourceStream.cpp SourceStream.h SON/FineDrawer.cpp SON/FineDrawer.h SON/LSect.cpp SON/LSect.h SON/liveness.h SON/IRGraph.cpp SON/IRGraph.h SON/CodeGen.cpp SON/CodeGen.h)

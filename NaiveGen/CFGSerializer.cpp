@@ -65,6 +65,7 @@ void CFGSerializer::visit(C0::BasicBlock *block) {
         }
     }
 
+    bool has_ret = false;
     for (auto &inst: block->insts) {
         switch (inst.op) {
             case QuadOp::Add:
@@ -81,6 +82,7 @@ void CFGSerializer::visit(C0::BasicBlock *block) {
                 break;
             case QuadOp::Ret:
                 handleRet(inst, reg_table);
+                has_ret = true;
                 break;
             case QuadOp::Read:
                 handleRead(inst, reg_table);
@@ -110,14 +112,16 @@ void CFGSerializer::visit(C0::BasicBlock *block) {
                 break;
         }
     }
+    if(!has_ret) {
 
-    if (!restored) {
-        storeRegAfterBasicBlock(reg_table);
-    }
+        if (!restored) {
+            storeRegAfterBasicBlock(reg_table);
+        }
 
-    if (block->next != nullptr && nextBlock() != block->next) {
-        unique_ptr<Inst> jmp = make_unique<BInst>(getBlockLabel(block->next));
-        list.addInst(std::move(jmp));
+        if (block->next != nullptr && nextBlock() != block->next) {
+            unique_ptr<Inst> jmp = make_unique<BInst>(getBlockLabel(block->next));
+            list.addInst(std::move(jmp));
+        }
     }
 
 }

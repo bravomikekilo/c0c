@@ -144,6 +144,62 @@ string Quad::toString(shared_ptr<SymTable> table) const {
 
 }
 
+optional<int> Quad::constFold(const SymTable &table, optional<QuadVal> c_val, int val) {
+    switch (op) {
+        case QuadOp::Add:
+        case QuadOp::Sub:
+        case QuadOp::Mul:
+        case QuadOp::Div:
+            break;
+        case QuadOp::Copy: {
+            if(auto c = src0.constVal(table); c) {
+                return c.value();
+            }
+            if(c_val == src0) {
+                return val;
+            }
+            return {};
+        }
+        default:
+            return {};
+    }
+
+    optional<int> left_val;
+    if(src0 == c_val) {
+        left_val = val;
+    } else if(auto c = src0.constVal(table); c) {
+        left_val = c.value();
+    }
+
+    optional<int> right_val;
+    if(src1 == c_val) {
+        right_val = val;
+    } else if(auto c = src1.constVal(table); c) {
+        right_val = c.value();
+    }
+
+    if(!right_val.has_value() || !left_val.has_value()) {
+        return {};
+    }
+
+    switch (op) {
+        case QuadOp::Add:
+            return {left_val.value() + right_val.value()};
+        case QuadOp::Sub:
+            return {left_val.value() - right_val.value()};
+        case QuadOp::Mul:
+            return {left_val.value() * right_val.value()};
+        case QuadOp::Div:
+            return {left_val.value() / right_val.value()};
+        default:
+            return {};
+    }
+
+
+
+
+}
+
 optional<int> QuadVal::constVal(const SymTable &table) const {
     if (isConst) return {val};
     const auto *term = table.findVarByID(val);

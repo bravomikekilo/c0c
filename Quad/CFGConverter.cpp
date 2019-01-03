@@ -177,14 +177,14 @@ void CFGConverter::visit(CondAST *e) {
 
 void CFGConverter::visit(WhileStmt *e) {
     if (!curr_block->insts.empty()) {
-        auto head_block = builder.create();
+        auto head_block = builder.create(e->getPos());
         curr_block->next = head_block;
         curr_block = head_block;
     }
     e->cond->accept(*this);
     auto *main_branch = &(curr_block->insts.back().jmp);
     auto cond_block = curr_block;
-    auto body_block = builder.create();
+    auto body_block = builder.create(e->body->getPos());
     *main_branch = body_block;
 
     curr_block = body_block;
@@ -202,7 +202,7 @@ void CFGConverter::visit(IfStmt *e) {
     auto *main_branch = &(curr_block->insts.back().jmp);
     if (e->falseBranch.has_value()) {
         auto head_block = curr_block;
-        auto true_head_block = builder.create();
+        auto true_head_block = builder.create(e->getPos());
         *main_branch = true_head_block;
 
         curr_block = true_head_block;
@@ -215,7 +215,7 @@ void CFGConverter::visit(IfStmt *e) {
 
         std::swap(true_waiting, wait_for_next_block);
 
-        auto false_head_block = builder.create();
+        auto false_head_block = builder.create(e->falseBranch.value()->getPos());
         head_block->next = false_head_block;
 
         curr_block = false_head_block;
@@ -228,7 +228,7 @@ void CFGConverter::visit(IfStmt *e) {
 
     } else {
         auto head_block = curr_block;
-        curr_block = builder.create();
+        curr_block = builder.create(e->trueBranch->getPos());
         *main_branch = curr_block;
         e->trueBranch->accept(*this);
 
@@ -243,7 +243,7 @@ void CFGConverter::visit(IfStmt *e) {
 void CFGConverter::visit(BlockStmt *e) {
     for (auto &stmt: e->stmts) {
         if (hasWaiting()) {
-            curr_block = builder.create();
+            curr_block = builder.create(stmt->getPos());
             cleanWaiting(curr_block);
         }
         stmt->accept(*this);
@@ -285,20 +285,22 @@ void CFGConverter::visit(ExprStmt *e) {
 }
 
 void CFGConverter::visit(FuncAST *e) {
+    curr_block = builder.create(e->getPos());
+    start_block = curr_block;
     curr_table = e->table;
     for (auto &stmt: e->stmts) {
         if (hasWaiting()) {
-            curr_block = builder.create();
+            curr_block = builder.create(stmt->getPos());
             cleanWaiting(curr_block);
         }
         stmt->accept(*this);
     }
     if (hasWaiting()) {
-        curr_block = builder.create();
+        curr_block = builder.create(Pos{0, 0});
         curr_block->insts.emplace_back();
         cleanWaiting(curr_block);
     } else {
-        if (curr_block->insts.back().op != QuadOp::Ret) {
+        if (curr_block->insts.empty() || curr_block->insts.back().op != QuadOp::Ret) {
             curr_block->insts.emplace_back();
         }
     }
@@ -310,12 +312,12 @@ void CFGConverter::visit(ForStmt *e) {
         e->start.value()->accept(*this);
     }
 
-    auto cond_block = builder.create();
+    auto cond_block = builder.create(e->cond->getPos());
     curr_block->next = cond_block;
     curr_block = cond_block;
     e->cond->accept(*this);
 
-    auto body_block = builder.create();
+    auto body_block = builder.create(e->body->getPos());
     curr_block->insts.back().jmp = body_block;
 
     curr_block = body_block;
@@ -327,7 +329,7 @@ void CFGConverter::visit(ForStmt *e) {
             e->after.value()->accept(*this);
             addWaiting(&curr_block->next);
         } else {
-            auto after_block = builder.create();
+            auto after_block = builder.create(e->after.value()->getPos());
             cleanWaiting(after_block);
             curr_block = after_block;
             e->after.value()->accept(*this);
@@ -342,7 +344,7 @@ void CFGConverter::visit(ForStmt *e) {
 
 void CFGConverter::visit(DoStmt *e) {
     if (!curr_block->insts.empty()) {
-        auto next_block = builder.create();
+        auto next_block = builder.create(e->body->getPos());
         if (curr_block->next == nullptr) {
             curr_block->next = next_block;
         }
@@ -353,7 +355,7 @@ void CFGConverter::visit(DoStmt *e) {
 
     e->body->accept(*this);
     if (hasWaiting()) {
-        auto next_block = builder.create();
+        auto next_block = builder.create(e->cond->getPos());
         curr_block->next = next_block;
         curr_block = next_block;
         cleanWaiting(curr_block);

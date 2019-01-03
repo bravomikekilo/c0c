@@ -4,7 +4,7 @@
 namespace C0 {
 optional<Keyword> isKeyword(const string &raw) {
     if (raw == "const") {
-        return Keyword::CONST;
+        return Keyword::CONST_;
     }
     if (raw == "if") {
         return Keyword::IF;
@@ -45,7 +45,7 @@ optional<Keyword> isKeyword(const string &raw) {
         return Keyword::CHAR;
     }
     if (raw == "void") {
-        return Keyword::VOID;
+        return Keyword::VOID_;
     }
     return optional<Keyword>();
 }
@@ -115,7 +115,7 @@ string cmpToString(Cmp cmp) {
 
 string keyToString(Keyword key) {
     switch (key) {
-        case Keyword::CONST:
+        case Keyword::CONST_:
             return "const";
         case Keyword::IF:
             return "if";
@@ -141,7 +141,7 @@ string keyToString(Keyword key) {
             return "int";
         case Keyword::CHAR:
             return "char";
-        case Keyword::VOID:
+        case Keyword::VOID_:
             return "void";
         default:
             return {};

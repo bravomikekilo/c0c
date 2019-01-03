@@ -122,6 +122,7 @@ unique_ptr<ExprAST> Parser::parseFactor() {
     }
 
     addError(lexer.headPos(), "missing factor");
+    lexer.next();
     return nullptr;
 }
 
@@ -474,7 +475,7 @@ void Parser::tryParseVar(bool global) {
 }
 
 void Parser::tryParseConst(bool global) {
-    while (lexer.peek().is(Keyword::CONST)) {
+    while (lexer.peek().is(Keyword::CONST_)) {
         lexer.next();
         auto baseType = BaseTypeK::Error;
         if (lexer.peek().is(Keyword::CHAR)) {
@@ -492,6 +493,11 @@ void Parser::tryParseConst(bool global) {
         do {
             if (!lexer.peek().is(LexKind::Ident)) {
                 addError("miss a variable name");
+                if(!lexer.peek().is(Sep::Comma)) {
+                    lexer.next();
+                } else if(lexer.peek().is(LexKind::Eof)) {
+                    break;
+                }
             } else {
                 auto name = lexer.peek().getString();
                 auto name_pos = lexer.headPos();
@@ -548,10 +554,13 @@ pair<vector<shared_ptr<FuncAST>>, shared_ptr<SymTable>> Parser::parseProg() {
         auto baseType = lexer.peek().is(Keyword::CHAR) ? BaseTypeK::Char : BaseTypeK::Int;
         auto func_pos = lexer.headPos();
         lexer.next();
+        string first_name;
         if (!lexer.peek().is(LexKind::Ident)) {
             addError("miss a variable or function name");
+        } else {
+            first_name = lexer.peek().getString();
         }
-        auto first_name = lexer.peek().getString();
+        // auto first_name = lexer.peek().getString();
         auto name_pos = lexer.headPos();
         lexer.next();
         if (lexer.peek().is(Sep::LPar)) {
@@ -650,7 +659,7 @@ pair<vector<shared_ptr<FuncAST>>, shared_ptr<SymTable>> Parser::parseProg() {
 Type Parser::parseRetType() {
     auto head = lexer.peek();
     lexer.next();
-    if (head.is(Keyword::VOID)) {
+    if (head.is(Keyword::VOID_)) {
         return Type(BaseTypeK::Void);
     } else if (head.is(Keyword::CHAR)) {
         return Type(BaseTypeK::Char);
@@ -666,7 +675,7 @@ Type Parser::parseRetType() {
 Type Parser::parseArgType() {
     auto head = lexer.peek();
     lexer.next();
-    if (head.is(Keyword::VOID)) {
+    if (head.is(Keyword::VOID_)) {
         return Type(BaseTypeK::Error);
     } else if (head.is(Keyword::CHAR)) {
         return Type(BaseTypeK::Char);

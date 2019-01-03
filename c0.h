@@ -34,7 +34,7 @@ enum class Sep {
 };
 
 enum class Keyword {
-    CONST,
+    CONST_,
     IF,
     ELSE,
     DO,
@@ -47,7 +47,7 @@ enum class Keyword {
     RETURN,
     INT,
     CHAR,
-    VOID,
+    VOID_,
 };
 
 

@@ -7,6 +7,7 @@
 
 #include "common.h"
 #include "Quads.h"
+#include "Pos.h"
 #include <list>
 
 namespace C0 {
@@ -14,11 +15,12 @@ namespace C0 {
 
 class BasicBlock {
 public:
+    Pos pos;
     std::list<Quad> insts;
     BasicBlock *next;
 
-    explicit BasicBlock(int bid, BasicBlock *next = nullptr)
-    :bid(bid), next(next) {}
+    explicit BasicBlock(Pos pos, int bid, BasicBlock *next = nullptr)
+    :bid(bid), next(next), pos(pos) {}
 
     int getBid() { return bid; }
 
@@ -27,6 +29,9 @@ public:
 
     template <typename T>
     T *payload() { return (T *)other; }
+
+    void constFolding(const C0::SymTable &table);
+    void deadClean();
 
 private:
     int bid;
@@ -38,8 +43,8 @@ private:
 class BasicBlockBuilder {
 
 public:
-    BasicBlock *create() {
-        auto ret = new BasicBlock(popBid());
+    BasicBlock *create(Pos pos) {
+        auto ret = new BasicBlock(pos, popBid());
         built.push_back(ret);
         return ret;
     }

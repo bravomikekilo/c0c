@@ -31,7 +31,7 @@ public:
 class AddI : public ArithInst {
 protected:
     string op() override {
-        return "add";
+        return "addu";
     }
 
 public:
@@ -46,7 +46,7 @@ public:
 class SubI : public ArithInst {
 protected:
     string op() override {
-        return "sub";
+        return "subu";
     }
 
 
@@ -68,7 +68,7 @@ public:
 class MulI : public ArithInst {
 protected:
     string op() override {
-        return "mul";
+        return "mulu";
     }
 
 

@@ -113,6 +113,9 @@ struct Quad {
 
     string toString(shared_ptr<SymTable> table) const ;
 
+    optional<int> constFold(const SymTable &table, optional<QuadVal> c_val, int val);
+    // bool constReplace(QuadVal val, int c);
+
 };
 
 

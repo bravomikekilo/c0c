@@ -17,7 +17,7 @@ class CFGConverter: public ASTVisitor {
 public:
 
     explicit CFGConverter(BasicBlockBuilder &builder): builder(builder) {
-        curr_block = builder.create();
+        curr_block = nullptr;
         start_block = curr_block;
     }
 
