@@ -44,6 +44,8 @@ public:
     }
 
     string asText() override;
+
+    bool same(const Node &other) override;
 };
 
 /// represent initial value of a argument, so it can't be a constant
@@ -66,6 +68,8 @@ public:
     void SCCPType() override;
 
     string asText() override;
+
+    bool same(const Node &other) override;
 
 
 };

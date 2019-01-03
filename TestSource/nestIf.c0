@@ -1,0 +1,20 @@
+
+void value(){
+    const int test = 0110;
+    int op;
+    scanf(op);
+
+    if(op == 1) {
+        op = op + 1;
+        printf(test);
+    } else {
+        if(op == 2) {
+            printf('b');
+        } else {
+            printf((((((('b')))))));
+        }
+    }
+
+    // printf("result", op);
+
+}

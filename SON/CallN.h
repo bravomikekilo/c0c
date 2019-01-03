@@ -61,6 +61,8 @@ public:
         return false;
     }
 
+    bool same(const Node &other) override;
+
 };
 
 
@@ -87,6 +89,8 @@ public:
     bool needReg() override {
         return false;
     }
+
+    bool same(const Node &other) override;
 };
 
 class PrintIntN: public PrintN {

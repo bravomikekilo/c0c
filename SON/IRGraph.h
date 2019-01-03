@@ -45,6 +45,9 @@ public:
 
     void buildIndex();
 
+    void cleanControlFlow();
+
+    void localCSE();
 
 
     // build dominance tree

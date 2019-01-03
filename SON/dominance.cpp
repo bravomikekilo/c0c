@@ -91,4 +91,22 @@ vector<RegionN *> computeDominanceTree(pair<RegionN *, StopN *> graph) {
     return ret;
 }
 
+vector<RegionN *> getDominanceOrder(const vector<RegionN *> &relation, const vector<RegionN *> &order, int start_index) {
+    vector<RegionN *> ret;
+    stack<RegionN *> s;
+    s.push(relation[start_index]);
+
+    while(!s.empty()) {
+        auto head = s.top(); s.pop();
+        ret.push_back(head);
+        for(auto i = 0; i < relation.size(); ++i) {
+            if(relation[i] == head) {
+                if(order[i] != head) s.push(order[i]);
+            }
+        }
+    }
+
+    return ret;
+}
+
 }

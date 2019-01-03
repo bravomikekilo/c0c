@@ -21,6 +21,12 @@ string ProjArgN::asText() {
     return Node::asText() + ":" + std::to_string(n);
 }
 
+bool ProjArgN::same(const Node &other) {
+    if(!Node::same(other)) return false;
+    const auto &o = (const ProjArgN &)(other);
+    return o.n == n;
+}
+
 
 void UndefN::SCCPType() {
     typedef SCCPOptimizer::T T;
@@ -154,6 +160,15 @@ void InitGlobalN::SCCPType() {
 
 string InitGlobalN::asText() {
     return Node::asText() + ":" + name;
+}
+
+bool InitGlobalN::same(const Node &other) {
+    if(!Node::same(other)){
+        return false;
+    };
+
+    const auto &o = (const InitGlobalN &)(other);
+    return o.name == name;
 }
 
 }

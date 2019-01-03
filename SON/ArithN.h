@@ -35,6 +35,8 @@ public:
     int arith(int x, int y) override {
         return x + y;
     }
+
+    bool same(const Node &other) override;
 };
 
 class SubN: public ArithN {
@@ -56,6 +58,8 @@ public:
     int arith(int x, int y) override {
         return x * y;
     }
+
+    bool same(const Node &other) override;
 };
 
 class DivN: public ArithN {

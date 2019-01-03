@@ -48,6 +48,7 @@ void IRGraph::buildPostOrder() {
 
 RegionN *interSection(RegionN *b1, RegionN *b2, const vector<RegionN *> &dom);
 
+
 vector<RegionN *> IRGraph::buildDominance() {
     auto start = head;
     auto stop = tail;
@@ -86,7 +87,7 @@ vector<RegionN *> IRGraph::buildDominance() {
     vector<RegionN *> ret(index, nullptr);
 
     ret[start->bid] = start;
-    std::cout << "start->bid " << start->bid << std::endl;
+    // std::cout << "start->bid " << start->bid << std::endl;
     bool changed = true;
 
     while (changed) {
@@ -94,15 +95,17 @@ vector<RegionN *> IRGraph::buildDominance() {
         // in reverse post-order (except start_node)
         for (int sz = postOrder.size() - 2; sz >= 0; --sz) {
             auto region = postOrder[sz];
-            std::cout << "visit" << region->bid << std::endl;
+            // std::cout << "visit" << region->bid << std::endl;
 
             RegionN *new_idom = nullptr;
 
             bool first = true;
             region->visitPred([&](RegionN *pred) {
+                /*
                 std::cout << "BB" << region->bid << " pred BB" << pred->bid << std::endl;
                 std::cout << "pred idom "
                           << (ret[pred->bid] != nullptr ? std::to_string(ret[pred->bid]->bid) : "nullptr") << std::endl;
+                */
                 if (first) {
                     if (ret[pred->bid] != nullptr) {
                         first = false;
@@ -111,7 +114,7 @@ vector<RegionN *> IRGraph::buildDominance() {
                 } else {
                     if (ret[pred->bid] != nullptr) {
                         new_idom = interSection(pred, new_idom, ret);
-                        if (!new_idom) std::cout << "wrong in new_idom" << std::endl;
+                        // if (!new_idom) std::cout << "wrong in new_idom" << std::endl;
                     }
                 }
             });
@@ -325,5 +328,54 @@ void IRGraph::buildIndex() {
     tail->serial = index;
 }
 
+void IRGraph::cleanControlFlow() {
+    for(auto region: postOrder) {
+        if(region->getOrder().size() == 0 && region->size() == 1) {
+            auto pred = region->at(0);
+            for(auto user: region->getUser()) {
+                user->replace(region, pred);
+                pred->getUser().erase(region);
+                pred->getUser().insert(user);
+            }
+        }
+    }
+
+
+}
+
+// CSE inside basic block
+void IRGraph::localCSE() {
+    for(auto region: postOrder) {
+        unordered_map<Nop, unordered_set<UseE>> hash;
+        for(auto node: region->getOrder()) {
+            if(hash.count(node->getOp())) {
+                auto &set = hash.at(node->getOp());
+                bool unique = true;
+                for(auto ori: set) {
+                    if(ori->same(*node)) {
+                        // get a same cse
+                        std::cout << "same node " << ori->serial << " and " << node->serial << std::endl;
+                        unique = false;
+
+                        for(auto user: node->getUser()) {
+                            user->replace(node, ori);
+                        }
+
+                        for(auto use: *node) {
+                            use->getUser().erase(node);
+                        }
+                    }
+                }
+
+                if(unique) {
+                    set.insert(node);
+                }
+
+            } else {
+                hash.insert(pair(node->getOp(), unordered_set<UseE>()));
+            }
+        }
+    }
+}
 
 }

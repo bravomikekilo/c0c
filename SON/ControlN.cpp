@@ -18,10 +18,25 @@ using std::list;
 
 namespace C0 {
 
+static bool isCmp(UseE node) {
+    switch (node->getOp()) {
+        case Nop::Eq:
+        case Nop::Ne:
+        case Nop::Gt:
+        case Nop::Lt:
+        case Nop::Ge:
+        case Nop::Le:
+            return true;
+        default:
+            return false;
+    }
+}
+
 
 void RegionN::schedule() {
     order.clear(); // clear previous schedule
     vector<UseE> phis;
+    vector<UseE> args;
     UseE jmp = nullptr;
     std::stack<pair<UseE, bool>> s;
     unordered_set<UseE> visited;
@@ -36,13 +51,17 @@ void RegionN::schedule() {
             continue;
         }
 
-        /*
         if (user_op == Nop::Phi) {
             visited.insert(user);
             phis.push_back(user);
             continue;
         }
-        */
+
+        if (user_op == Nop::ProjArg) {
+            visited.insert(user);
+            args.push_back(user);
+            continue;
+        }
 
 
         bool is_head = true;
@@ -55,7 +74,7 @@ void RegionN::schedule() {
 
         if (is_head) {
             s.push(pair(user, false));
-            visited.insert(user);
+            // visited.insert(user);
         }
     }
 
@@ -63,21 +82,40 @@ void RegionN::schedule() {
     while (!s.empty()) {
         auto[head, is_post] = s.top();
         s.pop();
-
+        if (visited.count(head)) continue;
         if (is_post) {
             if (head->getOp() == Nop::Phi) {
                 phis.push_back(head);
             } else {
-                this->order.push_back(head);
+                if (!isCmp(head)) {
+                    this->order.push_back(head);
+                    visited.insert(head);
+                }
+                for (auto user : this->order) {
+                    if (visited.count(user)) continue;
+                    switch (user->getOp()) {
+                        case Nop::ProjGlobal:
+                        case Nop::ProjWorld:
+                            // case Nop::ProjArg:
+                        case Nop::ProjRet:
+                            this->order.push_back(user);
+                            visited.insert(user);
+                        default:
+                            break;
+                    }
+
+                }
+
             }
+            visited.insert(head);
             continue;
         }
 
         s.push(pair(head, true));
-        visited.insert(head);
+        // visited.insert(head);
         for (auto use : *head) {
             if (!visited.count(use) && use->front() == this) {
-                visited.insert(use);
+                // visited.insert(use);
                 s.push(pair(use, false));
             }
         }
@@ -85,15 +123,23 @@ void RegionN::schedule() {
     }
 
     if (jmp) {
+        order.push_back(jmp->at(1));
         order.push_back(jmp);
+        /*
         for (auto user: jmp->getUser()) {
             order.push_back(user);
         }
+        */
+    }
+
+    for (auto arg: args) {
+        order.push_front(arg);
     }
 
     for (auto phi: phis) {
         order.push_front(phi);
     }
+
 
 }
 
@@ -235,6 +281,13 @@ void StopN::SCCPType() {
     }
     type->height = T::Top;
 }
+
+bool StopN::same(const Node &other) {
+    if(!Node::same(other)) return false;
+    const auto &o = (const StopN &)(other);
+    return o.has_ret == has_ret;
+}
+
 
 
 void IfN::SCCPType() {

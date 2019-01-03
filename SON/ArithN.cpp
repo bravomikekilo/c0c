@@ -65,6 +65,17 @@ void AddN::SCCPType() {
     type->constant = l_type->constant + r_type->constant;
 }
 
+bool AddN::same(const Node &other) {
+    if(other.size() != size()) return false;
+
+    if(uses[0] == other.at(0) && uses[1] == other.at(1)) {
+        return true;
+    }
+
+    return uses[0] == other.at(1) && uses[1] == other.at(0);
+
+}
+
 void MulN::SCCPType() {
     typedef SCCPOptimizer::T T;
     auto lhs = uses[1];
@@ -108,6 +119,17 @@ void MulN::SCCPType() {
 
     type->type = r_type->type;
     type->constant = l_type->constant * r_type->constant;
+
+}
+
+bool MulN::same(const Node &other) {
+    if(other.size() != size()) return false;
+
+    if(uses[0] == other.at(0) && uses[1] == other.at(1)) {
+        return true;
+    }
+
+    return uses[0] == other.at(1) && uses[1] == other.at(0);
 
 }
 

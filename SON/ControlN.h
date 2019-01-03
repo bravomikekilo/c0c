@@ -167,6 +167,8 @@ public:
         return false;
     }
 
+    bool same(const Node &other) override;
+
 };
 
 

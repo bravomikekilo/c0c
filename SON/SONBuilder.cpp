@@ -190,8 +190,26 @@ void SONBuilder::visitRightOp(OpExpr *e) {
 void SONBuilder::visit(C0::CondAST *e) {
     e->lhs->accept(*this);
     auto lhs = right_val;
+    auto left_base = addr;
     e->rhs->accept(*this);
     auto rhs = right_val;
+    auto right_base = addr;
+
+    if (left_base) {
+        if (e->lhs->outType(curr_table).getBase().is(BaseTypeK::Char)) {
+            lhs = sea.alloc<GetCharN>(curr_block, left_base, lhs);
+        } else {
+            lhs = sea.alloc<GetIntN>(curr_block, left_base, lhs);
+        }
+    }
+
+    if (right_base) {
+        if (e->rhs->outType(curr_table).getBase().is(BaseTypeK::Char)) {
+            rhs = sea.alloc<GetCharN>(curr_block, right_base, rhs);
+        } else {
+            rhs = sea.alloc<GetIntN>(curr_block, right_base, rhs);
+        }
+    }
 
     switch (e->cp) {
         case Cmp::Greater:
@@ -655,6 +673,14 @@ void SONBuilder::visit(FuncAST *e) {
             curr_block = block;
         }
         stmt->accept(*this);
+    }
+
+    if (!waiting.empty()) {
+        auto block = sea.alloc<RegionN>(Pos{0, 0}, waiting);
+        addContext(block);
+        sealBlock(block);
+        waiting.clear();
+        curr_block = block;
     }
 
     if (!has_return) {

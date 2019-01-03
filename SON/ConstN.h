@@ -49,6 +49,8 @@ public:
 
     bool asCode() override;
 
+    bool same(const Node &other) override;
+
 
 };
 
@@ -71,6 +73,8 @@ public:
     bool asCode() override;
 
     string exprAsUse() override;
+
+    bool same(const Node &other) override;
 
 };
 
@@ -99,6 +103,8 @@ public:
 
     string exprAsUse() override;
 
+    bool same(const Node &other) override;
+
 };
 
 class StackSlotN: public ConstN {
@@ -121,6 +127,8 @@ public:
     bool asCode() override;
 
     string exprAsUse() override;
+
+    bool same(const Node &other) override;
 
 };
 

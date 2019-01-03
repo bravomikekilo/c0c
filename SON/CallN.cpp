@@ -37,6 +37,16 @@ void CallN::SCCPType(ProjN *n) {
     p_type->height = t->height;
 }
 
+bool CallN::same(const Node &other) {
+    if(!Node::same(other) || other.getOp() != Nop::Call) {
+        return false;
+    };
+
+    auto &o = (const CallN &)(other);
+    return o.func_name == func_name;
+
+}
+
 
 void PrintN::SCCPType() {
     typedef SCCPOptimizer::T T;
@@ -64,6 +74,15 @@ UseE PrintN::SCCPIdentity(Sea &sea) {
     } else {
         return this;
     }
+}
+
+bool PrintN::same(const Node &other) {
+    if(!Node::same(other) || other.getOp() != Nop::Call) {
+        return false;
+    };
+
+    auto &o = (const PrintN &)(other);
+    return o.str_id == str_id;
 }
 
 void ReadN::SCCPType() {
@@ -109,5 +128,6 @@ UseE ReadN::SCCPIdentity(Sea &sea, ProjN *projection) {
         return projection;
     }
 }
+
 
 }

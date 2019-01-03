@@ -151,7 +151,7 @@ public:
         return *user;
     }
 
-    size_t size() { return num_uses; }
+    size_t size() const { return num_uses; }
 
     void push_back(const UseE &use) {
         auto arr = new UseE[num_uses + 1];
@@ -164,13 +164,13 @@ public:
         uses = arr;
     }
 
-    Nop getOp() { return op; }
+    Nop getOp() const { return op; }
 
-    UseE at(size_t index) {
+    UseE at(size_t index) const {
         return uses[index];
     }
 
-    UseE operator[](size_t index) {
+    UseE operator[](size_t index) const {
         return uses[index];
     }
 
@@ -228,6 +228,16 @@ public:
     virtual bool needReg() {
         return true;
     };
+
+    virtual bool same(const Node &other) {
+        if(other.size() != size() || op != other.op) return false;
+        for(auto i = 0; i < size(); ++i) {
+            if(uses[i] != other.uses[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     unique_ptr<Reg> reg = nullptr;
 

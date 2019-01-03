@@ -11,6 +11,8 @@ namespace C0 {
 
 vector<RegionN *> computeDominanceTree(pair<RegionN *, StopN *> graph);
 
+vector<RegionN *> getDominanceOrder(const vector<RegionN *> &relation, const vector<RegionN *> &order, int start_index);
+
 
 }
 

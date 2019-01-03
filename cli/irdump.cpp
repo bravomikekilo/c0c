@@ -71,7 +71,8 @@ int main(int argc, char **argv) {
         graph.buildPostOrder();
         graph.buildIndex();
 
-        // std::cout << graph.irDump(true) << std::endl;
+        std::cout << "##$$ " << func->name << "/raw.ir" << std::endl;
+        std::cout << graph.irDump(true) << std::endl;
 
         phi_cleaner.optimize(stop);
 
@@ -112,20 +113,27 @@ int main(int argc, char **argv) {
 
 
         graph.buildPostOrder();
+        graph.cleanControlFlow();
+
+        graph.buildPostOrder();
         graph.buildIndex();
+
+        std::cout << "##$$ " << func->name << "/clean_control.ir" << std::endl;
+        std::cout << graph.irDump(false) << std::endl;
+
 
 
         // std::cout << graph.irDump(true) << std::endl;
 
 
         // std::cout << "##$$ " << func->name << "/control_flow.dot" << std::endl;
-        C0::FineDrawer fine_drawer;
-        fine_drawer.draw(stop);
+        // C0::FineDrawer fine_drawer;
+        // fine_drawer.draw(stop);
         // std::cout << fine_drawer.toDot(func->name) << std::endl;
 
 
-        graph.buildPostOrder();
-        graph.buildIndex();
+        // graph.buildPostOrder();
+        // graph.buildIndex();
 
         /*
         std::cout << "##$$ " << func->name << "/ir_dump.ir" << std::endl;
@@ -135,6 +143,13 @@ int main(int argc, char **argv) {
         std::cout << "##$$ " << func->name << "/liveness.ir" << std::endl;
         // graph.initLiveness();
         graph.liveAnalysis();
+        std::cout << graph.irDump(false) << std::endl;
+
+        std::cout << "perform local cse" << std::endl;
+        graph.localCSE();
+
+        graph.buildIndex();
+        std::cout << "after local cse" << std::endl;
         std::cout << graph.irDump(false) << std::endl;
 
         auto relation = graph.buildDominance();
@@ -147,6 +162,12 @@ int main(int argc, char **argv) {
             << " dominance BB" << region->bid << " @" << region->getPos().toStr()
             << std::endl;
             ++index;
+        }
+
+        auto domin_order = C0::getDominanceOrder(relation, order, start->bid);
+        std::cout << "dominance pre-order" << std::endl;
+        for(auto region: domin_order) {
+            std::cout << "BB" << region->bid << region->getPos().toStr() << std::endl;
         }
 
     }

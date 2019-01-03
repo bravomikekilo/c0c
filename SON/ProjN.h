@@ -69,6 +69,8 @@ public:
         return false;
     }
 
+    bool same(const Node &other) override;
+
 };
 
 class IfProjN : public ProjN {
