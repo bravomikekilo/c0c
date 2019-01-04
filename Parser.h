@@ -70,8 +70,10 @@ public:
 
     pair<vector<shared_ptr<FuncAST>>, shared_ptr<SymTable>> parseProg();
 
-    vector<string> &getError() {
-        return errors;
+    vector<string> getError() {
+        auto lexer_error = lexer.getErrors();
+        lexer_error.insert(lexer_error.end(), errors.begin(), errors.end());
+        return lexer_error;
     }
 
 

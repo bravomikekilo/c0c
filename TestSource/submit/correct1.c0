@@ -1,0 +1,43 @@
+// test loop
+
+int testFunc(int x, int y) {
+
+    const int ratio = 2;
+
+    int temp;
+    int result;
+    result = 1;
+
+    for(temp = 0; temp < 10; temp = temp + 1){
+        result = result * ratio;
+    }
+    printf("result ", result);
+
+    if(temp) {
+        result = 2 + result;
+    } else {
+        result = ratio * result;
+    }
+
+    printf("result ", result);
+
+    do {
+        temp = temp - 1;
+        result = 2 + result;
+    } while(temp < 5);
+
+    printf("result ", result);
+
+
+    temp = 5;
+
+    return (result / temp);
+
+}
+
+
+int main() {
+    int t;
+    t = testFunc(1, 2);
+    printf("result ", t);
+}

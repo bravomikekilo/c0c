@@ -1,0 +1,9 @@
+
+int _test_func(int x, char y) {
+    y = 'a';
+    y = ';'
+    x = 00100;
+    y = '"';
+    y = ','
+    return (x + y);
+}

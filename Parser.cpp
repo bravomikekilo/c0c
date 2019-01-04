@@ -24,6 +24,13 @@ bool Parser::checkSemicolon() {
 unique_ptr<ExprAST> Parser::parseFactor() {
     const auto &head = lexer.peek();
 
+    if (head.is(LexKind::Keyword)) {
+        auto head_pos = lexer.headPos();
+        addError(lexer.headPos(), "variable name conflict with keyword: " + head.toString());
+        lexer.next();
+        return make_unique<VarExpr>(head_pos, 0);
+    }
+
     if (head.is(Op::Add)) {
         lexer.next();
         if (lexer.peek().is(LexKind::Int)) {
@@ -413,21 +420,28 @@ void Parser::tryParseVar(bool global) {
         // auto baseType = lexer.peek().is(Keyword::CHAR) ? BaseTypeK::Char : BaseTypeK::Int;
         lexer.next();
         do {
-            if (!lexer.peek().is(LexKind::Ident)) {
+            if (!lexer.peek().is(LexKind::Ident) && !lexer.peek().is(LexKind::Keyword)) {
                 addError("missing a variable name");
                 if (lexer.peek().is(Sep::Semicolon)) {
                     break;
                 }
                 lexer.next();
             } else {
-                auto name = lexer.peek().getString();
+                string name;
+                if (lexer.peek().is(LexKind::Keyword)) {
+                    addError("variable name conficit with keyword: " + lexer.peek().toString());
+                    name = lexer.peek().toString();
+                } else {
+                    name = lexer.peek().getString();
+                }
+
                 lexer.next();
                 if (lexer.peek().is(Sep::LBar)) {
                     lexer.next();
                     size_t length = 0;
                     if (lexer.peek().is(LexKind::Int)) {
                         length = lexer.peek().getInt();
-                        if(length <= 0) {
+                        if (length <= 0) {
                             addError(lexer.headPos(), "length of array must greater than 0");
                             length = INT_MAX;
                         }
@@ -491,15 +505,26 @@ void Parser::tryParseConst(bool global) {
         }
         // auto baseType = lexer.peek().is(Keyword::CHAR) ? BaseTypeK::Char : BaseTypeK::Int;
         do {
-            if (!lexer.peek().is(LexKind::Ident)) {
-                addError("miss a variable name");
-                if(!lexer.peek().is(Sep::Comma)) {
+            if (!lexer.peek().is(LexKind::Ident) && !lexer.peek().is(LexKind::Keyword)) {
+                if (lexer.peek().is(LexKind::Keyword)) {
+                    addError("name conflict with keyword " + lexer.peek().toString());
+                } else {
+                    addError("miss a variable name");
+                }
+                if (!lexer.peek().is(Sep::Comma)) {
                     lexer.next();
-                } else if(lexer.peek().is(LexKind::Eof)) {
+                } else if (lexer.peek().is(LexKind::Eof)) {
                     break;
                 }
             } else {
-                auto name = lexer.peek().getString();
+                string name;
+                if(lexer.peek().is(LexKind::Keyword)) {
+                    addError("name conflict with keyword " + lexer.peek().toString());
+                    name = lexer.peek().toString();
+                } else {
+                    name = lexer.peek().getString();
+                }
+
                 auto name_pos = lexer.headPos();
                 lexer.next();
                 expect(Sep::Assign, "miss = in const");

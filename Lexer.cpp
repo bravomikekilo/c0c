@@ -9,7 +9,7 @@ void Lexer::next() {
     do {
         currLex = parse();
         if (currLex.isError()) {
-            errors.push_back(currLex);
+            addError(currLex.toString());
         }
     } while (currLex.isError());
 }
@@ -52,7 +52,11 @@ Lex Lexer::parseChar() {
     head_pos = stream.getPos();
     auto c = stream.peek();
     if (c == EOF) {
-        return Lex::Error(err);
+        err += " unexpected end of file";
+        addError(err);
+        // return Lex::Error(err);
+        char ch = -1;
+        return Lex(ch);
     }
     char ch = static_cast<char>(c);
     stream.get();
@@ -71,11 +75,13 @@ Lex Lexer::parseChar() {
             stream.get();
             err.push_back('\'');
         }
-        return Lex::Error(err);
+        err += " invalid char";
+        addError(err);
+        // return Lex::Error(err);
     } else {
         stream.get();
-        return Lex(ch);
     }
+    return Lex(ch);
 }
 
 Lex Lexer::parseString() {
@@ -93,10 +99,11 @@ Lex Lexer::parseString() {
     }
     if (head == '"' && !invalid_char) {
         stream.get();
-        return Lex::String(raw);
     } else {
-        return Lex::Error(raw);
+        raw += "   invalid char in string";
+        addError(raw);
     }
+    return Lex::String(raw);
     // return Lex::String(raw);
 }
 
@@ -152,7 +159,7 @@ Lex Lexer::parseInt() {
         }
     }
     if (overflow || multiZero || (hasZero && ret != 0)) {
-        errors.push_back(Lex::Error(chunk));
+        addError(chunk + " multiple zero");
     }
     return Lex(sign * ret);
 
@@ -238,10 +245,11 @@ Lex Lexer::parse() {
             auto next = stream.peek();
             if (next == '=') {
                 stream.get();
-                return Lex(Cmp::UnEqual);
             } else {
-                return Lex::Error("!");
+                // return Lex::Error("!");
+                addError("! without =");
             }
+            return Lex(Cmp::UnEqual);
         }
 
         case '/':
@@ -282,6 +290,7 @@ Lex Lexer::parse() {
             while (!isspace(stream.peek())) {
                 err.push_back(static_cast<char>(stream.get()));
             }
+            err += " unknown token";
             return Lex::Error(err);
         }
 

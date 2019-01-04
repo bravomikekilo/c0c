@@ -10,7 +10,7 @@ namespace C0 {
 class Lexer {
 public:
     explicit Lexer(const std::string &source)
-            :stream(source), errors(vector<Lex>()), head_pos(stream.getPos()) {
+            :stream(source), errors(vector<string>()), head_pos(stream.getPos()) {
         next();
     };
 
@@ -18,12 +18,12 @@ public:
 
     Pos headPos() const { return head_pos;}
 
-    const vector<Lex> &getErrors() const { return errors; }
+    const vector<string> &getErrors() const { return errors; }
 
     void next();
 
 private:
-    vector<Lex> errors;
+    vector<string> errors;
 
     optional<Lex> skipWhitespace();
 
@@ -42,6 +42,10 @@ private:
     Lex parseChar();
 
     Lex parse();
+
+    void addError(const string &str) {
+        errors.push_back(head_pos.toStr() + ": " + str);
+    }
 };
 
 } // end namespace C0

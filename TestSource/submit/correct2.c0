@@ -1,0 +1,22 @@
+// test io
+
+int main() {
+
+    int a, b, c, d;
+    char ch;
+
+    scanf(a);
+    scanf(b, c);
+    scanf(ch);
+
+    printf("hello world");
+    printf("hello world", 1 + 2 + 3);
+    printf(1 + 2 + 3);
+    printf(a + b * c);
+
+    printf("char:", ch);
+    printf(ch);
+    printf((ch));
+
+
+}

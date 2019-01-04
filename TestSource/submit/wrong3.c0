@@ -1,0 +1,30 @@
+
+
+int multiple(int x, int y) {
+    const int c = 1;
+    const char char = 'c';
+
+    int x;
+    int int;
+
+    x = 5;
+
+    int = 10;
+    return (x + y);
+}
+
+int broke(int , int , int z) {
+
+    if(t > 10 {
+        z = 100;
+    }
+
+    return n + m;
+}
+
+void main() {
+    broke(10, 10);
+
+}
+
+

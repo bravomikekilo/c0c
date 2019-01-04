@@ -44,6 +44,7 @@ int main(int argc, char **argv) {
     }
     bool verbose = false;
     bool escape_str = true;
+    bool with_opt = false;
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--verbose") == 0) {
             verbose = true;
@@ -51,6 +52,10 @@ int main(int argc, char **argv) {
 
         if (strcmp(argv[i], "--raw") == 0) {
             escape_str = false;
+        }
+
+        if (strcmp(argv[i], "--opt") == 0) {
+            with_opt = true;
         }
     }
 
@@ -62,16 +67,16 @@ int main(int argc, char **argv) {
 
     auto[funcs, sym] = parser.parseProg();
 
-    if(verbose) {
+    if (verbose) {
         std::cout << C0::ASTDrawer::drawProgram(funcs) << std::endl;
     }
 
-    if(!parser.getError().empty()) {
+    if (!parser.getError().empty()) {
         has_error = true;
 
         std::cout << "all syntax error" << std::endl;
 
-        for(const auto& err: parser.getError()) {
+        for (const auto &err: parser.getError()) {
             std::cout << err << std::endl;
         }
 
@@ -81,9 +86,9 @@ int main(int argc, char **argv) {
     for (auto &func : funcs) {
         C0::TypeChecker checker;
         func->accept(checker);
-        if(!checker.getErrors().empty()) {
+        if (!checker.getErrors().empty()) {
             std::cout << "sementic error in function " << func->name << std::endl;
-            for(const auto &err: checker.getErrors()) {
+            for (const auto &err: checker.getErrors()) {
                 has_error = true;
                 std::cout << err << std::endl;
             }
@@ -91,7 +96,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    if(has_error) {
+    if (has_error) {
 #ifdef _WIN32
         getchar();
         getchar();
@@ -123,11 +128,13 @@ int main(int argc, char **argv) {
         std::cout << func->name << "/pre.cfg" << std::endl;
         std::cout << C0::writeCFG(start_block, func->table) << std::endl;
 
-        C0::ConstFolder folder(func->table);
-        folder.foldConst(start_block);
+        if (with_opt) {
+            C0::ConstFolder folder(func->table);
+            folder.foldConst(start_block);
 
-        std::cout << func->name << "/after.cfg" << std::endl;
-        std::cout << C0::writeCFG(start_block, func->table) << std::endl;
+            std::cout << func->name << "/after.cfg" << std::endl;
+            std::cout << C0::writeCFG(start_block, func->table) << std::endl;
+        }
 
         C0::frameBuilder frame_builder;
         frame_builder.buildFrame(start_block, func);

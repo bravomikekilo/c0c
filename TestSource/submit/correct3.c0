@@ -1,0 +1,43 @@
+// test array
+
+int arr[100];
+
+int sum(int x) {
+
+    char ch_arr[10];
+
+
+    int i, ret, sum;
+
+    ch_arr[0] = 'a';
+    ch_arr[1] = 'b';
+    ch_arr[2] = 'c';
+    ch_arr[3] = 'd';
+
+    for(i = 0; i < x; i = i + 1) {
+        arr[i] = i + 1;
+    }
+
+    ret = 0;
+
+    for(i = 0; i < x; i = i + 1) {
+        ret = ret + arr[i];
+    }
+
+    sum = 0;
+    for(i = 0; i < 4; i = i + 1) {
+        sum = sum + ch_arr[i];
+    }
+
+    printf("sum of char array ", sum);
+
+
+    return (ret);
+
+}
+
+void main() {
+    int x;
+    x = sum(10);
+    printf("sum is:", x);
+}

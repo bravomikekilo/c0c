@@ -1,0 +1,18 @@
+
+const char x = 'a';
+
+int main() {
+    const int index = 100;
+    const int _index = 101;
+
+    int arr[100];
+    int ret;
+
+
+
+    printf(arr[index]);
+    printf(arr[_index]);
+
+    printf(arr[99]);
+    return (arr[88]);
+}
