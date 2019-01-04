@@ -1,7 +1,7 @@
 const int scale = 100,test = 20;
 const char char_test = 'y';    
 int 
-mark[100],data[0000100];                        
+mark[100],data[100];
 int 
 a,b,c,d,e;
 int 
@@ -59,7 +59,7 @@ int foo_expr(){
         data[i] = i;
         i = i + 1;
     }while(i<scale);
-    return (-a*data[c]+-2*'c'+sqrt(d)-(5/02)*1);
+    return (-a*data[c]+-2*'c'+sqrt(d)-(5/2)*1);
 }
 
 void do_nothing(){
@@ -78,7 +78,7 @@ void do_nothing(){
 
 
 void value(){
-    const int test = 0110;
+    const int test = 110;
     int op;
     scanf(op);
 

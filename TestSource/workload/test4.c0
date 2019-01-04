@@ -1,4 +1,4 @@
-const int MAX_STACK_NUM = 0010, MAX_CHOOSE_NUM = 10;    
+const int MAX_STACK_NUM = 10, MAX_CHOOSE_NUM = 10;
 const char DIVIDE = '_';
 
 int stack[12], used[12];    

@@ -3,7 +3,7 @@ const int a10=10,a20=+20,a30=-30;
 const char adder='+';
 const char pluser='*',number='8',letter='a';
 
-int var2,varray[010];
+int var2,varray[10];
 char var4,varraychar[20];
 int var1;
 
@@ -123,7 +123,7 @@ void main(){
     fortest();
 
     scanf(var4);
-    if(pi-+0314+varray[0]-1) printf("error");
+    if(pi-+314+varray[0]-1) printf("error");
     if(1)
     if(chara(var4+0)=='a') printf("your input is correct!");
     else printf("error!");

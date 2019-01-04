@@ -125,8 +125,10 @@ int main(int argc, char **argv) {
             std::cout << cfg_drawer.getDot(func->name) << std::endl;
         }
 
-        std::cout << func->name << "/pre.cfg" << std::endl;
-        std::cout << C0::writeCFG(start_block, func->table) << std::endl;
+        if (!with_opt) {
+            std::cout << func->name << "/pre.cfg" << std::endl;
+            std::cout << C0::writeCFG(start_block, func->table) << std::endl;
+        }
 
         if (with_opt) {
             C0::ConstFolder folder(func->table);
